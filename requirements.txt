@@ -1,0 +1,8 @@
+Faker==1.0.5
+humanfriendly==4.18
+python-dateutil==2.8.0
+python-dotenv==0.10.1
+PyYAML==5.1
+six==1.12.0
+text-unidecode==1.2
+tqdm==4.31.1
