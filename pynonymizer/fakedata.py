@@ -1,7 +1,9 @@
 from faker import Faker
 from functools import reduce
 from tqdm import tqdm
+import logging
 
+logger = logging.getLogger("pynonymizer.fakedata")
 
 def _map_fake_columns(fake_columns):
     """
@@ -11,7 +13,6 @@ def _map_fake_columns(fake_columns):
     :param fake_columns: A list of FakeColumn instances
     :return:
     """
-
     return reduce(lambda result, col: (result.update({col.name: col}) or result), fake_columns, {})
 
 
@@ -59,13 +60,20 @@ class FakeSeeder:
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
         # Filter supported columns so we're not seeding ALL types by default
-        required_columns = strategy.get_required_fake_types()
-        filtered_columns = set(value for value in self.supported_columns.values() if value in required_columns)
+        required_columns = strategy.get_update_column_fake_types()
+        filtered_columns = set([value for value in self.supported_columns.values() if value.name in required_columns])
 
-        print("creating seed table...")
+
+        if len(filtered_columns) < 1:
+            raise ValueError("Resulting seed columns is empty. All of the columns specified were unsupported ")
+
+        logger.info("creating seed table...")
+        logger.debug(f"seed table columns: {filtered_columns}")
+
         database.create_seed_table(filtered_columns)
 
         for i in tqdm(range(0, seed_rows), desc="Inserting seed data", unit="rows"):
+            logger.debug(f"inserting seed row {i}")
             database.insert_seed_row(filtered_columns)
 
 

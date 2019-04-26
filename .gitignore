@@ -1,9 +1,12 @@
 .env
 strategies/*.yml
 venv/
+build/
 
 
 .DS_Store
 .idea/
 
 __pycache__
+*.egg
+*.egg-info/

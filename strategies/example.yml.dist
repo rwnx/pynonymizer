@@ -1,0 +1,95 @@
+tables:
+  accounts:
+    columns:
+      current_sign_in_ip: ipv4_public
+      last_sign_in_ip: ipv4_public
+      username: user_name
+      email: company_email
+
+  awards:
+    columns:
+      student_full_name: name
+      qualification_name: bs
+      qualification_code: random_int
+      qualification_accreditation_number: random_int
+
+  qualifications:
+    columns:
+      accreditation_number: random_int
+      name: bs
+      short_name: bs
+      description: bs
+      summary: bs
+      price: pyfloat
+
+  candidates: truncate
+
+  centres:
+    columns:
+      name: company
+      code: empty
+      tel: empty
+      email: company_email
+      website: uri
+
+  exam_centres:
+    columns:
+      name: company
+      tel: empty
+      email: company_email
+      town: city
+      website: uri
+
+  transactions:
+    columns:
+      cheque_number: empty
+      recorded_name: empty
+      card_transaction_number: empty
+      nominal_reference_number: empty
+      tcv_number: empty
+      bacs_reference: empty
+      notes: empty
+
+  people:
+    columns:
+      firstname: first_name
+      surname: last_name
+      salutation: prefix
+      fullname: name
+      gender: empty
+      email: company_email
+      dob: empty
+      phone: empty
+      phone0: empty
+
+  addresses:
+    columns:
+      line1: empty
+      line2: empty
+      town: empty
+      city: empty
+      postcode: empty
+
+  reasonable_adjustments:
+    columns:
+      application_details: empty
+      application_requirements: empty
+      internal_notes: empty
+
+  examiners:
+    type: update
+    columns:
+      emc_1_title: prefix
+      emc_1_forename: first_name
+      emc_1_surname: last_name
+      emc_1_email: company_email
+      emc_2_title: prefix
+      emc_2_forename: first_name
+      emc_2_surname: last_name
+      emc_2_email: company_email
+
+  notes:
+    columns:
+      notes_text: bs
+
+  _OLD_RAD: truncate

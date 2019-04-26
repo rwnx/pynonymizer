@@ -1,5 +1,5 @@
-from input.gzip import GzipInput
-from input.raw import RawInput
+from pynonymizer.input.gzip import GzipInput
+from pynonymizer.input.raw import RawInput
 import os
 
 

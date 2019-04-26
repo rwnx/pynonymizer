@@ -1,8 +1,17 @@
 import subprocess
 import shutil
 from tqdm import tqdm
-from database.exceptions import UnsupportedTableStrategyError, DatabaseConnectionError, MissingPrerequisiteError
+from pynonymizer.database.exceptions import UnsupportedTableStrategyError, DatabaseConnectionError, MissingPrerequisiteError, UnsupportedColumnStrategyError
+from pynonymizer.strategy import TableStrategyTypes, UpdateColumnStrategyTypes
+import logging
 
+logger = logging.getLogger("pynonymize.database.mysql")
+
+# For preservation of uniqueness across versions of mysql, and the existence of this bug:
+# https://bugs.mysql.com/bug.php?id=89474
+# define some custom functions for processing random logins and emails, as md5 strings, rather than the preferred UUIDs.
+UNIQUE_LOGIN_SUBQUERY = "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )"
+UNIQUE_EMAIL_SUBQUERY = "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') )"
 
 class MySqlProvider:
     """
@@ -31,8 +40,10 @@ class MySqlProvider:
         except subprocess.CalledProcessError as error:
             raise DatabaseConnectionError()
 
-
     def create_seed_table(self, columns):
+        if len(columns) < 1:
+            raise ValueError("Cannot create a seed table with no columns")
+
         column_types = ",".join(
             map(lambda col: "`{}` {}".format(col.name, col.sql_type), columns)
         )
@@ -72,7 +83,8 @@ class MySqlProvider:
                     restore_process.stdin.write(chunk)
                     restore_process.stdin.flush()
                     progressbar.update(len(chunk))
-            progressbar.write("Restored Database")
+
+        logger.info("Restored Database")
 
     def __get_sql_value(self, column):
         value = column.get_value()
@@ -84,8 +96,17 @@ class MySqlProvider:
     def __truncate_table(self, table_name):
         self.__execute_db_statement("SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `{}`; SET FOREIGN_KEY_CHECKS=1;".format(table_name))
 
-    def __get_column_subquery(self, column):
-        return "( SELECT `{}` FROM `{}` ORDER BY RAND() LIMIT 1)".format(column.fake_type, self.SEED_TABLE_NAME)
+    def __get_column_subquery(self, column_strategy):
+        if column_strategy.type == UpdateColumnStrategyTypes.EMPTY:
+            return "('')"
+        elif column_strategy.type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
+            return UNIQUE_EMAIL_SUBQUERY
+        elif column_strategy.type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
+            return UNIQUE_LOGIN_SUBQUERY
+        elif column_strategy.type == UpdateColumnStrategyTypes.FAKE:
+            return "( SELECT `{}` FROM `{}` ORDER BY RAND() LIMIT 1)".format(column_strategy.fake_type, self.SEED_TABLE_NAME)
+        else:
+            raise UnsupportedColumnStrategyError(column_strategy)
 
     def __update_table_columns(self, table_name, column_strategies):
         update_column_assignments = ",".join(
@@ -94,11 +115,11 @@ class MySqlProvider:
         self.__execute_db_statement( "UPDATE `{}` SET {};".format(table_name, update_column_assignments) )
 
     def __anonymize_table(self, table_strategy, progressbar):
-        if table_strategy.type == "truncate":
+        if table_strategy.type == TableStrategyTypes.TRUNCATE:
             progressbar.set_description("Truncating {}".format(table_strategy.name))
             self.__truncate_table(table_strategy.name)
 
-        elif table_strategy.type == "update":
+        elif table_strategy.type == TableStrategyTypes.UPDATE:
             progressbar.set_description("Anonymizing {}".format(table_strategy.name))
             self.__update_table_columns(table_strategy.name, table_strategy.get_column_strategies())
 
@@ -127,7 +148,7 @@ class MySqlProvider:
         process_output = subprocess.check_output(
             ["mysql", "-h", self.db_host, "-u", self.db_user, "-p{}".format(self.db_pass), self.db_name, "-sN",  "--execute", statement])
 
-        return int( process_output.decode() ) * DUMPSIZE_ESTIMATE_INFLATION
+        return int( process_output.decode() ) * self.DUMPSIZE_ESTIMATE_INFLATION
 
     def dump_database(self, output):
         dumpsize_estimate = self.estimate_dumpsize()
@@ -138,5 +159,4 @@ class MySqlProvider:
                 for chunk in iter(lambda: dump_process.stdout.read(self.DUMP_CHUNK_SIZE), b''):
                     output_file.write(chunk)
                     progressbar.update(len(chunk))
-
 
