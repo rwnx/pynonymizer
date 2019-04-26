@@ -9,18 +9,19 @@ tables:
   awards:
     columns:
       student_full_name: name
-      qualification_name: bs
+      centre_name: company
+      qualification_name: catch_phrase
       qualification_code: random_int
       qualification_accreditation_number: random_int
 
   qualifications:
     columns:
       accreditation_number: random_int
-      name: bs
-      short_name: bs
+      name: catch_phrase
+      short_name: catch_phrase
       description: bs
       summary: bs
-      price: pyfloat
+      price: random_int
 
   candidates: truncate
 
@@ -58,7 +59,7 @@ tables:
       fullname: name
       gender: empty
       email: company_email
-      dob: empty
+      dob: date_of_birth
       phone: empty
       phone0: empty
 
@@ -75,6 +76,11 @@ tables:
       application_details: empty
       application_requirements: empty
       internal_notes: empty
+
+  schedule_of_works:
+    columns:
+      nominal_code: empty
+      notes: empty
 
   examiners:
     type: update
@@ -93,3 +99,19 @@ tables:
       notes_text: bs
 
   _OLD_RAD: truncate
+
+  oauth_access_tokens: truncate
+  oauth_access_grants: truncate
+  oauth_applications: truncate
+  broadcasts: truncate
+
+  payment_gateways: truncate
+
+  ra_attachments:
+    columns:
+      filename: file_name
+      file_path: file_path
+
+  report_email_queue:
+    columns:
+      email_address: company_email

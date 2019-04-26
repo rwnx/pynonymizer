@@ -2,34 +2,18 @@ import yaml
 import argparse
 from dotenv import load_dotenv
 import os
+import sys
 from pynonymizer import database
-from pynonymizer import fakedata
+from pynonymizer.faker import FakeSeeder
 from pynonymizer.strategy import DatabaseStrategy
 from pynonymizer.input import get_input
 from pynonymizer.output import get_output
-import logging
+from pynonymizer.logging import get_logger, get_default_logger
 
-logger = logging.getLogger("pynonymizer")
+logger = get_default_logger()
 
 def main(args=None):
     load_dotenv()
-
-    env_type = os.getenv("ENV_TYPE")
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('[%(asctime)s|%(levelname)s|%(name)s] %(message)s')
-
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(formatter)
-
-    if env_type == "production":
-        console_handler.setLevel(logging.ERROR)
-        file_handler = logging.FileHandler('pynonymizer.log')
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-    logger.addHandler(console_handler)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("input_location", help="The source dumpfile to read from")
@@ -43,8 +27,12 @@ def main(args=None):
     db_pass = os.getenv("DB_PASS")
     db_name = os.getenv("DB_NAME")
     fake_locale = os.getenv("FAKE_LOCALE")
+    env_type = os.getenv("ENV_TYPE")
 
-    fake_seeder = fakedata.FakeSeeder(fake_locale)
+    if env_type == "production":
+        sys.tracebacklimit  = 0
+
+    fake_seeder = FakeSeeder(fake_locale)
 
     with open(args.strategyfile, "r") as strategy_yaml:
         strategy = DatabaseStrategy(fake_seeder, yaml.safe_load(strategy_yaml))
@@ -68,6 +56,7 @@ def main(args=None):
 
     db.drop_database()
     logger.info("Process completed successfully")
+
 
 if __name__ == "__main__":
     main()

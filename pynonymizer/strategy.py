@@ -1,14 +1,16 @@
 from enum import Enum
-import logging
+from pynonymizer.logging import get_logger
+logger = get_logger(__name__)
+
+
 """
 A strategy is an container of instructions on how to anonymize a database. 
 """
 
-logger = logging.getLogger("pynonymize.strategy")
-
 
 class UpdateColumnStrategyTypes(Enum):
     EMPTY = "empty"
+    NULL = "null"
     FAKE = "fake"
     UNIQUE_EMAIL = "unique_email"
     UNIQUE_LOGIN = "unique_login"
@@ -36,6 +38,9 @@ class UpdateColumnStrategy:
         self.name = name
         if config == "empty":
             self.type = UpdateColumnStrategyTypes.EMPTY
+
+        elif config == "null":
+            self.type = UpdateColumnStrategyTypes.NULL
 
         elif config == "unique_email":
             self.type = UpdateColumnStrategyTypes.UNIQUE_EMAIL

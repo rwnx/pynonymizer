@@ -1,9 +1,9 @@
 from faker import Faker
 from functools import reduce
 from tqdm import tqdm
-import logging
+from pynonymizer.logging import get_logger
+logger = get_logger(__name__)
 
-logger = logging.getLogger("pynonymizer.fakedata")
 
 def _map_fake_columns(fake_columns):
     """
@@ -42,27 +42,35 @@ class FakeSeeder:
             FakeColumn(self.faker, "company_email", "VARCHAR(50)"),
             FakeColumn(self.faker, "phone_number", "VARCHAR(50)"),
             FakeColumn(self.faker, "company", "VARCHAR(50)"),
+            FakeColumn(self.faker, "bs", "VARCHAR(150)"),
+            FakeColumn(self.faker, "catch_phrase", "VARCHAR(150)"),
+            FakeColumn(self.faker, "job", "VARCHAR(50)"),
             FakeColumn(self.faker, "city", "VARCHAR(50)"),
             FakeColumn(self.faker, "street_address", "VARCHAR(50)"),
             FakeColumn(self.faker, "postcode", "VARCHAR(50)"),
-            FakeColumn(self.faker, "uri", "VARCHAR(50)"),
+            FakeColumn(self.faker, "uri", "VARCHAR(150)"),
             FakeColumn(self.faker, "ipv4_private", "VARCHAR(50)"),
             FakeColumn(self.faker, "ipv4_public", "VARCHAR(50)"),
-            FakeColumn(self.faker, "bs", "VARCHAR(150)"),
+            FakeColumn(self.faker, "file_name", "VARCHAR(150)"),
+            FakeColumn(self.faker, "file_path", "VARCHAR(150)"),
             FakeColumn(self.faker, "paragraph", "VARCHAR(255)"),
             FakeColumn(self.faker, "prefix", "VARCHAR(10)"),
             FakeColumn(self.faker, "random_int", "INT"),
-            FakeColumn(self.faker, "pyfloat", "FLOAT")
+            FakeColumn(self.faker, "date_of_birth", "DATE"),
+            FakeColumn(self.faker, "future_date", "DATE"),
+            FakeColumn(self.faker, "past_date", "DATE"),
+            FakeColumn(self.faker, "future_datetime", "DATETIME"),
+            FakeColumn(self.faker, "past_datetime", "DATETIME"),
+            FakeColumn(self.faker, "date", "DATE")
         ])
 
-    def seed(self, database, strategy, seed_rows=100):
+    def seed(self, database, strategy, seed_rows=150):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
         # Filter supported columns so we're not seeding ALL types by default
         required_columns = strategy.get_update_column_fake_types()
         filtered_columns = set([value for value in self.supported_columns.values() if value.name in required_columns])
-
 
         if len(filtered_columns) < 1:
             raise ValueError("Resulting seed columns is empty. All of the columns specified were unsupported ")
