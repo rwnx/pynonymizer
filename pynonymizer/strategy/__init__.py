@@ -1,0 +1,1 @@
+# This is required for default module behaviour

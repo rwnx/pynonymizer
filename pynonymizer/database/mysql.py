@@ -3,7 +3,9 @@ import shutil
 from tqdm import tqdm
 from datetime import date, datetime
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError, DatabaseConnectionError, MissingPrerequisiteError, UnsupportedColumnStrategyError
-from pynonymizer.strategy import TableStrategyTypes, UpdateColumnStrategyTypes
+from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy
+from pynonymizer.strategy.update_column import EmptyUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, UniqueEmailUpdateColumnStrategy, FakeUpdateColumnStrategy
+
 from pynonymizer.logging import get_logger
 logger = get_logger(__name__)
 
@@ -62,7 +64,7 @@ class MySqlProvider:
         self.__execute_db_statement(f"DROP TABLE IF EXISTS `{self.SEED_TABLE_NAME}`;")
 
     def insert_seed_row(self, columns):
-        column_names = ",".join( map(lambda col: f"`{col.name}`", columns) )
+        column_names = ",".join(map(lambda col: f"`{col.name}`", columns))
         column_values = ",".join(map(lambda col: self.__get_seed_sql_value(col), columns))
         self.__execute_db_statement(f"INSERT INTO `{self.SEED_TABLE_NAME}`({column_names}) VALUES ({column_values});")
 
@@ -99,33 +101,32 @@ class MySqlProvider:
         # For preservation of unique values across versions of mysql, and this bug:
         # https://bugs.mysql.com/bug.php?id=89474,
 
-        if column_strategy.type == UpdateColumnStrategyTypes.EMPTY:
+        if isinstance(column_strategy, EmptyUpdateColumnStrategy):
             return "('')"
-        elif column_strategy.type == UpdateColumnStrategyTypes.NULL:
-            return "(NULL)"
-        elif column_strategy.type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
+        elif isinstance(column_strategy, UniqueEmailUpdateColumnStrategy):
             return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') )"
-        elif column_strategy.type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
+        elif isinstance(column_strategy, UniqueLoginUpdateColumnStrategy):
             return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )"
-        elif column_strategy.type == UpdateColumnStrategyTypes.FAKE:
+        elif isinstance(column_strategy, FakeUpdateColumnStrategy):
             return f"( SELECT `{column_strategy.fake_type}` FROM `{self.SEED_TABLE_NAME}` ORDER BY RAND() LIMIT 1)"
         else:
             raise UnsupportedColumnStrategyError(column_strategy)
 
-    def __update_table_columns(self, table_name, column_strategies):
+    def __update_table_columns(self, table_name, table_strategy):
+        column_strategies = table_strategy.column_strategies
         update_column_assignments = ",".join(
             map(lambda col: f"`{col.name}` = {self.__get_column_subquery(col)}", column_strategies)
         )
         self.__execute_db_statement(f"UPDATE `{table_name}` SET {update_column_assignments};" )
 
-    def __anonymize_table(self, table_strategy, progressbar):
-        if table_strategy.type == TableStrategyTypes.TRUNCATE:
-            progressbar.set_description("Truncating {}".format(table_strategy.name))
-            self.__truncate_table(table_strategy.name)
+    def __anonymize_table(self, table_name, table_strategy, progressbar):
+        if isinstance(table_strategy, TruncateTableStrategy):
+            progressbar.set_description("Truncating {}".format(table_name))
+            self.__truncate_table(table_name)
 
-        elif table_strategy.type == TableStrategyTypes.UPDATE:
-            progressbar.set_description("Anonymizing {}".format(table_strategy.name))
-            self.__update_table_columns(table_strategy.name, table_strategy.get_column_strategies())
+        elif isinstance(table_strategy, UpdateColumnsTableStrategy):
+            progressbar.set_description("Anonymizing {}".format(table_name))
+            self.__update_table_columns(table_name, table_strategy)
 
         else:
             raise UnsupportedTableStrategyError(table_strategy)
@@ -138,10 +139,10 @@ class MySqlProvider:
         :param database_strategy: a strategy.DatabaseStrategy configuration
         :return:
         """
-        table_strategies = database_strategy.get_table_strategies()
+        table_strategies = database_strategy.table_strategies
         with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
-            for table_strategy in table_strategies:
-                self.__anonymize_table(table_strategy, progressbar)
+            for table_name, table_strategy in table_strategies.items():
+                self.__anonymize_table(table_name, table_strategy, progressbar)
 
     def estimate_dumpsize(self):
         """

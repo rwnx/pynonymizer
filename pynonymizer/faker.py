@@ -64,12 +64,12 @@ class FakeSeeder:
             FakeColumn(self.faker, "date", "DATE")
         ])
 
-    def seed(self, database, strategy, seed_rows=150):
+    def seed(self, database, database_strategy, seed_rows=150):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
         # Filter supported columns so we're not seeding ALL types by default
-        required_columns = strategy.get_update_column_fake_types()
+        required_columns = database_strategy.get_update_column_fake_types()
         filtered_columns = set([value for value in self.supported_columns.values() if value.name in required_columns])
 
         if len(filtered_columns) < 1:
