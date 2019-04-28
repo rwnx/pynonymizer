@@ -53,47 +53,6 @@ class MySqlProvider:
         else:
             return str(value)
 
-    def create_seed_table(self, columns):
-        if len(columns) < 1:
-            raise ValueError("Cannot create a seed table with no columns")
-
-        column_types = ",".join( map(lambda col: f"`{col.name}` {col.sql_type}", columns) )
-        self.__execute_db_statement(f"CREATE TABLE `{self.SEED_TABLE_NAME}` ({column_types});")
-
-    def drop_seed_table(self):
-        self.__execute_db_statement(f"DROP TABLE IF EXISTS `{self.SEED_TABLE_NAME}`;")
-
-    def insert_seed_row(self, columns):
-        column_names = ",".join(map(lambda col: f"`{col.name}`", columns))
-        column_values = ",".join(map(lambda col: self.__get_seed_sql_value(col), columns))
-        self.__execute_db_statement(f"INSERT INTO `{self.SEED_TABLE_NAME}`({column_names}) VALUES ({column_values});")
-
-    def create_database(self):
-        self.__execute_statement(f"CREATE DATABASE `{self.db_name}`")
-
-    def drop_database(self):
-        self.__execute_statement(f"DROP DATABASE IF EXISTS `{self.db_name}`")
-
-    def restore_database(self, input):
-        """
-        Feed a mysqldump dumpfile to the mysql binary on stdin.
-        :param dumpfile:
-        :param dumpsize:
-        :return:
-        """
-        dumpsize = input.get_size()
-
-        restore_process = subprocess.Popen(["mysql", "--host", self.db_host, "--user", self.db_user, f"-p{self.db_pass}", self.db_name], stdin=subprocess.PIPE)
-        with input.open() as dumpfile_data:
-            with tqdm(desc="Restoring database", total=dumpsize, unit='B', unit_scale=True, unit_divisor=1000) as progressbar:
-                for chunk in iter(lambda: dumpfile_data.read(self.RESTORE_CHUNK_SIZE), b''):
-                    restore_process.stdin.write(chunk)
-                    restore_process.stdin.flush()
-                    progressbar.update(len(chunk))
-
-        logger.info("Restored Database")
-
-
     def __truncate_table(self, table_name):
         self.__execute_db_statement(f"SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `{table_name}`; SET FOREIGN_KEY_CHECKS=1;")
 
@@ -142,6 +101,49 @@ class MySqlProvider:
         with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
             for table_name, table_strategy in table_strategies.items():
                 self.__anonymize_table(table_name, table_strategy, progressbar)
+
+    def create_seed_table(self, columns):
+        if len(columns) < 1:
+            raise ValueError("Cannot create a seed table with no columns")
+
+        column_types = ",".join(map(lambda col: f"`{col.name}` {col.sql_type}", columns))
+        self.__execute_db_statement(f"CREATE TABLE `{self.SEED_TABLE_NAME}` ({column_types});")
+
+    def drop_seed_table(self):
+        self.__execute_db_statement(f"DROP TABLE IF EXISTS `{self.SEED_TABLE_NAME}`;")
+
+    def insert_seed_row(self, columns):
+        column_names = ",".join(map(lambda col: f"`{col.name}`", columns))
+        column_values = ",".join(map(lambda col: self.__get_seed_sql_value(col), columns))
+        self.__execute_db_statement(f"INSERT INTO `{self.SEED_TABLE_NAME}`({column_names}) VALUES ({column_values});")
+
+    def create_database(self):
+        self.__execute_statement(f"CREATE DATABASE `{self.db_name}`")
+
+    def drop_database(self):
+        self.__execute_statement(f"DROP DATABASE IF EXISTS `{self.db_name}`")
+
+    def restore_database(self, input):
+        """
+        Feed a mysqldump dumpfile to the mysql binary on stdin.
+        :param dumpfile:
+        :param dumpsize:
+        :return:
+        """
+        dumpsize = input.get_size()
+
+        restore_process = subprocess.Popen(
+            ["mysql", "--host", self.db_host, "--user", self.db_user, f"-p{self.db_pass}", self.db_name],
+            stdin=subprocess.PIPE)
+        with input.open() as dumpfile_data:
+            with tqdm(desc="Restoring database", total=dumpsize, unit='B', unit_scale=True,
+                      unit_divisor=1000) as progressbar:
+                for chunk in iter(lambda: dumpfile_data.read(self.RESTORE_CHUNK_SIZE), b''):
+                    restore_process.stdin.write(chunk)
+                    restore_process.stdin.flush()
+                    progressbar.update(len(chunk))
+
+        logger.info("Restored Database")
 
     def estimate_dumpsize(self):
         """
