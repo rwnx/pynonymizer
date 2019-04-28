@@ -51,6 +51,6 @@ class StrategyParser:
     def parse_config(self, config):
         table_strategies = {}
         for table_name, table_config in config["tables"].items():
-            table_strategies[table_name] = self.__parse_table(table_config)
+            table_strategies[table_name] = self.__parse_table(table_name, table_config)
 
         return DatabaseStrategy(table_strategies)

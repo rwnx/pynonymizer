@@ -97,7 +97,7 @@ class MySqlProvider:
     def __truncate_table(self, table_name):
         self.__execute_db_statement(f"SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `{table_name}`; SET FOREIGN_KEY_CHECKS=1;")
 
-    def __get_column_subquery(self, column_strategy):
+    def __get_column_subquery(self, column_name, column_strategy):
         # For preservation of unique values across versions of mysql, and this bug:
         # https://bugs.mysql.com/bug.php?id=89474,
 
@@ -114,9 +114,8 @@ class MySqlProvider:
 
     def __update_table_columns(self, table_name, table_strategy):
         column_strategies = table_strategy.column_strategies
-        update_column_assignments = ",".join(
-            map(lambda col: f"`{col.name}` = {self.__get_column_subquery(col)}", column_strategies)
-        )
+        update_column_assignments = ",".join( f"`{column_name}` = {self.__get_column_subquery(column_name, column_strategy)}" for column_name, column_strategy in column_strategies.items() )
+
         self.__execute_db_statement(f"UPDATE `{table_name}` SET {update_column_assignments};" )
 
     def __anonymize_table(self, table_name, table_strategy, progressbar):

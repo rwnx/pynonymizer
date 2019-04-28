@@ -5,7 +5,7 @@ import os
 import sys
 from pynonymizer import database
 from pynonymizer.faker import FakeSeeder
-from pynonymizer.strategy import DatabaseStrategy
+from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer.input import get_input
 from pynonymizer.output import get_output
 from pynonymizer.logging import get_logger, get_default_logger
@@ -33,9 +33,10 @@ def main(args=None):
         sys.tracebacklimit  = 0
 
     fake_seeder = FakeSeeder(fake_locale)
+    strategy_parser = StrategyParser()
 
     with open(args.strategyfile, "r") as strategy_yaml:
-        strategy = DatabaseStrategy(fake_seeder, yaml.safe_load(strategy_yaml))
+        strategy = strategy_parser.parse_config(yaml.safe_load(strategy_yaml))
 
     # init and validate DB connection
     db = database.get_provider("mysql", db_host, db_user, db_pass, db_name)
