@@ -12,7 +12,8 @@ setuptools.setup(
     install_requires=[
         "pyyaml>=5",
         "tqdm>=4",
-        "faker>=1"
+        "faker>=1",
+        "python-dotenv>=0.10"
     ],
     entry_points={
         'console_scripts': [

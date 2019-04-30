@@ -1,19 +1,26 @@
 import yaml
 import argparse
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 import os
 import sys
 from pynonymizer import database
-from pynonymizer.faker import FakeSeeder
+from pynonymizer.fake import FakeSeeder
 from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer.input import get_input
 from pynonymizer.output import get_output
-from pynonymizer.logging import get_logger, get_default_logger
+from pynonymizer.log import get_logger, get_default_logger
 
 logger = get_default_logger()
 
+
+
 def main(args=None):
-    load_dotenv()
+    if sys.version_info < (3, 6):
+        sys.exit('pynonymizer requires Python 3.6+ to run')
+
+    # find the dotenv from the current working dir rather than the execution location
+    dotenv = find_dotenv(usecwd=True)
+    load_dotenv( dotenv_path=find_dotenv(usecwd=True) )
 
     parser = argparse.ArgumentParser()
     parser.add_argument("input_location", help="The source dumpfile to read from")
@@ -22,29 +29,11 @@ def main(args=None):
 
     args = parser.parse_args()
 
-
     db_host = os.getenv("DB_HOST") or "127.0.0.1"
-    db_user = os.getenv("DB_USER")
-    db_pass = os.getenv("DB_PASS")
-    db_name = os.getenv("DB_NAME")
+    db_user = os.getenv("DB_USER") or sys.exit("Missing environment variable: DB_USER")
+    db_pass = os.getenv("DB_PASS") or sys.exit("Missing environment variable: DB_PASS")
+    db_name = os.getenv("DB_NAME") or sys.exit("Missing environment variable: DB_NAME")
     fake_locale = os.getenv("FAKE_LOCALE") or "en_GB"
-    env_type = os.getenv("ENV_TYPE") or "development"
-
-    # Validate required env
-    if db_user is None:
-        logger.error("Missing required environment variable: %s", "DB_USER")
-        sys.exit(1)
-
-    if db_pass is None:
-        logger.error("Missing required environment variable: %s", "DB_PASS")
-        sys.exit(1)
-
-    if db_name is None:
-        logger.error("Missing required environment variable: %s", "DB_NAME")
-        sys.exit(1)
-
-    if env_type == "production":
-        sys.tracebacklimit  = 0
 
     fake_seeder = FakeSeeder(fake_locale)
     strategy_parser = StrategyParser()

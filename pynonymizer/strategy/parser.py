@@ -1,5 +1,5 @@
 from pynonymizer.strategy.exceptions import UnknownColumnStrategyError, UnknownTableStrategyError
-from pynonymizer.logging import get_logger
+from pynonymizer.log import get_logger
 from pynonymizer.strategy.table import UpdateColumnsTableStrategy, TruncateTableStrategy
 from pynonymizer.strategy.update_column import EmptyUpdateColumnStrategy, UniqueEmailUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, FakeUpdateColumnStrategy
 from pynonymizer.strategy.database import DatabaseStrategy

@@ -6,7 +6,7 @@ from pynonymizer.database.exceptions import UnsupportedTableStrategyError, Datab
 from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy
 from pynonymizer.strategy.update_column import EmptyUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, UniqueEmailUpdateColumnStrategy, FakeUpdateColumnStrategy
 
-from pynonymizer.logging import get_logger
+from pynonymizer.log import get_logger
 logger = get_logger(__name__)
 
 class MySqlProvider:
