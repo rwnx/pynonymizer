@@ -64,6 +64,8 @@ class FakeSeeder:
             FakeColumn(self.faker, "date", "DATE")
         ])
 
+    # TODO: this is a DB concern, really. faker/fakedata shouldn't be indicating the process of building the seed table
+    # move to database providers
     def seed(self, database, database_strategy, seed_rows=150):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates

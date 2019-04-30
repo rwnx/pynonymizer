@@ -15,6 +15,26 @@ A database connection is required to restore the database to during the anonymiz
 1. dump resulting data to file
 1. clean up!
 
+## Installation
+1. Install `python setup.py install`
+
+## Usage
+1. Install
+1. Set env vars using .env or other method
+1. run command `pynonymizer`
+```
+usage: pynonymizer [-h] input_location strategyfile output_location
+
+positional arguments:
+  input_location   The source dumpfile to read from
+  strategyfile     a strategyfile to use during anonymization (e.g.
+                   example.yml)
+  output_location  The destination to write the output to
+
+optional arguments:
+  -h, --help       show this help message and exit
+```
+
 
 ## Development
 1. setup venv

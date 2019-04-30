@@ -1,4 +1,9 @@
 import setuptools
+import sys
+
+
+if sys.version_info < (3, 6):
+    sys.exit('pypinfo requires Python 3.6+')
 
 setuptools.setup(
     name='pynonymizer',

@@ -22,12 +22,26 @@ def main(args=None):
 
     args = parser.parse_args()
 
-    db_host = os.getenv("DB_HOST")
+
+    db_host = os.getenv("DB_HOST") or "127.0.0.1"
     db_user = os.getenv("DB_USER")
     db_pass = os.getenv("DB_PASS")
     db_name = os.getenv("DB_NAME")
-    fake_locale = os.getenv("FAKE_LOCALE")
-    env_type = os.getenv("ENV_TYPE")
+    fake_locale = os.getenv("FAKE_LOCALE") or "en_GB"
+    env_type = os.getenv("ENV_TYPE") or "development"
+
+    # Validate required env
+    if db_user is None:
+        logger.error("Missing required environment variable: %s", "DB_USER")
+        sys.exit(1)
+
+    if db_pass is None:
+        logger.error("Missing required environment variable: %s", "DB_PASS")
+        sys.exit(1)
+
+    if db_name is None:
+        logger.error("Missing required environment variable: %s", "DB_NAME")
+        sys.exit(1)
 
     if env_type == "production":
         sys.tracebacklimit  = 0
