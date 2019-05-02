@@ -32,7 +32,7 @@ class MySqlProvider:
             version = self.__execute_statement("SELECT @@VERSION;", "-sN").decode()
             logger.info(f"mysql version {version}")
         except subprocess.CalledProcessError as error:
-            raise DatabaseConnectionError()
+            raise DatabaseConnectionError() from None
 
     def __execute_statement(self, statement, *args):
         return subprocess.check_output(["mysql", "-h", self.db_host, "-u", self.db_user, f"-p{self.db_pass}", *args, "--execute", statement])
@@ -91,31 +91,71 @@ class MySqlProvider:
 
         progressbar.update()
 
-    def anonymize_database(self, database_strategy):
-        """
-        Anonymize a restored database using the passed database strategy
-        :param database_strategy: a strategy.DatabaseStrategy configuration
-        :return:
-        """
-        table_strategies = database_strategy.table_strategies
-        with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
-            for table_name, table_strategy in table_strategies.items():
-                self.__anonymize_table(table_name, table_strategy, progressbar)
 
-    def create_seed_table(self, columns):
+
+    def __seed(self, columns, seed_rows=150):
+        """
+        'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
+        """
+        for i in tqdm(range(0, seed_rows), desc="Inserting seed data", unit="rows"):
+            logger.debug(f"inserting seed row {i}")
+            self.__insert_seed_row(columns)
+
+    def __create_seed_table(self, columns):
         if len(columns) < 1:
             raise ValueError("Cannot create a seed table with no columns")
 
         column_types = ",".join(map(lambda col: f"`{col.name}` {col.sql_type}", columns))
         self.__execute_db_statement(f"CREATE TABLE `{self.SEED_TABLE_NAME}` ({column_types});")
 
-    def drop_seed_table(self):
+    def __drop_seed_table(self):
         self.__execute_db_statement(f"DROP TABLE IF EXISTS `{self.SEED_TABLE_NAME}`;")
 
-    def insert_seed_row(self, columns):
+    def __insert_seed_row(self, columns):
         column_names = ",".join(map(lambda col: f"`{col.name}`", columns))
         column_values = ",".join(map(lambda col: self.__get_seed_sql_value(col), columns))
         self.__execute_db_statement(f"INSERT INTO `{self.SEED_TABLE_NAME}`({column_names}) VALUES ({column_values});")
+
+    def __estimate_dumpsize(self):
+        """
+        Makes a guess on the dump size using internal database metrics
+        :return:
+        """
+        statement = f"SELECT data_bytes FROM (SELECT SUM(data_length) AS data_bytes FROM information_schema.tables WHERE table_schema = '{self.db_name}') AS data;"
+        process_output = subprocess.check_output(
+            ["mysql", "-h", self.db_host, "-u", self.db_user, "-p{}".format(self.db_pass), self.db_name, "-sN",
+             "--execute", statement])
+
+        return int(process_output.decode()) * self.DUMPSIZE_ESTIMATE_INFLATION
+
+    def anonymize_database(self, seeder, database_strategy):
+        """
+        Anonymize a restored database using the passed database strategy
+        :param seeder: a FakeSeeder instance
+        :param database_strategy: a strategy.DatabaseStrategy configuration
+        :return:
+        """
+        # Filter supported columns so we're not seeding ALL types by default
+        required_columns = database_strategy.get_update_column_fake_types()
+        filtered_columns = set([value for value in seeder.supported_columns.values() if value.name in required_columns])
+        if len(filtered_columns) < 1:
+            raise ValueError("Resulting seed columns is empty. All of the columns specified were unsupported or missing.")
+
+        logger.info("creating seed table")
+        self.__create_seed_table(filtered_columns)
+
+        logger.info("inserting seed data")
+        self.__seed(filtered_columns)
+
+        table_strategies = database_strategy.table_strategies
+        logger.info("Anonymizing %d tables", len(table_strategies))
+
+        with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
+            for table_name, table_strategy in table_strategies.items():
+                self.__anonymize_table(table_name, table_strategy, progressbar)
+
+        logger.info("dropping seed table")
+        self.__drop_seed_table()
 
     def create_database(self):
         self.__execute_statement(f"CREATE DATABASE `{self.db_name}`")
@@ -126,8 +166,7 @@ class MySqlProvider:
     def restore_database(self, input):
         """
         Feed a mysqldump dumpfile to the mysql binary on stdin.
-        :param dumpfile:
-        :param dumpsize:
+        :param input:
         :return:
         """
         dumpsize = input.get_size()
@@ -143,21 +182,13 @@ class MySqlProvider:
                     restore_process.stdin.flush()
                     progressbar.update(len(chunk))
 
-        logger.info("Restored Database")
-
-    def estimate_dumpsize(self):
+    def dump_database(self, output):
         """
-        Makes a guess on the dump size using internal database metrics
+        Feed an output with stdout from the mysqldump binary
+        :param output:
         :return:
         """
-        statement = f"SELECT data_bytes FROM (SELECT SUM(data_length) AS data_bytes FROM information_schema.tables WHERE table_schema = '{self.db_name}') AS data;"
-        process_output = subprocess.check_output(
-            ["mysql", "-h", self.db_host, "-u", self.db_user, "-p{}".format(self.db_pass), self.db_name, "-sN",  "--execute", statement])
-
-        return int( process_output.decode() ) * self.DUMPSIZE_ESTIMATE_INFLATION
-
-    def dump_database(self, output):
-        dumpsize_estimate = self.estimate_dumpsize()
+        dumpsize_estimate = self.__estimate_dumpsize()
 
         with output.open() as output_file:
             dump_process = subprocess.Popen(["mysqldump", "--host", self.db_host, "--user", self.db_user, f"-p{self.db_pass}", self.db_name], stdout=subprocess.PIPE)

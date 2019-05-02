@@ -8,6 +8,9 @@ logger = get_logger(__name__)
 
 
 class StrategyParser:
+    def __init__(self, fake_seeder):
+        self.fake_seeder = fake_seeder
+
     def __parse_update_column(self, column_name, column_config):
         # autodetect shorthand
         if isinstance(column_config, str):
@@ -22,7 +25,7 @@ class StrategyParser:
 
             else:
                 # in autodetect, the column config string will be the fake_type
-                return FakeUpdateColumnStrategy(column_config)
+                return FakeUpdateColumnStrategy(self.fake_seeder, column_config)
         else:
             raise UnknownColumnStrategyError(column_config)
 
