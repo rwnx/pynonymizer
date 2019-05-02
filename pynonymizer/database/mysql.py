@@ -3,8 +3,8 @@ import shutil
 from tqdm import tqdm
 from datetime import date, datetime
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError, DatabaseConnectionError, MissingPrerequisiteError, UnsupportedColumnStrategyError
-from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy
-from pynonymizer.strategy.update_column import EmptyUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, UniqueEmailUpdateColumnStrategy, FakeUpdateColumnStrategy
+from pynonymizer.strategy.table import TableStrategyTypes
+from pynonymizer.strategy.update_column import ColumnStrategyTypes
 
 from pynonymizer.log import get_logger
 logger = get_logger(__name__)
@@ -60,14 +60,14 @@ class MySqlProvider:
         # For preservation of unique values across versions of mysql, and this bug:
         # https://bugs.mysql.com/bug.php?id=89474,
 
-        if isinstance(column_strategy, EmptyUpdateColumnStrategy):
+        if column_strategy.strategy_type == ColumnStrategyTypes.EMPTY:
             return "('')"
-        elif isinstance(column_strategy, UniqueEmailUpdateColumnStrategy):
+        elif column_strategy.strategy_type == ColumnStrategyTypes.UNIQUE_EMAIL:
             return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') )"
-        elif isinstance(column_strategy, UniqueLoginUpdateColumnStrategy):
+        elif column_strategy.strategy_type == ColumnStrategyTypes.UNIQUE_LOGIN:
             return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )"
-        elif isinstance(column_strategy, FakeUpdateColumnStrategy):
-            return f"( SELECT `{column_strategy.fake_type}` FROM `{self.SEED_TABLE_NAME}` ORDER BY RAND() LIMIT 1)"
+        elif column_strategy.strategy_type == ColumnStrategyTypes.FAKE_UPDATE:
+            return f"( SELECT `{column_strategy.fake_column.name}` FROM `{self.SEED_TABLE_NAME}` ORDER BY RAND() LIMIT 1)"
         else:
             raise UnsupportedColumnStrategyError(column_strategy)
 
@@ -78,11 +78,11 @@ class MySqlProvider:
         self.__execute_db_statement(f"UPDATE `{table_name}` SET {update_column_assignments};" )
 
     def __anonymize_table(self, table_name, table_strategy, progressbar):
-        if isinstance(table_strategy, TruncateTableStrategy):
+        if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
             progressbar.set_description("Truncating {}".format(table_name))
             self.__truncate_table(table_name)
 
-        elif isinstance(table_strategy, UpdateColumnsTableStrategy):
+        elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
             progressbar.set_description("Anonymizing {}".format(table_name))
             self.__update_table_columns(table_name, table_strategy)
 
@@ -90,7 +90,6 @@ class MySqlProvider:
             raise UnsupportedTableStrategyError(table_strategy)
 
         progressbar.update()
-
 
 
     def __seed(self, columns, seed_rows=150):
@@ -128,24 +127,21 @@ class MySqlProvider:
 
         return int(process_output.decode()) * self.DUMPSIZE_ESTIMATE_INFLATION
 
-    def anonymize_database(self, seeder, database_strategy):
+    def anonymize_database(self, database_strategy):
         """
         Anonymize a restored database using the passed database strategy
-        :param seeder: a FakeSeeder instance
+
         :param database_strategy: a strategy.DatabaseStrategy configuration
         :return:
         """
         # Filter supported columns so we're not seeding ALL types by default
-        required_columns = database_strategy.get_update_column_fake_types()
-        filtered_columns = set([value for value in seeder.supported_columns.values() if value.name in required_columns])
-        if len(filtered_columns) < 1:
-            raise ValueError("Resulting seed columns is empty. All of the columns specified were unsupported or missing.")
+        required_columns = database_strategy.get_fake_columns()
 
-        logger.info("creating seed table")
-        self.__create_seed_table(filtered_columns)
+        logger.info("creating seed table with %d columns", len(required_columns))
+        self.__create_seed_table(required_columns)
 
         logger.info("inserting seed data")
-        self.__seed(filtered_columns)
+        self.__seed(required_columns)
 
         table_strategies = database_strategy.table_strategies
         logger.info("Anonymizing %d tables", len(table_strategies))

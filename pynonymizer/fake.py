@@ -1,6 +1,5 @@
 from faker import Faker
 from functools import reduce
-from tqdm import tqdm
 from pynonymizer.log import get_logger
 logger = get_logger(__name__)
 
@@ -66,5 +65,8 @@ class FakeSeeder:
 
     def supports_fake_type(self, fake_type):
         return fake_type in self.supported_columns
+
+    def get_fake_column(self, fake_type):
+        return self.supported_columns[fake_type]
 
 

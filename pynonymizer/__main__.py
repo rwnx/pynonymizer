@@ -8,7 +8,7 @@ from pynonymizer.fake import FakeSeeder
 from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer.input import get_input
 from pynonymizer.output import get_output
-from pynonymizer.log import get_logger, get_default_logger
+from pynonymizer.log import get_default_logger
 
 logger = get_default_logger()
 
@@ -60,7 +60,7 @@ def main(args=None):
     db.restore_database(input)
 
     logger.debug("Anonymizing Database")
-    db.anonymize_database(fake_seeder, strategy)
+    db.anonymize_database(strategy)
 
     logger.debug("Dumping database")
     db.dump_database(output)
