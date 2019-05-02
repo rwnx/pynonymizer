@@ -33,7 +33,7 @@ default_logger = get_default_logger()
 
 default_logger.setLevel(logging.DEBUG)
 default_file_formatter = logging.Formatter('[%(asctime)-15s|%(levelname)s|%(name)s] %(message)s')
-default_console_formatter = logging.Formatter('[%(asctime)-5s|%(levelname)s] %(message)s')
+default_console_formatter = logging.Formatter('%(message)s')
 
 # Add default warn handler to console
 console_handler = logging.StreamHandler()
