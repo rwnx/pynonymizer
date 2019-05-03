@@ -9,6 +9,7 @@ setuptools.setup(
     name='pynonymizer',
     version='0.1.0',
     packages=setuptools.find_packages(),
+    test_suite="tests",
     install_requires=[
         "pyyaml>=5",
         "tqdm>=4",
