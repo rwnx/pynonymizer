@@ -1,7 +1,6 @@
 import logging
 import os
 
-
 def get_default_logger():
     """
     Get the default logging instance
@@ -28,23 +27,26 @@ def get_logger(name):
     return logging.getLogger(f"pynonymizer.{child_logger_name}")
 
 
-# init default logger
-default_logger = get_default_logger()
+def init_logging():
+    # init default logger
+    default_logger = get_default_logger()
 
-default_logger.setLevel(logging.DEBUG)
-default_file_formatter = logging.Formatter('[%(asctime)-15s|%(levelname)s|%(name)s] %(message)s')
-default_console_formatter = logging.Formatter('%(message)s')
+    default_logger.setLevel(logging.DEBUG)
+    default_file_formatter = logging.Formatter('[%(asctime)-15s|%(levelname)s|%(name)s] %(message)s')
+    default_console_formatter = logging.Formatter('%(message)s')
 
-# Add default warn handler to console
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(default_console_formatter)
-default_logger.addHandler(console_handler)
+    # Add default warn handler to console
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(default_console_formatter)
+    default_logger.addHandler(console_handler)
 
-# Add default file handler when running in production
-if os.getenv("env_type") == "production":
-    file_handler = logging.FileHandler('pynonymizer.log')
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(default_file_formatter)
-    default_logger.addHandler(file_handler)
+    # Add default file handler when running in production
+    if os.getenv("env_type") == "production":
+        file_handler = logging.FileHandler('pynonymizer.log')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(default_file_formatter)
+        default_logger.addHandler(file_handler)
 
+
+init_logging()

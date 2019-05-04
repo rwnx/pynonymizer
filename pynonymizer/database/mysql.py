@@ -154,10 +154,10 @@ class MySqlProvider:
         self.__drop_seed_table()
 
     def create_database(self):
-        self.__execute_statement(f"CREATE DATABASE `{self.db_name}`")
+        self.__execute_statement(f"CREATE DATABASE `{self.db_name}`;")
 
     def drop_database(self):
-        self.__execute_statement(f"DROP DATABASE IF EXISTS `{self.db_name}`")
+        self.__execute_statement(f"DROP DATABASE IF EXISTS `{self.db_name}`;")
 
     def restore_database(self, input):
         """

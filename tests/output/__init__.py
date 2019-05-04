@@ -2,7 +2,7 @@ import unittest
 import pynonymizer.output
 
 
-class ResolveOutput(unittest.TestCase):
+class ResolveFromFilepathTest(unittest.TestCase):
     test_path_examples = [
         "",
         "complex/multi/part/path/test/",
@@ -11,14 +11,14 @@ class ResolveOutput(unittest.TestCase):
         "C:\\absolute\\path\\test\\"
     ]
 
-    def test_resolve_raw_output(self):
+    def test_resolve_raw(self):
         for path in self.test_path_examples:
             test_path = path + "test.sql"
             with self.subTest(i=test_path):
-                self.assertIsInstance(pynonymizer.output.get_output(test_path), pynonymizer.output.RawOutput)
+                self.assertIsInstance(pynonymizer.output.from_location(test_path), pynonymizer.output.RawOutput)
 
-    def test_resolve_gzip_output(self):
+    def test_resolve_gzip(self):
         for path in self.test_path_examples:
             test_path = path + "test.sql.gz"
             with self.subTest(i=test_path):
-                self.assertIsInstance(pynonymizer.output.get_output(test_path), pynonymizer.output.GzipOutput)
+                self.assertIsInstance(pynonymizer.output.from_location(test_path), pynonymizer.output.GzipOutput)

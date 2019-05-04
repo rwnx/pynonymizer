@@ -4,6 +4,12 @@ from pynonymizer.log import get_logger
 logger = get_logger(__name__)
 
 
+class UnsupportedFakeTypeError(KeyError):
+    def __init__(self, fake_type):
+        super().__init__(f"Unsupported Fake type: {fake_type}")
+        self.fake_type = fake_type
+
+
 def _map_fake_columns(fake_columns):
     """
     map a list of FakeColumn instances to a map of name: FakeColumn
@@ -29,7 +35,7 @@ class FakeColumn:
         return self.generator()
 
 
-class FakeSeeder:
+class FakeColumnSet:
     def __init__(self, locale="en_GB"):
         self.faker = Faker(locale)
         self.supported_columns = _map_fake_columns([
@@ -63,10 +69,11 @@ class FakeSeeder:
             FakeColumn(self.faker, "date", "DATE")
         ])
 
-    def supports_fake_type(self, fake_type):
-        return fake_type in self.supported_columns
-
     def get_fake_column(self, fake_type):
-        return self.supported_columns[fake_type]
+        try:
+            return self.supported_columns[fake_type]
+        except KeyError as error:
+            raise UnsupportedFakeTypeError(fake_type) from None
+
 
 

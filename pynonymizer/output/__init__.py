@@ -8,7 +8,7 @@ class UnknownOutputTypeError(Exception):
         super().__init__("Unable to detect output type for file: {}".format(filename))
 
 
-def get_output(filename):
+def from_location(filename):
     name, ext = os.path.splitext(filename)
 
     if ext == ".sql":

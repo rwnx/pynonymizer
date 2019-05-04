@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pynonymizer.fake
 
 
-class TestFakeColumn(unittest.TestCase):
+class FakeColumnTest(unittest.TestCase):
     def setUp(self):
         self.faker = Mock()
         self.faker.test_field = Mock()

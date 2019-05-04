@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import Mock
 
+from pynonymizer.fake import UnsupportedFakeTypeError
 from pynonymizer.strategy import parser, database, table, update_column
 from pynonymizer.strategy.exceptions import UnknownTableStrategyError
-from pynonymizer.strategy.update_column import UnsupportedFakeTypeError
 
 """
 tables:
@@ -18,7 +18,7 @@ tables:
 """
 
 
-class ConfigParsing(unittest.TestCase):
+class ConfigParsingTest(unittest.TestCase):
     valid_config = {
         "tables": {
             "accounts": {
@@ -41,8 +41,8 @@ class ConfigParsing(unittest.TestCase):
     }
 
     def setUp(self):
-        self.fake_seeder = Mock()
-        self.strategy_parser = parser.StrategyParser(self.fake_seeder)
+        self.fake_column_set = Mock()
+        self.strategy_parser = parser.StrategyParser(self.fake_column_set)
 
     def test_valid_parse(self):
         strategy = self.strategy_parser.parse_config(self.valid_config)
@@ -53,12 +53,17 @@ class ConfigParsing(unittest.TestCase):
 
         accounts_strategy = strategy.table_strategies["accounts"]
         self.assertIsInstance(accounts_strategy.column_strategies["current_sign_in_ip"], update_column.FakeUpdateColumnStrategy)
+        self.fake_column_set.get_fake_column.assert_called_once_with("ipv4_public")
+
         self.assertIsInstance(accounts_strategy.column_strategies["username"], update_column.UniqueLoginUpdateColumnStrategy)
         self.assertIsInstance(accounts_strategy.column_strategies["email"], update_column.UniqueEmailUpdateColumnStrategy)
         self.assertIsInstance(accounts_strategy.column_strategies["name"], update_column.EmptyUpdateColumnStrategy)
 
     def test_unsupported_fake_column_type(self):
-        self.fake_seeder.supports_fake_type = Mock(return_value=False)
+        """
+        get_fake_column's UnsupportedFakeType should kill a parse attempt
+        """
+        self.fake_column_set.get_fake_column = Mock(side_effect=UnsupportedFakeTypeError("test"))
         with self.assertRaises(UnsupportedFakeTypeError):
             self.strategy_parser.parse_config(self.valid_config)
 

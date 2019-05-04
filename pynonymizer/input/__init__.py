@@ -8,7 +8,7 @@ class UnknownInputTypeError(Exception):
         super().__init__("Unable to detect input type for file: {}".format(filename))
 
 
-def get_input(filename):
+def from_location(filename):
     name, ext = os.path.splitext(filename)
 
     if ext == ".sql":
