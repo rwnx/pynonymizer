@@ -48,6 +48,9 @@ def main(args=None):
     logger.debug("Database: (%s)%s@%s db_name: %s", db_host, db_type, db_user, db_name)
     db = get_provider(db_type, db_host, db_user, db_pass, db_name)
 
+    if not db.test_connection():
+        sys.exit("Unable to connect to database.")
+
     # locate i/o
     input_obj = input.from_location(args.input)
     output_obj = output.from_location(args.output)

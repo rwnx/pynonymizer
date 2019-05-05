@@ -1,25 +1,24 @@
-class DatabaseConnectionError(Exception):
-    def __init__(self):
-        super().__init__("Unable to connect to database. check your settings.")
+class DatabaseProviderError(Exception):
+    pass
 
 
-class MissingPrerequisiteError(Exception):
+class MissingPrerequisiteError(DatabaseProviderError):
     def __init__(self, message):
         super().__init__(message)
 
 
-class UnsupportedTableStrategyError(Exception):
+class UnsupportedTableStrategyError(DatabaseProviderError):
     def __init__(self, table_strategy):
         super().__init__("Unsupported Table Strategy: {}".format(table_strategy))
 
 
-class UnknownDatabaseTypeError(Exception):
+class UnknownDatabaseTypeError(DatabaseProviderError):
     def __init__(self, database_type):
         self.database_type = database_type
         super().__init__("Unknown Database Type: {}".format(database_type))
 
 
-class UnsupportedColumnStrategyError(Exception):
+class UnsupportedColumnStrategyError(DatabaseProviderError):
     def __init__(self, column_strategy):
         self.column_strategy = column_strategy
         super().__init__("Unsupported Column Strategy Type: {}".format(column_strategy))
