@@ -39,7 +39,7 @@ class DatabaseQueryExecTests(unittest.TestCase):
         query_factory.get_drop_database.assert_called_once_with("db_name")
         execution.MySqlCmdRunner.return_value.execute.assert_called_once_with(query_factory.get_drop_database.return_value)
 
-    def test_connection_success(self, query_factory, execution):
+    def test_connection(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         # test_connection should return the cmd runner's test output (bool)
         self.assertEqual( provider.test_connection(), execution.MySqlCmdRunner.return_value.test.return_value )
@@ -51,9 +51,12 @@ class DatabaseQueryExecTests(unittest.TestCase):
 
         provider.restore_database(mock_input)
 
+        # ask for size
         mock_input.get_size.assert_called()
+        # open input and read at least once
         mock_input.open.assert_called()
         mock_input.open.return_value.read.assert_called()
+        # open, write and flush at least once
         execution.MySqlCmdRunner.return_value.open_batch_processor.assert_called_once_with()
         execution.MySqlCmdRunner.return_value.open_batch_processor.return_value.write.assert_called()
         execution.MySqlCmdRunner.return_value.open_batch_processor.return_value.flush.assert_called()
@@ -67,8 +70,11 @@ class DatabaseQueryExecTests(unittest.TestCase):
 
         provider.dump_database(mock_output)
 
+        # open output and write at least once
         mock_output.open.assert_called()
         mock_output.open.return_value.write.assert_called()
+
+        # open dumper and read at least once
         execution.MySqlDumpRunner.return_value.open_dumper.assert_called_once_with()
         execution.MySqlDumpRunner.return_value.open_dumper.return_value.read.assert_called()
 
