@@ -15,7 +15,7 @@ class FakeColumnTest(unittest.TestCase):
     def test_fields(self):
         fake_column = pynonymizer.fake.FakeColumn(*self.implicit_generator_args)
 
-        self.assertEqual(fake_column.name, "test_field")
+        self.assertEqual(fake_column.column_name, "test_field")
         self.assertEqual(fake_column.sql_type, "VARCHAR(10)")
 
     def test_implicit_generator(self):

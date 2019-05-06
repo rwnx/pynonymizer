@@ -18,15 +18,15 @@ def _map_fake_columns(fake_columns):
     :param fake_columns: A list of FakeColumn instances
     :return:
     """
-    return reduce(lambda result, col: (result.update({col.name: col}) or result), fake_columns, {})
+    return reduce(lambda result, col: (result.update({col.column_name: col}) or result), fake_columns, {})
 
 
 class FakeColumn:
-    def __init__(self, faker_instance, name, sql_type, generator=None):
-        self.name = name
+    def __init__(self, faker_instance, column_name, sql_type, generator=None):
+        self.column_name = column_name
         self.sql_type = sql_type
         if generator is None:
-            fake_attr = getattr(faker_instance, name)
+            fake_attr = getattr(faker_instance, column_name)
             self.generator = lambda: fake_attr()
         else:
             self.generator = generator

@@ -1,55 +1,74 @@
 import unittest
-from unittest.mock import Mock, patch, MagicMock, call
-
+import os
+from unittest.mock import Mock, patch, MagicMock, call, mock_open
 from pynonymizer.database.mysql import MySqlProvider
-from pynonymizer.database.exceptions import MissingPrerequisiteError
-from pynonymizer.fake import FakeColumn
-import datetime
+import pynonymizer.strategy.database
+import pynonymizer.strategy.table
+import pynonymizer.strategy.update_column
+import pynonymizer.input
+import pynonymizer.output
 
-from subprocess import CalledProcessError
 
 class MySqlProviderInitTest(unittest.TestCase):
-    """
-    These tests are fragile and rely on the actual SQL the provider is going to run.
-    for more robustness, it might be more prudent to rely on some kind of sql parsing, or pattern matching,
-    so minor changes (like whitespace) don't break all the tests.
-    """
-    @patch("pynonymizer.database.mysql.MySqlDumpRunner", autospec=True)
-    @patch("pynonymizer.database.mysql.MySqlCmdRunner", autospec=True)
-    def test_init_runners_correctly(self, runner, dumper):
+    @patch("pynonymizer.database.mysql.provider.execution", autospec=True)
+    def test_init_runners_correctly(self, exec):
         """
         Test the provider inits dependencies with the correct database information
         """
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        runner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
-        dumper.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
+        exec.MySqlCmdRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
+        exec.MySqlDumpRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
 
-@patch("shutil.which", Mock(return_value="/usr/bin/mysql"))
-class MySqlProviderCreateDatabaseTests(unittest.TestCase):
-    @patch("subprocess.check_output")
-    def test_create_database(self, check_mock):
+
+@patch("pynonymizer.database.mysql.provider.execution", autospec=True)
+@patch("pynonymizer.database.mysql.provider.query_factory", autospec=True)
+class DatabaseQueryExecTests(unittest.TestCase):
+    def test_create_database(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         provider.create_database()
-        check_mock.assert_called_with(["mysql", "-h", "1.2.3.4", "-u", "root", "-ppassword", "--execute", "CREATE DATABASE `db_name`;"])
 
+        # assert that the query factory is called with the db name, and the output is passed to the execute runner
+        query_factory.get_create_database.assert_called_once_with("db_name")
+        execution.MySqlCmdRunner.return_value.execute.assert_called_once_with(query_factory.get_create_database.return_value)
 
-@patch("shutil.which", Mock(return_value="/usr/bin/mysql"))
-class MySqlProviderDropDatabaseTests(unittest.TestCase):
-    @patch("subprocess.check_output")
-    def test_drop_database(self, check_mock):
+    def test_drop_database(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         provider.drop_database()
-        check_mock.assert_called_with(["mysql", "-h", "1.2.3.4", "-u", "root", "-ppassword", "--execute", "DROP DATABASE IF EXISTS `db_name`;"])
 
+        # assert that the query factory is called with the db name, and the output is passed to the execute runner
+        query_factory.get_drop_database.assert_called_once_with("db_name")
+        execution.MySqlCmdRunner.return_value.execute.assert_called_once_with(query_factory.get_drop_database.return_value)
 
-@patch("shutil.which", Mock(return_value="/usr/bin/mysql"))
-class MySqlProviderConnectionTests(unittest.TestCase):
-    @patch("subprocess.check_output", Mock(side_effect=CalledProcessError(1, "")) )
-    def test_connection_fail(self):
+    def test_connection_success(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        self.assertFalse(provider.test_connection())
+        # test_connection should return the cmd runner's test output (bool)
+        self.assertEqual( provider.test_connection(), execution.MySqlCmdRunner.return_value.test.return_value )
 
-    @patch("subprocess.check_output", Mock(return_value=b""))
-    def test_connection_success(self):
+    def test_restore_database(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        self.assertTrue( provider.test_connection() )
+        rand_data = bytes( os.urandom(8193) )
+        mock_input = Mock(get_size=Mock(return_value=8193), open=mock_open(read_data=rand_data))
+
+        provider.restore_database(mock_input)
+
+        mock_input.get_size.assert_called()
+        mock_input.open.assert_called()
+        mock_input.open.return_value.read.assert_called()
+        execution.MySqlCmdRunner.return_value.open_batch_processor.assert_called_once_with()
+        execution.MySqlCmdRunner.return_value.open_batch_processor.return_value.write.assert_called()
+        execution.MySqlCmdRunner.return_value.open_batch_processor.return_value.flush.assert_called()
+
+    def test_dump_database(self, query_factory, execution):
+        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+        rand_data = bytes( os.urandom(8192) )
+        mock_output = Mock(open=mock_open())
+
+        execution.MySqlDumpRunner.return_value.open_dumper.return_value = MagicMock(read=MagicMock(side_effect=[rand_data, b""]))
+
+        provider.dump_database(mock_output)
+
+        mock_output.open.assert_called()
+        mock_output.open.return_value.write.assert_called()
+        execution.MySqlDumpRunner.return_value.open_dumper.assert_called_once_with()
+        execution.MySqlDumpRunner.return_value.open_dumper.return_value.read.assert_called()
+

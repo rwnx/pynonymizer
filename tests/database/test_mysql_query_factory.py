@@ -1,68 +1,64 @@
 import unittest
 from unittest.mock import Mock
-from pynonymizer.strategy.update_column import FakeUpdateColumnStrategy, ColumnStrategyTypes
-from pynonymizer.database.mysql import MySqlQueryFactory
+
+from pynonymizer.fake import FakeColumn
+from pynonymizer.strategy.update_column import ColumnStrategyTypes, FakeUpdateColumnStrategy
+import pynonymizer.database.mysql.query_factory as query_factory
+
+"""
+These tests are brittle and based on the actual SQL generated. 
+The sentiment is to test the 'meaning' of the SQL, rather than the actual formatting, so it may be prudent to replace
+these tests with some form of parsing or pattern matching. 
+
+The general idea, however, is that by keeping the queryfactory separate from the provider, it will not change often,
+and the sql returned should be very stable.
+"""
 
 
 class MySqlQueryFactoryTest(unittest.TestCase):
     def test_get_truncate_table(self):
         self.assertEqual(
             "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;",
-            MySqlQueryFactory.get_truncate_table("test")
+            query_factory.get_truncate_table("test")
         )
 
     def test_get_drop_seed_table(self):
         self.assertEqual(
             "DROP TABLE IF EXISTS `seed_table`;",
-            MySqlQueryFactory.get_drop_seed_table("seed_table")
+            query_factory.get_drop_seed_table("seed_table")
 
         )
 
     def test_get_create_database(self):
         self.assertEqual(
             "CREATE DATABASE `test_database`;",
-            MySqlQueryFactory.get_create_database("test_database")
+            query_factory.get_create_database("test_database")
 
         )
 
     def test_get_drop_database(self):
         self.assertEqual(
             "DROP DATABASE IF EXISTS `test_database`;",
-            MySqlQueryFactory.get_drop_database("test_database"),
+            query_factory.get_drop_database("test_database"),
         )
 
     def test_get_dumpsize_estimate(self):
         self.assertEqual(
             "SELECT data_bytes FROM (SELECT SUM(data_length) AS data_bytes "
             "FROM information_schema.tables WHERE table_schema = 'test') AS data;",
-            MySqlQueryFactory.get_dumpsize_estimate("test")
+            query_factory.get_dumpsize_estimate("test")
         )
 
 
-class FakeColumn:
-    def __init__(self, faker_instance, name, sql_type, generator=None):
-        self.name = name
-        self.sql_type = sql_type
-        if generator is None:
-            fake_attr = getattr(faker_instance, name)
-            self.generator = lambda: fake_attr()
-        else:
-            self.generator = generator
-
-    def get_value(self):
-        return self.generator()
-
-class MysqlQueryFactorySeedTest(unittest.TestCase):
+class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
     def setUp(self):
-        self.fake_column1 = FakeColumn(Mock, "test_fake_column_name", "VARCHAR(50)", lambda: "test_value1")
-        self.fake_column2 = FakeColumn(Mock, "test_fake_column_name2", "INT", lambda: "test_value2")
+        self.fake_column1 = Mock(spec=FakeColumn, column_name="test_fake_column_name", sql_type="VARCHAR(50)", get_value=Mock(return_value="test_value1"))
+        self.fake_column2 = Mock(spec=FakeColumn, column_name="test_fake_column_name2", sql_type="INT", get_value=Mock(return_value="test_value2"))
 
         self.fake_columns = [self.fake_column1, self.fake_column2]
 
-        self.test_fake_strategy = Mock(strategy_type=ColumnStrategyTypes.FAKE_UPDATE)
-        self.test_fake_strategy.fake_column = self.fake_column1
-        self.test_fake_strategy2 = Mock(strategy_type=ColumnStrategyTypes.FAKE_UPDATE)
-        self.test_fake_strategy2.fake_column = self.fake_column2
+        self.test_fake_strategy = Mock(spec=FakeUpdateColumnStrategy, strategy_type=ColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column1)
+        self.test_fake_strategy2 = Mock(spec=FakeUpdateColumnStrategy, strategy_type=ColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column2)
 
         self.empty_strategy = Mock(strategy_type=ColumnStrategyTypes.EMPTY)
         self.ulogin_strategy = Mock(strategy_type=ColumnStrategyTypes.UNIQUE_LOGIN)
@@ -80,13 +76,13 @@ class MysqlQueryFactorySeedTest(unittest.TestCase):
         self.assertEqual(
             "INSERT INTO `seed_table`(`test_fake_column_name`,`test_fake_column_name2`) "
             "VALUES ('test_value1','test_value2');",
-             MySqlQueryFactory.get_insert_seed_row("seed_table", self.fake_columns)
+             query_factory.get_insert_seed_row("seed_table", self.fake_columns)
         )
 
     def test_get_create_seed_table(self):
         self.assertEqual(
             "CREATE TABLE `seed_table` (`test_fake_column_name` VARCHAR(50),`test_fake_column_name2` INT);",
-            MySqlQueryFactory.get_create_seed_table("seed_table", self.fake_columns)
+            query_factory.get_create_seed_table("seed_table", self.fake_columns)
         )
 
     def test_get_update_table_fake_column(self):
@@ -97,5 +93,5 @@ class MysqlQueryFactorySeedTest(unittest.TestCase):
             "`test_column3` = (''),"
             "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) ),"
             "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') );",
-            MySqlQueryFactory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
+            query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
         )
