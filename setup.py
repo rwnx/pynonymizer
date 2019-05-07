@@ -9,7 +9,6 @@ setuptools.setup(
     name='pynonymizer',
     version='0.1.0',
     packages=setuptools.find_packages(),
-    test_suite="tests",
     install_requires=[
         "pyyaml>=5",
         "tqdm>=4",
@@ -21,4 +20,11 @@ setuptools.setup(
             'pynonymizer = pynonymizer.__main__:main'
         ]
     },
+    test_suite="tests",
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+    ],
  )

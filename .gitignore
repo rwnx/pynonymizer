@@ -10,6 +10,6 @@ build/
 __pycache__
 *.egg
 *.egg-info/
-
+.eggs
 *.sql
 *.sql.gz

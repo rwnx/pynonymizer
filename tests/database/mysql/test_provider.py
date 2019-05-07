@@ -2,22 +2,17 @@ import unittest
 import os
 from unittest.mock import Mock, patch, MagicMock, call, mock_open
 from pynonymizer.database.mysql import MySqlProvider
-import pynonymizer.strategy.database
-import pynonymizer.strategy.table
-import pynonymizer.strategy.update_column
-import pynonymizer.input
-import pynonymizer.output
 
 
 class MySqlProviderInitTest(unittest.TestCase):
     @patch("pynonymizer.database.mysql.provider.execution", autospec=True)
-    def test_init_runners_correctly(self, exec):
+    def test_init_runners_correctly(self, execution):
         """
         Test the provider inits dependencies with the correct database information
         """
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        exec.MySqlCmdRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
-        exec.MySqlDumpRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
+        execution.MySqlCmdRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
+        execution.MySqlDumpRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
 
 
 @patch("pynonymizer.database.mysql.provider.execution", autospec=True)
@@ -42,7 +37,7 @@ class DatabaseQueryExecTests(unittest.TestCase):
     def test_connection(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         # test_connection should return the cmd runner's test output (bool)
-        self.assertEqual( provider.test_connection(), execution.MySqlCmdRunner.return_value.test.return_value )
+        assert provider.test_connection() == execution.MySqlCmdRunner.return_value.test.return_value
 
     def test_restore_database(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")

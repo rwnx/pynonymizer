@@ -14,40 +14,23 @@ The general idea, however, is that by keeping the queryfactory separate from the
 and the sql returned should be very stable.
 """
 
+def test_get_truncate_table():
+    assert "SET FOREIGN_KEY_CHECKS=0; " \
+           "TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;" == query_factory.get_truncate_table("test")
 
-class MySqlQueryFactoryTest(unittest.TestCase):
-    def test_get_truncate_table(self):
-        self.assertEqual(
-            "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;",
-            query_factory.get_truncate_table("test")
-        )
+def test_get_drop_seed_table():
+    assert "DROP TABLE IF EXISTS `seed_table`;" == query_factory.get_drop_seed_table("seed_table")
 
-    def test_get_drop_seed_table(self):
-        self.assertEqual(
-            "DROP TABLE IF EXISTS `seed_table`;",
-            query_factory.get_drop_seed_table("seed_table")
+def test_get_create_database():
+    assert "CREATE DATABASE `test_database`;" == query_factory.get_create_database("test_database")
 
-        )
+def test_get_drop_database():
+    assert "DROP DATABASE IF EXISTS `test_database`;" == query_factory.get_drop_database("test_database")
 
-    def test_get_create_database(self):
-        self.assertEqual(
-            "CREATE DATABASE `test_database`;",
-            query_factory.get_create_database("test_database")
-
-        )
-
-    def test_get_drop_database(self):
-        self.assertEqual(
-            "DROP DATABASE IF EXISTS `test_database`;",
-            query_factory.get_drop_database("test_database"),
-        )
-
-    def test_get_dumpsize_estimate(self):
-        self.assertEqual(
-            "SELECT data_bytes FROM (SELECT SUM(data_length) AS data_bytes "
-            "FROM information_schema.tables WHERE table_schema = 'test') AS data;",
-            query_factory.get_dumpsize_estimate("test")
-        )
+def test_get_dumpsize_estimate():
+    assert "SELECT data_bytes FROM " \
+           "(SELECT SUM(data_length) AS data_bytes " \
+           "FROM information_schema.tables WHERE table_schema = 'test') AS data;" == query_factory.get_dumpsize_estimate("test")
 
 
 class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
@@ -73,25 +56,19 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
         }
 
     def test_get_insert_seed_row(self):
-        self.assertEqual(
-            "INSERT INTO `seed_table`(`test_fake_column_name`,`test_fake_column_name2`) "
-            "VALUES ('test_value1','test_value2');",
+        assert "INSERT INTO `seed_table`(`test_fake_column_name`,`test_fake_column_name2`) " \
+            "VALUES ('test_value1','test_value2');" == \
              query_factory.get_insert_seed_row("seed_table", self.fake_columns)
-        )
 
     def test_get_create_seed_table(self):
-        self.assertEqual(
-            "CREATE TABLE `seed_table` (`test_fake_column_name` VARCHAR(50),`test_fake_column_name2` INT);",
+        assert "CREATE TABLE `seed_table` (`test_fake_column_name` VARCHAR(50),`test_fake_column_name2` INT);" == \
             query_factory.get_create_seed_table("seed_table", self.fake_columns)
-        )
 
     def test_get_update_table_fake_column(self):
-        self.assertEqual(
-            "UPDATE `anon_table` SET "
-            "`test_column1` = ( SELECT `test_fake_column_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column2` = ( SELECT `test_fake_column_name2` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column3` = (''),"
-            "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) ),"
-            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') );",
+        assert "UPDATE `anon_table` SET " \
+            "`test_column1` = ( SELECT `test_fake_column_name` FROM `seed_table` ORDER BY RAND() LIMIT 1)," \
+            "`test_column2` = ( SELECT `test_fake_column_name2` FROM `seed_table` ORDER BY RAND() LIMIT 1)," \
+            "`test_column3` = ('')," \
+            "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )," \
+            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') );" == \
             query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
-        )
