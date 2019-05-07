@@ -3,11 +3,15 @@
 pynonymizer is a tool for translating sensitive production database dumps into anonymized copies.
 
 This anonymized data can be used in development and testing.
+## Supported Databases
+1. mysql
 
 ## Requirements
-1. `mysql`, `mysqldump`, database connection 
-
-A database connection is required to restore the database to during the anonymization process.
+### mysql
+* `mysql`
+* `mysqldump`
+* database connection (to restore, anonymize, and dump from)
+* access to mysqldump file (single file)
 
 ## Process
 1. Restore database from dumpfile
@@ -15,12 +19,15 @@ A database connection is required to restore the database to during the anonymiz
 1. dump resulting data to file
 1. clean up!
 
+# Getting Started
+
 ## Installation
 1. Install `python setup.py install`
 
 ## Usage
 1. Install
 1. Set env vars using .env or other method
+1. write a [strategyfile](/doc/strategyfiles.md) for your database
 1. run command `pynonymizer`
 ```
 usage: pynonymizer [-h] input_location strategyfile output_location
@@ -40,3 +47,6 @@ optional arguments:
 1. setup venv
 1. copy `.env` for your environment
 2. install dependencies with `pip install -r requirements.txt`
+
+### Testing
+1. run `python -m unittest` to auto-discover and run tests
