@@ -8,6 +8,9 @@ if sys.version_info < (3, 6):
 setuptools.setup(
     name='pynonymizer',
     version='0.1.0',
+    description='An anonymization tool for production databases',
+    author='Jerome Twell',
+    author_email='jerome@examtrack.co.uk',
     packages=setuptools.find_packages(),
     install_requires=[
         "pyyaml>=5",
