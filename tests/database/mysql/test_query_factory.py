@@ -14,18 +14,23 @@ The general idea, however, is that by keeping the queryfactory separate from the
 and the sql returned should be very stable.
 """
 
+
 def test_get_truncate_table():
     assert "SET FOREIGN_KEY_CHECKS=0; " \
            "TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;" == query_factory.get_truncate_table("test")
 
+
 def test_get_drop_seed_table():
     assert "DROP TABLE IF EXISTS `seed_table`;" == query_factory.get_drop_seed_table("seed_table")
+
 
 def test_get_create_database():
     assert "CREATE DATABASE `test_database`;" == query_factory.get_create_database("test_database")
 
+
 def test_get_drop_database():
     assert "DROP DATABASE IF EXISTS `test_database`;" == query_factory.get_drop_database("test_database")
+
 
 def test_get_dumpsize_estimate():
     assert "SELECT data_bytes FROM " \
