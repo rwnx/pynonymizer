@@ -49,4 +49,4 @@ optional arguments:
 2. install dependencies with `pip install -r requirements.txt`
 
 ### Testing
-1. run `python -m unittest` to auto-discover and run tests
+1. run `tox`

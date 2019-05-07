@@ -23,11 +23,6 @@ setuptools.setup(
             'pynonymizer = pynonymizer.__main__:main'
         ]
     },
-    test_suite="tests",
-    setup_requires=[
-        'pytest-runner',
-    ],
-    tests_require=[
-        'pytest',
-    ],
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"]
  )

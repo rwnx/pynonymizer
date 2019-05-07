@@ -13,3 +13,6 @@ __pycache__
 .eggs
 *.sql
 *.sql.gz
+
+.tox
+dist/

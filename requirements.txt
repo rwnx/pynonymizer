@@ -1,8 +1,16 @@
 Faker==1.0.5
+filelock==3.0.10
 humanfriendly==4.18
+importlib-metadata==0.9
+pluggy==0.10.0
+py==1.8.0
 python-dateutil==2.8.0
 python-dotenv==0.10.1
 PyYAML==5.1
 six==1.12.0
 text-unidecode==1.2
+toml==0.10.0
+tox==3.9.0
 tqdm==4.31.1
+virtualenv==16.5.0
+zipp==0.4.0
