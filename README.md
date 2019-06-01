@@ -50,3 +50,8 @@ optional arguments:
 
 ### Testing
 1. run `tox`
+
+
+## License
+
+[MIT](LICENSE)

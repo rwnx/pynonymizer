@@ -9,7 +9,7 @@ Set your merge request as Work In Progress (WIP:).
 
 Complete your work, adding tests for your changes. Then make sure the tests pass:
 ```
-    tox
+tox
 ```
 
 Push to your branch and unmark the merge request as WIP.
