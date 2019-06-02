@@ -1,7 +1,4 @@
-# This file is a template, and might need editing before it works on your project.
-# Official language image. Look for the different tagged releases at:
-# https://hub.docker.com/r/library/python/tags/
-image: python:latest
+image: themattrix/tox:latest
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -26,6 +23,6 @@ before_script:
 
 test:
   script:
-  - pip install tox # you can also use tox
-  - tox -e py36,py37
+  - pip install tox
+  - tox
 
