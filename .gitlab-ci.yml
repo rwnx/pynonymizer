@@ -21,13 +21,12 @@ before_script:
   - virtualenv venv
   - source venv/bin/activate
 
+stages:
+  - test
+
 test:
+  stage: test
   script:
   - pip install tox
   - tox
-  
-build:
-  script:
-  - pip install wheel
-  - python setup.py bdist_wheel
-
+  coverage: '/TOTAL.*\s+(\d+%)$/'
