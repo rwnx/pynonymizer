@@ -9,6 +9,7 @@ from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer import input
 from pynonymizer import output
 from pynonymizer.log import get_default_logger
+from pynonymizer.version import __version__
 
 logger = get_default_logger()
 
@@ -19,6 +20,7 @@ def create_parser():
     parser.add_argument("strategyfile", help="a strategyfile to use during anonymization (e.g. example.yml)")
     parser.add_argument("output", help="The destination to write the output to")
     parser.add_argument("--db-name", "-n", default=None, required=False, help="Name of database to create/restore to")
+    parser.add_argument("-v", "--version", action="version", version=__version__)
 
     return parser
 
