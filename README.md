@@ -21,31 +21,39 @@ This anonymized data can be used in development and testing.
 
 # Getting Started
 
-## Installation
-1. Install `python setup.py install`
-
 ## Usage
-1. Install
-1. Set env vars using .env or other method
-1. write a [strategyfile](/doc/strategyfiles.md) for your database
-1. run command `pynonymizer`
+1. Set required env (normally, or using dotenv)
+1. Write a [strategyfile](/doc/strategyfiles.md) for your database
+1. Run command `pynonymizer`
 ```
-usage: pynonymizer [-h] input_location strategyfile output_location
+usage: pynonymizer [-h] [--db-name DB_NAME] [-v] input strategyfile output
+
+A tool for writing better anonymization strategies for your production databases.
+
+environment variables:
+  DB_TYPE      Type of database (mysql)
+  DB_HOST      Database host/ip (127.0.0.1)
+  DB_USER      Database username
+  DB_PASS      Database password
+  FAKE_LOCALE  Locale to initialize faker generation (en_GB)
 
 positional arguments:
-  input_location   The source dumpfile to read from
-  strategyfile     a strategyfile to use during anonymization (e.g.
-                   example.yml)
-  output_location  The destination to write the output to
+  input                 The source dumpfile to read from.
+
+                        [.sql, .gz]
+  strategyfile          A strategyfile to use during anonymization.
+  output                The destination to write the dumped output to.
+                        [.sql, .gz]
 
 optional arguments:
-  -h, --help       show this help message and exit
+  -h, --help            show this help message and exit
+  --db-name DB_NAME, -n DB_NAME
+                        Name of database to create in the target host and restore to. This will default to a random name.
+  -v, --version         show program's version number and exit
 ```
-
 
 ## Development
 1. setup venv
-1. copy `.env` for your environment
 2. install dependencies with `pip install -r requirements.txt`
 
 ### Testing

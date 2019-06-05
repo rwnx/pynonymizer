@@ -3,22 +3,34 @@ import argparse
 from dotenv import load_dotenv, find_dotenv
 import os
 import sys
+import textwrap
 from pynonymizer.database import get_temp_db_name, get_provider
 from pynonymizer.fake import FakeColumnSet
 from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer import input
 from pynonymizer import output
 from pynonymizer.log import get_default_logger
+from pynonymizer.version import __version__
 
 logger = get_default_logger()
 
 
 def create_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("input", help="The source dumpfile to read from")
-    parser.add_argument("strategyfile", help="a strategyfile to use during anonymization (e.g. example.yml)")
-    parser.add_argument("output", help="The destination to write the output to")
-    parser.add_argument("--db-name", "-n", default=None, required=False, help="Name of database to create/restore to")
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description="\n".join([
+    "A tool for writing better anonymization strategies for your production databases.",
+    "",
+    "environment variables:",
+    "  DB_TYPE      Type of database (mysql)",
+    "  DB_HOST      Database host/ip (127.0.0.1)",
+    "  DB_USER      Database username",
+    "  DB_PASS      Database password",
+    "  FAKE_LOCALE  Locale to initialize faker generation (en_GB)",
+    ]))
+    parser.add_argument("input", help="The source dumpfile to read from. \n[.sql, .gz]")
+    parser.add_argument("strategyfile", help="A strategyfile to use during anonymization.")
+    parser.add_argument("output", help="The destination to write the dumped output to. \n[.sql, .gz]")
+    parser.add_argument("--db-name", "-n", default=None, required=False, help="Name of database to create in the target host and restore to. This will default to a random name.")
+    parser.add_argument("-v", "--version", action="version", version=__version__)
 
     return parser
 
