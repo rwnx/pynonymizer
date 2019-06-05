@@ -16,13 +16,15 @@ If you don't see the label you think you need, open an issue!
 
 ## Merge Requests
 
-Create a merge request based on the issue, targeting the default branch. You can use the "Create merge request" button in Gitlab, 
+Create a merge request based on the issue, targeting the default branch. You can use the "Create merge request" button in Gitlab,
 this will make a Work in Progress (`WIP`) branch in the form:
 ```
 000-name-of-issue
 ```
 
 Complete your work, adding tests for your changes.
+
+Add a comment to the changelog (in the `[Unreleased]` section) to give a human-friendly description to the work you've done.
 
 When you've completed your work, and it's ready to be merged, unmark your request as `WIP`.
 
