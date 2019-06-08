@@ -35,6 +35,9 @@ test:
 
 build:
   stage: build
+  artifacts:
+    paths:
+      - dist/
   before_script:
     - pip install wheel
   script:
