@@ -28,8 +28,12 @@ stages:
 
 test:
   stage: test
-  script:
+  artifacts:
+    paths:
+      - htmlcov/
+  before_script:
     - pip install tox
+  script:
     - tox
   coverage: '/TOTAL.*\s+(\d+%)$/'
 
@@ -49,11 +53,13 @@ deploy:staging:
     - build
   before_script:
     - pip install twine
+  variables:
+    TWINE_USERNAME: $TEST_PYPI_USERNAME
+    TWINE_PASSWORD: $TEST_PYPI_PASSWORD
   script:
-    - TWINE_USERNAME=$TEST_PYPI_USERNAME TWINE_PASSWORD=$TEST_PYPI_PASSWORD twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+    - twine upload --repository-url https://test.pypi.org/legacy/ dist/*
   only:
-    refs:
-      - staging
+    - staging
 
 deploy:pypi:
   stage: deploy
@@ -61,9 +67,12 @@ deploy:pypi:
     - build
   before_script:
     - pip install twine
+  variables:
+    TWINE_USERNAME: $LIVE_PYPI_USERNAME
+    TWINE_PASSWORD: $LIVE_PYPI_PASSWORD
   script:
-    - TWINE_USERNAME=$LIVE_PYPI_USERNAME TWINE_PASSWORD=$LIVE_PYPI_PASSWORD twine upload dist/*
+    - twine upload dist/*
   only:
-    refs:
-      - pypi
+    - tags
+    - ^v\d+\.\d+\.\d+$
 
