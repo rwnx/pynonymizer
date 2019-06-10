@@ -16,20 +16,18 @@ logger = get_default_logger()
 
 
 def create_parser():
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description="\n".join([
+    parser = argparse.ArgumentParser(description="\n".join([
     "A tool for writing better anonymization strategies for your production databases.",
-    "",
-    "environment variables:",
-    "  DB_TYPE      Type of database (mysql)",
-    "  DB_HOST      Database host/ip (127.0.0.1)",
-    "  DB_USER      Database username",
-    "  DB_PASS      Database password",
-    "  FAKE_LOCALE  Locale to initialize faker generation (en_GB)",
     ]))
     parser.add_argument("input", help="The source dumpfile to read from. \n[.sql, .gz]")
     parser.add_argument("strategyfile", help="A strategyfile to use during anonymization.")
     parser.add_argument("output", help="The destination to write the dumped output to. \n[.sql, .gz]")
+    parser.add_argument("--db-type", "-t", default=None, required=False, help="database type.")
+    parser.add_argument("--db-host", "-d", default=None, required=False, help="database host")
     parser.add_argument("--db-name", "-n", default=None, required=False, help="Name of database to create in the target host and restore to. This will default to a random name.")
+    parser.add_argument("--db-user", "-u", default=None, required=False, help="Database username.")
+    parser.add_argument("--db-password", "-p", default=None, required=False, help="Database password.")
+    parser.add_argument("--fake-locale", "-l", default=None, required=False, help="locale to generate fake data for.")
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
     return parser
@@ -42,12 +40,12 @@ def main(args=None):
     dotenv = find_dotenv(usecwd=True)
     load_dotenv(dotenv_path=dotenv)
 
-    db_type = os.getenv("DB_TYPE") or "mysql"
-    db_host = os.getenv("DB_HOST") or "127.0.0.1"
-    db_user = os.getenv("DB_USER") or sys.exit("Missing environment variable: DB_USER")
-    db_pass = os.getenv("DB_PASS") or sys.exit("Missing environment variable: DB_PASS")
-    db_name = args.db_name or get_temp_db_name(args.strategyfile)
-    fake_locale = os.getenv("FAKE_LOCALE") or "en_GB"
+    db_type = args.db_type or os.getenv("DB_TYPE") or "mysql"
+    db_host = args.db_host or os.getenv("DB_HOST") or "127.0.0.1"
+    db_name = args.db_name or os.getenv("DB_NAME") or get_temp_db_name(args.strategyfile)
+    db_user = args.db_user or os.getenv("DB_USER") or sys.exit("Missing environment variable: DB_USER")
+    db_pass = args.db_password or os.getenv("DB_PASS") or sys.exit("Missing environment variable: DB_PASS")
+    fake_locale = args.fake_locale or os.getenv("FAKE_LOCALE") or "en_GB"
 
     fake_seeder = FakeColumnSet(fake_locale)
     strategy_parser = StrategyParser(fake_seeder)
