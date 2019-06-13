@@ -1,64 +1,113 @@
 # pynonymizer
 
-pynonymizer is a tool for translating sensitive production database dumps into anonymized copies.
+pynonymizer is a universal tool for translating sensitive production database dumps into anonymized copies.
 
-This anonymized data can be used in development and testing.
+This can help you support GDPR/Data Protection in your organization without compromizing on quality testing data.
+
+### Why are anonymized databases important?
+The primary source of information on how your database is used is in _your production database_. In most situations, the production dataset is usually significantly larger than any development copy, and
+would contain a wider range of data.
+
+From time to time, it is prudent to run a new feature or stage a test against this dataset, rather
+than one that is artificially created by developers or by testing frameworks. Anonymized databases allow us to use the structures present in production, while stripping them of any personally identifiable data that would
+consitute a breach of privacy for end-users and subsequently a breach of GDPR. 
+
+With Anonymized databases, copies can be processed regularly, and distributed easily, leaving your developers and testers with a rich source of information on the volume and general makeup of the system in production. It can
+be used to run better staging environments, integration tests, and even simulate database migrations. 
+
+below is an excerpt from an anonymized database:
+
+| id |salutation | firstname | surname | email | dob | 
+| - | - | - | - | - | - | 
+| 1 | Dr. | Bernard | Gough | tnelson@powell.com | 2000-07-03 | 
+| 2 | Mr. | Molly | Bennett | clarkeharriet@price-fry.com | 2014-05-19 | 
+| 3 | Mrs. | Chelsea | Reid | adamsamber@clayton.com | 1974-09-08 | 
+| 4 | Dr. | Grace | Armstrong | tracy36@wilson-matthews.com | 1963-12-15 | 
+| 5 | Dr. | Stanley | James | christine15@stewart.net | 1976-09-16 | 
+| 6 | Dr. | Mark | Walsh | dgardner@ward.biz | 2004-08-28 | 
+| 7 | Mrs. | Josephine | Chambers | hperry@allen.com | 1916-04-04 | 
+| 8 | Dr. | Stephen | Thomas | thompsonheather@smith-stevens.com | 1995-04-17 | 
+| 9 | Ms. | Damian | Thompson | yjones@cox.biz | 2016-10-02 | 
+| 10 | Miss | Geraldine | Harris | porteralice@francis-patel.com | 1910-09-28 | 
+| 11 | Ms. | Gemma | Jones | mandylewis@patel-thomas.net | 1990-06-03 | 
+| 12 | Dr. | Glenn | Carr | garnervalerie@farrell-parsons.biz | 1998-04-19 | 
+
+
+## How does it work?
+`pynonymizer` replaces personally identifiable data in your database with **realistic** pseudorandom data, from the `Faker` library or from other functions.
+There are a wide variety of data types available which should suit the column in question, for example:
+
+* `unique_email`
+* `company`
+* `file_path`
+* `[...]`
+
+For a full list of data generation strategies, see the docs on [strategyfiles](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md))
+
+### Process outline
+
+1. Restore from dumpfile to temporary database.
+1. Anonymize temporary database with strategy.
+1. Dump resulting data to file.
+1. Drop temporary database.
+
 ## Supported Databases
-1. mysql
+* `mysql`
+* More coming soon!
 
 ## Requirements
-### mysql
-* `mysql`
-* `mysqldump`
-* database connection (to restore, anonymize, and dump from)
-* access to mysqldump file (single file)
+* Python >= 3.6
 
-## Process
-1. Restore database from dumpfile
-1. anonymize database with appropriate strategy
-1. dump resulting data to file
-1. clean up!
+### mysql
+* `mysql`/`mysqldump`: You will need these utilities in your path. 
+* An active database connection, (mysql >= 5.5) either local or remote (to restore, anonymize, and dump from)
+* A backup in Single-file mysqldump output (schema and data)
 
 # Getting Started
 
 ## Usage
-1. Set required env (normally, or using dotenv)
-1. Write a [strategyfile](/doc/strategyfiles.md) for your database
-1. Run command `pynonymizer`
+1. Write a [strategyfile](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md) for your database
+1. See below:
 ```
-usage: pynonymizer [-h] [--db-name DB_NAME] [-v] input strategyfile output
+usage: pynonymizer [-h] [--db-type DB_TYPE] [--db-host DB_HOST]
+                   [--db-name DB_NAME] [--db-user DB_USER]
+                   [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
+                   [-v]
+                   input strategyfile output
 
-A tool for writing better anonymization strategies for your production databases.
-
-environment variables:
-  DB_TYPE      Type of database (mysql)
-  DB_HOST      Database host/ip (127.0.0.1)
-  DB_USER      Database username
-  DB_PASS      Database password
-  FAKE_LOCALE  Locale to initialize faker generation (en_GB)
+A tool for writing better anonymization strategies for your production
+databases.
 
 positional arguments:
-  input                 The source dumpfile to read from.
-
-                        [.sql, .gz]
+  input                 The source dumpfile to read from. [.sql, .gz]
   strategyfile          A strategyfile to use during anonymization.
-  output                The destination to write the dumped output to.
-                        [.sql, .gz]
+  output                The destination to write the dumped output to. [.sql,
+                        .gz]
 
 optional arguments:
   -h, --help            show this help message and exit
+  --db-type DB_TYPE, -t DB_TYPE
+                        Type of database to interact with. Supported
+                        databases: [mysql]. [$PYNONYMIZER_DB_TYPE]
+  --db-host DB_HOST, -d DB_HOST
+                        Database hostname or IP address.
+                        [$PYNONYMIZER_DB_HOST]
   --db-name DB_NAME, -n DB_NAME
-                        Name of database to create in the target host and restore to. This will default to a random name.
+                        Name of database to restore and anonymize in. If not
+                        provided, a unique name will be generated from the
+                        strategy name. This will be dropped at the end of the
+                        run. [$PYNONYMIZER_DB_NAME]
+  --db-user DB_USER, -u DB_USER
+                        Database credentials: username. [$PYNONYMIZER_DB_USER]
+  --db-password DB_PASSWORD, -p DB_PASSWORD
+                        Database credentials: password. Recommended: use
+                        environment variables to avoid exposing secrets in
+                        production environments. [$PYNONYMIZER_DB_PASSWORD]
+  --fake-locale FAKE_LOCALE, -l FAKE_LOCALE
+                        Locale setting to initialize fake data generation.
+                        Affects Names, addresses, formats, etc. [$FAKE_LOCALE]
   -v, --version         show program's version number and exit
 ```
-
-## Development
-1. setup venv
-2. install dependencies with `pip install -r requirements.txt`
-
-### Testing
-1. run `tox`
-
 
 ## License
 
