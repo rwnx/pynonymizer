@@ -1,10 +1,12 @@
 import unittest
+import pytest
 import os
 from unittest.mock import Mock, patch, MagicMock, call, mock_open
 from pynonymizer.database.mysql import MySqlProvider
 from pynonymizer.strategy.database import DatabaseStrategy
 from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy
 from pynonymizer.strategy.update_column import UniqueEmailUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, FakeUpdateColumnStrategy, EmptyUpdateColumnStrategy
+from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 
 
 class MySqlProviderInitTest(unittest.TestCase):
@@ -75,6 +77,15 @@ class DatabaseQueryExecTests(unittest.TestCase):
         # open dumper and read at least once
         execution.MySqlDumpRunner.return_value.open_dumper.assert_called_once_with()
         execution.MySqlDumpRunner.return_value.open_dumper.return_value.read.assert_called()
+
+    def test_anonymize_database_unsupported_table_strategy(self, query_factory, execution):
+        with pytest.raises(UnsupportedTableStrategyError) as e_info:
+            provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+            database_strategy = DatabaseStrategy({
+                    "table1": Mock(spec=TruncateTableStrategy, strategy_type="DEFINITELY_NOT_A_SUPPORTED_STRATEGY_TYPE"),
+            })
+            provider.anonymize_database(database_strategy)
+
 
     def test_anonymize_database(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
