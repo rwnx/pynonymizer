@@ -17,8 +17,6 @@ be used to run better staging environments, integration tests, and even simulate
 
 below is an excerpt from an anonymized database:
 
-people
----
 | id |salutation | firstname | surname | email | dob | 
 | - | - | - | - | - | - | 
 | 1 | Dr. | Bernard | Gough | tnelson@powell.com | 2000-07-03 | 
@@ -43,6 +41,8 @@ There are a wide variety of data types available which should suit the column in
 * `company`
 * `file_path`
 * `[...]`
+
+For a full list of data generation strategies, see the docs on [strategyfiles](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md))
 
 ### Process outline
 

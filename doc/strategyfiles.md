@@ -63,7 +63,7 @@ The aim is to support all of faker's methods, but at the moment, only a small se
 * user_name
 * email
 * company_email
-* phone_numbe
+* phone_number
 * company
 * bs
 * catch_phrase
