@@ -1,9 +1,8 @@
 import yaml
 import argparse
-from dotenv import load_dotenv, find_dotenv
+import dotenv
 import os
 import sys
-import textwrap
 from pynonymizer.database import get_temp_db_name, get_provider
 from pynonymizer.fake import FakeColumnSet
 from pynonymizer.strategy.parser import StrategyParser
@@ -13,6 +12,11 @@ from pynonymizer.log import get_default_logger
 from pynonymizer.version import __version__
 
 logger = get_default_logger()
+
+
+class ArgumentValidationError(BaseException):
+    def __init__(self, validation_messages):
+        self.validation_messages = validation_messages
 
 
 def create_parser():
@@ -30,47 +34,65 @@ def create_parser():
                         help="The destination to write the dumped output to. [.sql, .gz]")
 
     parser.add_argument("--db-type", "-t",
-                        default=os.getenv("$PYNONYMIZER_DB_TYPE") or os.getenv("DB_TYPE"),
-                        help="Type of database to interact with. Supported databases: [mysql]. $PYNONYMIZER_DB_TYPE")
+                        default=os.getenv("PYNONYMIZER_DB_TYPE") or os.getenv("DB_TYPE"),
+                        help="Type of database to interact with. Supported databases: [mysql]. [$PYNONYMIZER_DB_TYPE]")
 
     parser.add_argument("--db-host", "-d",
                         default=os.getenv("PYNONYMIZER_DB_HOST") or os.getenv("DB_HOST"),
-                        help="Database hostname or IP address. $PYNONYMIZER_DB_HOST")
+                        help="Database hostname or IP address. [$PYNONYMIZER_DB_HOST]")
 
     parser.add_argument("--db-name", "-n",
                         default=os.getenv("PYNONYMIZER_DB_NAME") or os.getenv("DB_NAME"),
-                        help="Name of database to restore and anonymize in. If not provided, a unique name will be generated from the strategy name. This will be dropped at the end of the run. $PYNONYMIZER_DB_NAME")
+                        help="Name of database to restore and anonymize in. If not provided, a unique name will be generated from the strategy name. This will be dropped at the end of the run. [$PYNONYMIZER_DB_NAME]")
 
     parser.add_argument("--db-user", "-u",
                         default=os.getenv("PYNONYMIZER_DB_USER") or os.getenv("DB_USER"),
-                        help="Database credentials: username. $PYNONYMIZER_DB_USER")
+                        help="Database credentials: username. [$PYNONYMIZER_DB_USER]")
 
     parser.add_argument("--db-password", "-p",
                         default=os.getenv("PYNONYMIZER_DB_PASSWORD") or os.getenv("DB_PASS"),
-                        help="Database credentials: password. Recommended: use environment variables to avoid exposing secrets in production environments. $PYNONYMIZER_DB_PASSWORD")
+                        help="Database credentials: password. Recommended: use environment variables to avoid exposing secrets in production environments. [$PYNONYMIZER_DB_PASSWORD]")
 
     parser.add_argument("--fake-locale", "-l",
                         default=os.getenv("PYNONYMIZER_FAKE_LOCALE") or os.getenv("FAKE_LOCALE"),
-                        help="Locale setting to initialize fake data generation. Affects Names, addresses, formats, etc. $FAKE_LOCALE")
+                        help="Locale setting to initialize fake data generation. Affects Names, addresses, formats, etc. [$FAKE_LOCALE]")
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
     return parser
 
 
-def pynonymize(input_path, strategyfile_path, output_path, db_type, db_host, db_name, db_user, db_password, fake_locale):
-    if db_type == None:
+def pynonymize(input_path, strategyfile_path, output_path, db_user, db_password, db_type=None, db_host=None, db_name=None, fake_locale=None):
+    if db_type is None:
         db_type = "mysql"
 
-    if db_host == None:
+    if db_host is None:
         db_host = "127.0.0.1"
 
-    if db_name == None:
+    if db_name is None:
         db_name = get_temp_db_name(strategyfile_path)
 
-    if fake_locale == None:
+    if fake_locale is None:
         fake_locale = "en_GB"
 
+    validations = []
+    if input_path is None:
+        validations.append("Missing INPUT")
+
+    if strategyfile_path is None:
+        validations.append("Missing STRATEGYFILE")
+
+    if output_path is None:
+        validations.append("Missing OUTPUT")
+
+    if db_user is None:
+        validations.append("Missing DB_USER")
+
+    if db_password is None:
+        validations.append("Missing DB_PASSWORD")
+
+    if len(validations) > 0:
+        raise ArgumentValidationError(validations)
 
     fake_seeder = FakeColumnSet(fake_locale)
     strategy_parser = StrategyParser(fake_seeder)
@@ -109,44 +131,38 @@ def pynonymize(input_path, strategyfile_path, output_path, db_type, db_host, db_
 
     logger.info("Dumped anonymized data successfully.")
 
-def main(rawAargs=None):
+
+def main(rawArgs=None):
     """
     Main entry point for the command line. Parse the cmdargs, load env and call to the main process
     :param args:
     :return:
     """
     # find the dotenv from the current working dir rather than the execution location
-    dotenv = find_dotenv(usecwd=True)
-    load_dotenv(dotenv_path=dotenv)
+    dotenv_file = dotenv.find_dotenv(usecwd=True)
+    dotenv.load_dotenv(dotenv_path=dotenv_file)
 
     parser = create_parser()
-    args = parser.parse_args(rawAargs)
+    args = parser.parse_args(rawArgs)
 
-    postvalidations = []
-    if args.db_user == None:
-        postvalidations.append("  Missing DB_USER")
-
-    if args.db_password == None:
-        postvalidations.append("  Missing DB_PASSWORD")
-
-    if len(postvalidations) > 0:
-        logger.error("ERROR: Missing values for required arguments: \n" + "\n".join(postvalidations) +
+    try:
+        pynonymize(
+            input_path=args.input,
+            strategyfile_path=args.strategyfile,
+            output_path=args.output,
+            db_type=args.db_type,
+            db_host=args.db_host,
+            db_name=args.db_name,
+            db_user=args.db_user,
+            db_password=args.db_password,
+            fake_locale=args.fake_locale
+        )
+    except ArgumentValidationError as error:
+        logger.error("ERROR: Missing values for required arguments: \n" + "\n".join(error.validation_messages) +
                      "\nSet these using the command-line options or with environment variables. \n"
                      "For a complete list, See the program help below.\n")
         parser.print_help()
         sys.exit(1)
-
-    pynonymize(
-        args.input,
-        args.strategyfile,
-        args.output,
-        args.db_type,
-        args.db_host,
-        args.db_name,
-        args.db_user,
-        args.db_password,
-        args.fake_locale
-    )
 
 
 if __name__ == "__main__":
