@@ -162,7 +162,7 @@ def main(rawArgs=None):
                      "\nSet these using the command-line options or with environment variables. \n"
                      "For a complete list, See the program help below.\n")
         parser.print_help()
-        sys.exit(1)
+        sys.exit(2)
 
 
 if __name__ == "__main__":

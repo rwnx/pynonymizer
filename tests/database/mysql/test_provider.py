@@ -72,4 +72,3 @@ class DatabaseQueryExecTests(unittest.TestCase):
         # open dumper and read at least once
         execution.MySqlDumpRunner.return_value.open_dumper.assert_called_once_with()
         execution.MySqlDumpRunner.return_value.open_dumper.return_value.read.assert_called()
-

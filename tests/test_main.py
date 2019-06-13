@@ -3,7 +3,6 @@ from unittest.mock import patch, Mock
 from pynonymizer.__main__ import ArgumentValidationError, pynonymize, main
 from types import SimpleNamespace
 
-
 def test_pynonymize_missing_db_credentials():
     with pytest.raises(ArgumentValidationError):
         pynonymize(
@@ -13,6 +12,7 @@ def test_pynonymize_missing_db_credentials():
             db_user=None,
             db_password=None
         )
+
 
 @patch("dotenv.find_dotenv")
 @patch("dotenv.load_dotenv")
@@ -34,7 +34,6 @@ def test_dotenv_called(pynonymize, create_parser, load_dotenv, find_dotenv):
         fake_locale="TEST_LOCALE"
     )))
     create_parser.return_value = parser_mock
-
 
     main(["input.sql", "strategyfile.yml", "output.sql"])
 
@@ -59,7 +58,7 @@ def test_dotenv_called(pynonymize, create_parser, load_dotenv, find_dotenv):
 @patch("dotenv.find_dotenv", Mock())
 @patch("dotenv.load_dotenv", Mock())
 @patch("pynonymizer.__main__.create_parser", Mock())
-@patch("pynonymizer.__main__.pynonymize", Mock(side_effect=ArgumentValidationError([])))
+@patch("pynonymizer.__main__.pynonymize", Mock(side_effect=ArgumentValidationError(["test validation"])))
 def test_sysexit_on_argument_invalid():
     """
     If pynonymize throws an argument validation error, main should exit with err 1
@@ -67,4 +66,4 @@ def test_sysexit_on_argument_invalid():
     with pytest.raises(SystemExit) as e_info:
         main(["blah"])
 
-    assert e_info.value.code == 1
+    assert e_info.value.code == 2
