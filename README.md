@@ -109,7 +109,7 @@ optional arguments:
                         production environments. [$PYNONYMIZER_DB_PASSWORD]
   --fake-locale FAKE_LOCALE, -l FAKE_LOCALE
                         Locale setting to initialize fake data generation.
-                        Affects Names, addresses, formats, etc. [$FAKE_LOCALE]
+                        Affects Names, addresses, formats, etc. [$PYNONYMIZER_FAKE_LOCALE]
   -v, --version         show program's version number and exit
 ```
 
