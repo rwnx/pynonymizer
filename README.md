@@ -42,7 +42,7 @@ There are a wide variety of data types available which should suit the column in
 * `file_path`
 * `[...]`
 
-For a full list of data generation strategies, see the docs on [strategyfiles](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md))
+For a full list of data generation strategies, see the docs on [strategyfiles](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md)
 
 ### Process outline
 
