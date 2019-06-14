@@ -115,4 +115,4 @@ optional arguments:
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://gitlab.com/jerometwell/pynonymizer/blob/master/LICENSE)
