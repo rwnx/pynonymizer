@@ -14,28 +14,48 @@ from pynonymizer.version import __version__
 logger = get_default_logger()
 
 
-class ArgumentValidationError(BaseException):
+class ArgumentValidationError(Exception):
     def __init__(self, validation_messages):
         self.validation_messages = validation_messages
 
 
+class DatabaseConnectionError(Exception):
+    pass
+
+
 def create_parser():
-    parser = argparse.ArgumentParser(description="A tool for writing better anonymization strategies for your production databases.")
-    parser.add_argument("input",
+    parser = argparse.ArgumentParser(prog="pynonymizer", description="A tool for writing better anonymization strategies for your production databases.")
+    input_positional = parser.add_mutually_exclusive_group(required=False)
+    input_positional.add_argument("legacy_input",
+                        nargs="?",
+                        help=argparse.SUPPRESS)
+
+    strategy_positional = parser.add_mutually_exclusive_group(required=False)
+    strategy_positional.add_argument("legacy_strategyfile",
+                        nargs="?",
+                        help=argparse.SUPPRESS)
+
+    output_positional = parser.add_mutually_exclusive_group(required=False)
+    output_positional.add_argument("legacy_output",
+                        nargs="?",
+                        help=argparse.SUPPRESS)
+
+    input_positional.add_argument("--input", "-i",
                         default=os.getenv("PYNONYMIZER_INPUT"),
-                        help="The source dumpfile to read from. [.sql, .gz]")
+                        help="The source dumpfile to read from. [file.sql, file.sql.gz] [$PYNONYMIZER_INPUT]")
 
-    parser.add_argument("strategyfile",
-                        default=os.getenv("PYNONYMIZER_STRATEGYFILE"),
-                        help="A strategyfile to use during anonymization.")
+    strategy_positional.add_argument("--strategy", "-s",
+                        dest="strategyfile",
+                        default=os.getenv("PYNONYMIZER_STRATEGY"),
+                        help="A strategyfile to use during anonymization. [$PYNONYMIZER_STRATEGY]")
 
-    parser.add_argument("output",
+    output_positional.add_argument("--output", "-o",
                         default=os.getenv("PYNONYMIZER_OUTPUT"),
-                        help="The destination to write the dumped output to. [.sql, .gz]")
+                        help="The destination to write the dumped output to. [file.sql, file.sql.gz] [$PYNONYMIZER_OUTPUT]")
 
     parser.add_argument("--db-type", "-t",
                         default=os.getenv("PYNONYMIZER_DB_TYPE") or os.getenv("DB_TYPE"),
-                        help="Type of database to interact with. Supported databases: [mysql]. [$PYNONYMIZER_DB_TYPE]")
+                        help="Type of database to interact with. More databases will be supposed in future versions. default: mysql [$PYNONYMIZER_DB_TYPE]")
 
     parser.add_argument("--db-host", "-d",
                         default=os.getenv("PYNONYMIZER_DB_HOST") or os.getenv("DB_HOST"),
@@ -106,7 +126,7 @@ def pynonymize(input_path, strategyfile_path, output_path, db_user, db_password,
     db_provider = get_provider(db_type, db_host, db_user, db_password, db_name)
 
     if not db_provider.test_connection():
-        sys.exit("Unable to connect to database.")
+        raise DatabaseConnectionError()
 
     # locate i/o
     input_obj = input.from_location(input_path)
@@ -145,11 +165,17 @@ def main(rawArgs=None):
     parser = create_parser()
     args = parser.parse_args(rawArgs)
 
+    # legacy posistionals take precendence if specified
+    # This is to support those not using the new options/env fallbacks
+    input        = args.legacy_input or args.input
+    strategyfile = args.legacy_strategyfile or args.strategyfile
+    output = args.legacy_output or args.output
+
     try:
         pynonymize(
-            input_path=args.input,
-            strategyfile_path=args.strategyfile,
-            output_path=args.output,
+            input_path=input,
+            strategyfile_path=strategyfile,
+            output_path=output,
             db_type=args.db_type,
             db_host=args.db_host,
             db_name=args.db_name,
@@ -157,8 +183,11 @@ def main(rawArgs=None):
             db_password=args.db_password,
             fake_locale=args.fake_locale
         )
+    except DatabaseConnectionError as error:
+        logger.error("Failed to connect to database.")
+        sys.exit(1)
     except ArgumentValidationError as error:
-        logger.error("ERROR: Missing values for required arguments: \n" + "\n".join(error.validation_messages) +
+        logger.error("Missing values for required arguments: \n" + "\n".join(error.validation_messages) +
                      "\nSet these using the command-line options or with environment variables. \n"
                      "For a complete list, See the program help below.\n")
         parser.print_help()

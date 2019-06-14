@@ -69,26 +69,30 @@ For a full list of data generation strategies, see the docs on [strategyfiles](h
 1. Write a [strategyfile](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md) for your database
 1. See below:
 ```
-usage: pynonymizer [-h] [--db-type DB_TYPE] [--db-host DB_HOST]
+usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
+                   [--output OUTPUT] [--db-type DB_TYPE] [--db-host DB_HOST]
                    [--db-name DB_NAME] [--db-user DB_USER]
                    [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
                    [-v]
-                   input strategyfile output
 
 A tool for writing better anonymization strategies for your production
 databases.
 
-positional arguments:
-  input                 The source dumpfile to read from. [.sql, .gz]
-  strategyfile          A strategyfile to use during anonymization.
-  output                The destination to write the dumped output to. [.sql,
-                        .gz]
-
 optional arguments:
   -h, --help            show this help message and exit
+  --input INPUT, -i INPUT
+                        The source dumpfile to read from. [file.sql,
+                        file.sql.gz] [$PYNONYMIZER_INPUT]
+  --strategy STRATEGYFILE, -s STRATEGYFILE
+                        A strategyfile to use during anonymization.
+                        [$PYNONYMIZER_STRATEGY]
+  --output OUTPUT, -o OUTPUT
+                        The destination to write the dumped output to.
+                        [file.sql, file.sql.gz] [$PYNONYMIZER_OUTPUT]
   --db-type DB_TYPE, -t DB_TYPE
-                        Type of database to interact with. Supported
-                        databases: [mysql]. [$PYNONYMIZER_DB_TYPE]
+                        Type of database to interact with. More databases will
+                        be supposed in future versions. default: mysql
+                        [$PYNONYMIZER_DB_TYPE]
   --db-host DB_HOST, -d DB_HOST
                         Database hostname or IP address.
                         [$PYNONYMIZER_DB_HOST]

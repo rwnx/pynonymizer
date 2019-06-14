@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import Mock
+import pytest
 
+from pynonymizer.database.exceptions import UnsupportedColumnStrategyError
 from pynonymizer.fake import FakeColumn
 from pynonymizer.strategy.update_column import ColumnStrategyTypes, FakeUpdateColumnStrategy
 import pynonymizer.database.mysql.query_factory as query_factory
@@ -41,7 +43,7 @@ def test_get_dumpsize_estimate():
 class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
     def setUp(self):
         self.fake_column1 = Mock(spec=FakeColumn, column_name="test_fake_column_name", sql_type="VARCHAR(50)", get_value=Mock(return_value="test_value1"))
-        self.fake_column2 = Mock(spec=FakeColumn, column_name="test_fake_column_name2", sql_type="INT", get_value=Mock(return_value="test_value2"))
+        self.fake_column2 = Mock(spec=FakeColumn, column_name="test_fake_column_name2", sql_type="INT", get_value=Mock(return_value=654))
 
         self.fake_columns = [self.fake_column1, self.fake_column2]
 
@@ -62,12 +64,28 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
 
     def test_get_insert_seed_row(self):
         assert "INSERT INTO `seed_table`(`test_fake_column_name`,`test_fake_column_name2`) " \
-            "VALUES ('test_value1','test_value2');" == \
+            "VALUES ('test_value1',654);" == \
              query_factory.get_insert_seed_row("seed_table", self.fake_columns)
 
     def test_get_create_seed_table(self):
         assert "CREATE TABLE `seed_table` (`test_fake_column_name` VARCHAR(50),`test_fake_column_name2` INT);" == \
             query_factory.get_create_seed_table("seed_table", self.fake_columns)
+
+    def test_get_create_seed_table_no_columns(self):
+        """
+        get_create_seed_table should error when presented with no columns
+        """
+        with pytest.raises(ValueError) as e_info:
+            query_factory.get_create_seed_table("seed_table", [])
+
+    def test_get_update_table_unsupported_column_type(self):
+        """
+        get_update_table should raise UnsupportedColumnStrategyError if presented with an unsupported column type
+        """
+        with pytest.raises(UnsupportedColumnStrategyError) as e_info:
+            query_factory.get_update_table("seed_table", "anon_table", {
+                "test_unsupported_column": Mock(strategy_type="NOT_SUPPORTED")
+            })
 
     def test_get_update_table_fake_column(self):
         assert "UPDATE `anon_table` SET " \

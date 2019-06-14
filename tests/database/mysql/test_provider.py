@@ -1,7 +1,12 @@
 import unittest
+import pytest
 import os
 from unittest.mock import Mock, patch, MagicMock, call, mock_open
 from pynonymizer.database.mysql import MySqlProvider
+from pynonymizer.strategy.database import DatabaseStrategy
+from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy
+from pynonymizer.strategy.update_column import UniqueEmailUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, FakeUpdateColumnStrategy, EmptyUpdateColumnStrategy
+from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 
 
 class MySqlProviderInitTest(unittest.TestCase):
@@ -35,8 +40,8 @@ class DatabaseQueryExecTests(unittest.TestCase):
         execution.MySqlCmdRunner.return_value.execute.assert_called_once_with(query_factory.get_drop_database.return_value)
 
     def test_connection(self, query_factory, execution):
-        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         # test_connection should return the cmd runner's test output (bool)
+        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         assert provider.test_connection() == execution.MySqlCmdRunner.return_value.test.return_value
 
     def test_restore_database(self, query_factory, execution):
@@ -72,3 +77,33 @@ class DatabaseQueryExecTests(unittest.TestCase):
         # open dumper and read at least once
         execution.MySqlDumpRunner.return_value.open_dumper.assert_called_once_with()
         execution.MySqlDumpRunner.return_value.open_dumper.return_value.read.assert_called()
+
+    def test_anonymize_database_unsupported_table_strategy(self, query_factory, execution):
+        with pytest.raises(UnsupportedTableStrategyError) as e_info:
+            provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+            database_strategy = DatabaseStrategy({
+                    "table1": Mock(spec=TruncateTableStrategy, strategy_type="DEFINITELY_NOT_A_SUPPORTED_STRATEGY_TYPE"),
+            })
+            provider.anonymize_database(database_strategy)
+
+
+    def test_anonymize_database(self, query_factory, execution):
+        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+        database_strategy = DatabaseStrategy({
+                "table1": TruncateTableStrategy(),
+                "table2": UpdateColumnsTableStrategy({
+                    "column1": UniqueEmailUpdateColumnStrategy(),
+                    "column2": UniqueLoginUpdateColumnStrategy(),
+                    "column3": FakeUpdateColumnStrategy(Mock(), "user_name"),
+                    "column4": EmptyUpdateColumnStrategy()
+                })
+            })
+
+        provider.anonymize_database(database_strategy)
+
+        # Assert that queries are executed that roughly match the process.
+        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_create_seed_table.return_value)
+        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_insert_seed_row.return_value)
+        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_truncate_table.return_value)
+        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_update_table.return_value)
+        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_drop_seed_table.return_value)

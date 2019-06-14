@@ -6,7 +6,6 @@ from pynonymizer.database.mysql.execution import MySqlDumpRunner, MySqlCmdRunner
 import subprocess
 
 
-
 @patch("shutil.which", Mock(return_value=None))
 class NoExecutablesInPathTests(unittest.TestCase):
     def test_dump_runner_missing_mysqldump(self):
