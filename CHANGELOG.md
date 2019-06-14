@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.2.0] 2019-06-14
  - Added new environment variables, optionals for all arguments. See the help `pynonymizer -h` for more information
  - Changed Internal structure to assist with better testing.
  - Deprecated positional arguments. These will no longer appear in helptext and are not required. You can now use all-environmental, all-optional or a mix of both. 
