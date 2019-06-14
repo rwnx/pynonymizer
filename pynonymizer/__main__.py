@@ -75,7 +75,7 @@ def create_parser():
 
     parser.add_argument("--fake-locale", "-l",
                         default=os.getenv("PYNONYMIZER_FAKE_LOCALE") or os.getenv("FAKE_LOCALE"),
-                        help="Locale setting to initialize fake data generation. Affects Names, addresses, formats, etc. [$FAKE_LOCALE]")
+                        help="Locale setting to initialize fake data generation. Affects Names, addresses, formats, etc. [$PYNONYMIZER_FAKE_LOCALE]")
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
