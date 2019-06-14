@@ -1,26 +1,17 @@
 from unittest.mock import patch, Mock
 from pynonymizer.__main__ import create_parser
+import pytest
 
 
-def test_normal_args():
+def test_legacy_positional_args():
     """
-    When called with the minimum args, argparse should return a working namespace with the correct values set
+    When called with the positional args, argparse should return a working namespace with the correct values set
     :return:
     """
     args = create_parser().parse_args(["input.sql", "strategyfile.yml", "output.sql"])
-    assert args.input == "input.sql"
-    assert args.strategyfile == "strategyfile.yml"
-    assert args.output == "output.sql"
-
-
-@patch("sys.exit")
-@patch('sys.stderr')
-def test_no_args(stderr_mock, exit_mock):
-    """
-    When called with no arguments, sys.exit should be called with err code 2
-    """
-    args = create_parser().parse_args([])
-    exit_mock.assert_called_once_with(2)
+    assert args.legacy_input == "input.sql"
+    assert args.legacy_strategyfile == "strategyfile.yml"
+    assert args.legacy_output == "output.sql"
 
 
 def mock_getenv_old(name):
@@ -64,6 +55,12 @@ def mock_getenv_new(name):
         return "ENV_DB_PASSWORD"
     elif name == "PYNONYMIZER_FAKE_LOCALE":
         return "ENV_FAKE_LOCALE"
+    elif name == "PYNONYMIZER_INPUT":
+        return "ENV_INPUT"
+    elif name == "PYNONYMIZER_STRATEGY":
+        return "ENV_STRATEGY"
+    elif name == "PYNONYMIZER_OUTPUT":
+        return "ENV_OUTPUT"
 
 
 def mock_getenv_old_new_combined(name):
@@ -79,10 +76,11 @@ def test_old_environmental_defaults():
     When not specified, arguments should fall back to OLD env vars (if specified)
     :return:
     """
+    # Use positionals, since the old vars dont cover these
     args = create_parser().parse_args(["input.sql", "strategyfile.yml", "output.sql"])
-    assert args.input        == "input.sql"
-    assert args.strategyfile == "strategyfile.yml"
-    assert args.output       == "output.sql"
+    assert args.legacy_input        == "input.sql"
+    assert args.legacy_strategyfile == "strategyfile.yml"
+    assert args.legacy_output       == "output.sql"
     assert args.db_type      == "OLDENV_DB_TYPE"
     assert args.db_name      == "OLDENV_DB_NAME"
     assert args.db_host      == "OLDENV_DB_HOST"
@@ -98,10 +96,10 @@ def test_environmental_defaults():
     old envs should take the lowest precedence and be ignored
     :return:
     """
-    args = create_parser().parse_args(["input.sql", "strategyfile.yml", "output.sql"])
-    assert args.input        == "input.sql"
-    assert args.strategyfile == "strategyfile.yml"
-    assert args.output       == "output.sql"
+    args = create_parser().parse_args([])
+    assert args.input        == "ENV_INPUT"
+    assert args.strategyfile == "ENV_STRATEGY"
+    assert args.output       == "ENV_OUTPUT"
     assert args.db_type      == "ENV_DB_TYPE"
     assert args.db_name      == "ENV_DB_NAME"
     assert args.db_host      == "ENV_DB_HOST"
@@ -111,15 +109,30 @@ def test_environmental_defaults():
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
+def test_all_legacy_new_mutex():
+    """
+    legacy posisitonals and new options should result in an error if specified together
+    """
+    with pytest.raises(SystemExit) as e_info:
+        create_parser().parse_args(["input.sql", "strategyfile.yml", "output.sql",  "--input", "input2.sql"])
+
+    with pytest.raises(SystemExit) as e_info:
+        create_parser().parse_args(["input.sql", "strategyfile.yml", "output.sql",  "--strategy", "strategyfile2.yml"])
+
+    with pytest.raises(SystemExit) as e_info:
+        create_parser().parse_args(["input.sql", "strategyfile.yml", "output.sql",  "--output", "output2.sql"])
+
+
+@patch("os.getenv", Mock(side_effect=mock_getenv_new))
 def test_all_args_precedence():
     """
     All arguments should be overridden by their argv counterparts
     :return:
     """
     args = create_parser().parse_args([
-        "input.sql",
-        "strategyfile.yml",
-        "output.sql",
+        "--input",  "input.sql",
+        "--strategy",  "strategyfile.yml",
+        "--output", "output.sql",
         "--db-type", "ARG_DB_TYPE",
         "--db-host", "ARG_DB_HOST",
         "--db-name", "ARG_DB_NAME",
@@ -139,15 +152,15 @@ def test_all_args_precedence():
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
-def test_all_args_precedence():
+def test_all_short_args_precedence():
     """
     All arguments should be overridden by their argv counterparts (using short options!)
     :return:
     """
     args = create_parser().parse_args([
-        "input.sql",
-        "strategyfile.yml",
-        "output.sql",
+        "-i", "input.sql",
+        "-s", "strategyfile.yml",
+        "-o", "output.sql",
         "-t", "ARG_DB_TYPE",
         "-d", "ARG_DB_HOST",
         "-n", "ARG_DB_NAME",

@@ -23,6 +23,9 @@ def test_dotenv_called(pynonymize, create_parser, load_dotenv, find_dotenv):
     dotenv should be called, and the parsed set of args should be passed to the pynonymize main function
     """
     parser_mock = Mock(parse_args=Mock(return_value=SimpleNamespace(
+        legacy_input=None,
+        legacy_strategyfile=None,
+        legacy_output=None,
         input="TEST_INPUT",
         strategyfile="TEST_STRATEGYFILE",
         output="TEST_OUTPUT",
