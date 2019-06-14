@@ -14,9 +14,13 @@ from pynonymizer.version import __version__
 logger = get_default_logger()
 
 
-class ArgumentValidationError(BaseException):
+class ArgumentValidationError(Exception):
     def __init__(self, validation_messages):
         self.validation_messages = validation_messages
+
+
+class DatabaseConnectionError(Exception):
+    pass
 
 
 def create_parser():
@@ -106,7 +110,7 @@ def pynonymize(input_path, strategyfile_path, output_path, db_user, db_password,
     db_provider = get_provider(db_type, db_host, db_user, db_password, db_name)
 
     if not db_provider.test_connection():
-        sys.exit("Unable to connect to database.")
+        raise DatabaseConnectionError()
 
     # locate i/o
     input_obj = input.from_location(input_path)
@@ -157,8 +161,11 @@ def main(rawArgs=None):
             db_password=args.db_password,
             fake_locale=args.fake_locale
         )
+    except DatabaseConnectionError as error:
+        logger.error("Failed to connect to database.")
+        sys.exit(1)
     except ArgumentValidationError as error:
-        logger.error("ERROR: Missing values for required arguments: \n" + "\n".join(error.validation_messages) +
+        logger.error("Missing values for required arguments: \n" + "\n".join(error.validation_messages) +
                      "\nSet these using the command-line options or with environment variables. \n"
                      "For a complete list, See the program help below.\n")
         parser.print_help()

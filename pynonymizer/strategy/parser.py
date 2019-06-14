@@ -39,7 +39,7 @@ class StrategyParser:
 
         # dict autodetection
         elif isinstance(table_config, dict):
-            if table_config["columns"]:
+            if "columns" in table_config:
                 column_strategies = {}
                 for column_name, column_config in table_config["columns"].items():
                     column_strategies[column_name] = self.__parse_update_column(column_name, column_config)
