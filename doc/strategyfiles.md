@@ -102,7 +102,7 @@ tables:
 
 ## Scripts
 Scripts can be used to add additional behaviour to the start or the end of an anonymization run. This might help you
-to do something specific that pynonymizer may not have a feature for (yet?).
+to do something specific that pynonymizer may not have a feature for (yet?), or to provider a report on something before you dump/drop/etc.
 
 Scripts are given in the `scripts` top level key. There are two subkeys, `before` and `after`.  In both cases, the required input format
 is a list of strings to be run as individual scripts. 
@@ -115,6 +115,30 @@ scripts:
   before:
     - DELETE FROM config where name = 'secret';
 ```
+
+You should recieve the output from each script in the log. The exact format will depend on the database provider. See the script except below:
+```
+[...]
+creating seed table with 3 columns
+Inserting seed data
+Inserting seed data: 100%|██████████████████| 150/150 [00:05<00:00, 25.98rows/s]
+Running before script 0 "SELECT COUNT(1) FROM `accounts`;"
+COUNT(1)
+1817
+
+Running before script 1 "SELECT SLEEP(1);"
+SLEEP(1)
+0
+
+Anonymizing 2 tables
+Truncating transactions: 100%|████████████████████| 2/2 [00:00<00:00,  2.66it/s]
+Running after script 0: "SELECT COUNT(1) FROM `accounts`;"
+COUNT(1)
+1817
+[...]
+```
+
+
 
 ### `before`
 Before takes place just before the anonymization starts, after any preparation by the database provider (e.g. seed table, etc)
