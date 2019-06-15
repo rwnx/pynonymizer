@@ -1,7 +1,8 @@
-
 class DatabaseStrategy:
-    def __init__(self, table_strategies):
-        self.table_strategies = table_strategies
+    def __init__(self, table_strategies=None, scripts=None):
+
+        self.table_strategies = table_strategies or {}
+        self.scripts = scripts or {}
 
     def get_fake_columns(self):
         unique_fake_types = set()

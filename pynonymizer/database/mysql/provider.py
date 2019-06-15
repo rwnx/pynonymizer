@@ -46,7 +46,7 @@ class MySqlProvider:
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
         for i in tqdm(range(0, seed_rows), desc="Inserting seed data", unit="rows"):
-            self.logger.debug(f"inserting seed row {i}")
+            self.logger.debug(f"Inserting seed row {i}")
             self.__runner.db_execute(query_factory.get_insert_seed_row(self.__SEED_TABLE_NAME, columns))
 
     def __estimate_dumpsize(self):
@@ -91,8 +91,15 @@ class MySqlProvider:
         self.logger.info("creating seed table with %d columns", len(required_columns))
         self.__runner.db_execute(query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, required_columns))
 
-        self.logger.info("inserting seed data")
+        self.logger.info("Inserting seed data")
         self.__seed(required_columns)
+
+        try:
+            for i, before_script in enumerate(database_strategy.scripts["before"]):
+                self.logger.info(f"Running before script {i} \"{before_script[:50]}\"")
+                self.logger.info( self.__runner.db_execute(before_script).decode() )
+        except KeyError:
+            pass
 
         table_strategies = database_strategy.table_strategies
         self.logger.info("Anonymizing %d tables", len(table_strategies))
@@ -100,6 +107,13 @@ class MySqlProvider:
         with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
             for table_name, table_strategy in table_strategies.items():
                 self.__anonymize_table(table_name, table_strategy, progressbar)
+
+        try:
+            for i, after_script in enumerate(database_strategy.scripts["after"]):
+                self.logger.info(f"Running after script {i}: \"{after_script[:50]}\"")
+                self.logger.info( self.__runner.db_execute(after_script).decode() )
+        except KeyError:
+            pass
 
         self.logger.info("dropping seed table")
         self.__runner.db_execute(query_factory.get_drop_seed_table(self.__SEED_TABLE_NAME))
