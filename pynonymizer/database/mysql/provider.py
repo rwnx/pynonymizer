@@ -97,7 +97,7 @@ class MySqlProvider:
         try:
             for i, before_script in enumerate(database_strategy.scripts["before"]):
                 self.logger.info(f"Running before script {i} \"{before_script[:20]}\"")
-                self.__runner.db_execute(before_script)
+                self.logger.info( self.__runner.db_execute(before_script).decode() )
         except KeyError:
             pass
 
@@ -111,7 +111,7 @@ class MySqlProvider:
         try:
             for i, after_script in enumerate(database_strategy.scripts["after"]):
                 self.logger.info(f"Running after script {i}: \"{after_script[:20]}\"")
-                self.__runner.db_execute(after_script)
+                self.logger.info( self.__runner.db_execute(after_script).decode() )
         except KeyError:
             pass
 
