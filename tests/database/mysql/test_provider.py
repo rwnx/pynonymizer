@@ -110,6 +110,10 @@ class DatabaseQueryExecTests(unittest.TestCase):
         execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_drop_seed_table.return_value)
 
     def test_before_script_run(self,query_factory, execution):
+        manager = Mock()
+        manager.attach_mock(execution, "execution")
+
+        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         database_strategy = DatabaseStrategy({
                 "table1": TruncateTableStrategy()
             },
@@ -118,11 +122,19 @@ class DatabaseQueryExecTests(unittest.TestCase):
             }
         )
 
-        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call("SELECT `before` FROM `before_table`;")
+        provider.anonymize_database(database_strategy)
+
+        truncate_call_index = manager.mock_calls.index(call.execution.MySqlCmdRunner().db_execute(query_factory.get_truncate_table.return_value))
+        before_script_call_index =  manager.mock_calls.index( call.execution.MySqlCmdRunner().db_execute("SELECT `before` FROM `before_table`;") )
+
+        # before script should be before any anonymization happens (truncate)
+        assert before_script_call_index < truncate_call_index
 
     def test_after_script_run(self,query_factory,execution):
         manager = Mock()
+        manager.attach_mock(execution, "execution")
 
+        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         database_strategy = DatabaseStrategy({
                 "table1": TruncateTableStrategy()
             },
@@ -130,5 +142,11 @@ class DatabaseQueryExecTests(unittest.TestCase):
                 "after": ["SELECT `after` FROM `after_table`;"]
             }
         )
+        provider.anonymize_database(database_strategy)
 
-        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call("SELECT `after` FROM `after_table`;")
+        truncate_call_index = manager.mock_calls.index(call.execution.MySqlCmdRunner().db_execute(query_factory.get_truncate_table.return_value))
+        after_script_call_index =  manager.mock_calls.index( call.execution.MySqlCmdRunner().db_execute("SELECT `after` FROM `after_table`;") )
+
+        # after script should be called after anonymization
+        assert truncate_call_index < after_script_call_index
+

@@ -94,12 +94,26 @@ class MySqlProvider:
         self.logger.info("inserting seed data")
         self.__seed(required_columns)
 
+        try:
+            for i, before_script in enumerate(database_strategy.scripts["before"]):
+                self.logger.info(f"Running before script {i} \"{before_script[:20]}\"")
+                self.__runner.db_execute(before_script)
+        except KeyError:
+            pass
+
         table_strategies = database_strategy.table_strategies
         self.logger.info("Anonymizing %d tables", len(table_strategies))
 
         with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
             for table_name, table_strategy in table_strategies.items():
                 self.__anonymize_table(table_name, table_strategy, progressbar)
+
+        try:
+            for i, after_script in enumerate(database_strategy.scripts["after"]):
+                self.logger.info(f"Running after script {i}: \"{after_script[:20]}\"")
+                self.__runner.db_execute(after_script)
+        except KeyError:
+            pass
 
         self.logger.info("dropping seed table")
         self.__runner.db_execute(query_factory.get_drop_seed_table(self.__SEED_TABLE_NAME))
