@@ -1,6 +1,7 @@
 import unittest
 import pytest
 import os
+from subprocess import CalledProcessError
 from unittest.mock import Mock, patch, MagicMock, call, mock_open
 from pynonymizer.database.mysql import MySqlProvider
 from pynonymizer.strategy.database import DatabaseStrategy

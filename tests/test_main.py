@@ -15,55 +15,96 @@ def test_pynonymize_missing_db_credentials():
             db_password=None
         )
 
-
 @patch("dotenv.find_dotenv")
 @patch("dotenv.load_dotenv")
 @patch("pynonymizer.__main__.create_parser")
 @patch("pynonymizer.__main__.pynonymize", autospec=True)
-def test_dotenv_called(pynonymize, create_parser, load_dotenv, find_dotenv):
-    """
-    dotenv should be called, and the parsed set of args should be passed to the pynonymize main function
-    """
-    parser_mock = Mock(parse_args=Mock(return_value=SimpleNamespace(
-        legacy_input=None,
-        legacy_strategyfile=None,
-        legacy_output=None,
-        input="TEST_INPUT",
-        strategyfile="TEST_STRATEGYFILE",
-        output="TEST_OUTPUT",
-        db_type="TEST_TYPE",
-        db_host="TEST_HOST",
-        db_name="TEST_NAME",
-        db_user="TEST_USER",
-        db_password="TEST_PASSWORD",
-        fake_locale="TEST_LOCALE",
-        start_at_step="TEST_START_AT_STEP",
-        skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
-        stop_at_step="TEST_STOP_AT_STEP"
-    )))
-    create_parser.return_value = parser_mock
+class MainArgTests(unittest.TestCase):
+    def setUp(self):
+        self.parsed_args = SimpleNamespace(
+            legacy_input=None,
+            legacy_strategyfile=None,
+            legacy_output=None,
+            input="TEST_INPUT",
+            strategyfile="TEST_STRATEGYFILE",
+            output="TEST_OUTPUT",
+            db_type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_name="TEST_NAME",
+            db_user="TEST_USER",
+            db_password="TEST_PASSWORD",
+            fake_locale="TEST_LOCALE",
+            start_at_step="TEST_START_AT_STEP",
+            skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
+            stop_at_step="TEST_STOP_AT_STEP"
+        )
+    def test_dotenv_called(self, pynonymize, create_parser, load_dotenv, find_dotenv):
+        """
+        dotenv should be called
+        """
+        parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
+        create_parser.return_value = parser_mock
 
-    main(["input.sql", "strategyfile.yml", "output.sql"])
+        main([])
 
-    find_dotenv.assert_called()
-    load_dotenv.assert_called()
-    create_parser.assert_called()
-    parser_mock.parse_args.assert_called()
+        find_dotenv.assert_called()
+        load_dotenv.assert_called()
 
-    pynonymize.assert_called_once_with(
-        input_path="TEST_INPUT",
-        strategyfile_path="TEST_STRATEGYFILE",
-        output_path="TEST_OUTPUT",
-        db_type="TEST_TYPE",
-        db_host="TEST_HOST",
-        db_name="TEST_NAME",
-        db_user="TEST_USER",
-        db_password="TEST_PASSWORD",
-        fake_locale="TEST_LOCALE",
-        start_at_step="TEST_START_AT_STEP",
-        skip_steps=["TEST_SKIP_1","TEST_SKIP_2"],
-        stop_at_step="TEST_STOP_AT_STEP"
-    )
+    def test_arg_pass_legacy_override(self, pynonymize, create_parser, load_dotenv, find_dotenv):
+        """
+        the parsed set of args should be passed to the pynonymize main function
+        legacy args should override normal ones to account for old positional behaviour
+        """
+        self.parsed_args.legacy_input = "LEGACY_INPUT"
+        self.parsed_args.legacy_strategyfile = "LEGACY_STRATEGYFILE"
+        self.parsed_args.legacy_output = "LEGACY_OUTPUT"
+        parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
+        create_parser.return_value = parser_mock
+
+        main([])
+
+        create_parser.assert_called()
+        parser_mock.parse_args.assert_called()
+        pynonymize.assert_called_once_with(
+            input_path="LEGACY_INPUT",
+            strategyfile_path="LEGACY_STRATEGYFILE",
+            output_path="LEGACY_OUTPUT",
+            db_type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_name="TEST_NAME",
+            db_user="TEST_USER",
+            db_password="TEST_PASSWORD",
+            fake_locale="TEST_LOCALE",
+            start_at_step="TEST_START_AT_STEP",
+            skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
+            stop_at_step="TEST_STOP_AT_STEP"
+        )
+
+    def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
+        """
+        the parsed set of args should be passed to the pynonymize main function
+        """
+        parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
+        create_parser.return_value = parser_mock
+
+        main([])
+
+        create_parser.assert_called()
+        parser_mock.parse_args.assert_called()
+        pynonymize.assert_called_once_with(
+            input_path="TEST_INPUT",
+            strategyfile_path="TEST_STRATEGYFILE",
+            output_path="TEST_OUTPUT",
+            db_type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_name="TEST_NAME",
+            db_user="TEST_USER",
+            db_password="TEST_PASSWORD",
+            fake_locale="TEST_LOCALE",
+            start_at_step="TEST_START_AT_STEP",
+            skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
+            stop_at_step="TEST_STOP_AT_STEP"
+        )
 
 
 @patch("dotenv.find_dotenv", Mock())

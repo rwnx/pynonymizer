@@ -1,10 +1,12 @@
-class DatabaseProviderError(Exception):
+from pynonymizer.exceptions import PynonymizerError
+
+
+class DatabaseProviderError(PynonymizerError):
     pass
 
 
 class MissingPrerequisiteError(DatabaseProviderError):
-    def __init__(self, message):
-        super().__init__(message)
+    pass
 
 
 class UnsupportedTableStrategyError(DatabaseProviderError):
