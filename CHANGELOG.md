@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added Process steps, e.g. `CREATE_DB`, `ANONYMIZE_DB` for improved logging and skip behaviour (see doc/process-control.md)
+- Added process control options:
+    - `--start-at STEP`: choose a step to start at (inclusive)
+    - `--stop-at STEP`: choose a step to stop at (inclusive)
+    - `--skip-steps STEP [..STEP]` : specify one or more steps to skip in the process
 
 ## [1.2.0] 2019-06-14
  - Added new environment variables, optionals for all arguments. See the help `pynonymizer -h` for more information

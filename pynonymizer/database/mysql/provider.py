@@ -7,7 +7,6 @@ import pynonymizer.database.mysql.execution as execution
 
 from pynonymizer import log
 
-
 class MySqlProvider:
     """
     A command-line based mysql provider. Uses `mysql` and `mysqldump`,

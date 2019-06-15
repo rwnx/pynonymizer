@@ -51,6 +51,8 @@ For a full list of data generation strategies, see the docs on [strategyfiles](h
 1. Dump resulting data to file.
 1. Drop temporary database.
 
+If this workflow doesnt work for you, see [process control](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/process-control.md) to see if it can be adjusted to suit your needs.
+
 ## Supported Databases
 * `mysql`
 * More coming soon!
@@ -73,7 +75,8 @@ usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--output OUTPUT] [--db-type DB_TYPE] [--db-host DB_HOST]
                    [--db-name DB_NAME] [--db-user DB_USER]
                    [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
-                   [-v]
+                   [--start-at STEP] [--skip-steps STEP [STEP ...]]
+                   [--stop-at STEP] [-v]
 
 A tool for writing better anonymization strategies for your production
 databases.
@@ -109,10 +112,19 @@ optional arguments:
                         production environments. [$PYNONYMIZER_DB_PASSWORD]
   --fake-locale FAKE_LOCALE, -l FAKE_LOCALE
                         Locale setting to initialize fake data generation.
-                        Affects Names, addresses, formats, etc. [$PYNONYMIZER_FAKE_LOCALE]
+                        Affects Names, addresses, formats, etc.
+                        [$PYNONYMIZER_FAKE_LOCALE]
+  --start-at STEP       Choose a step to begin the process (inclusive).
+                        [$PYNONYMIZER_START_AT]
+  --skip-steps STEP [STEP ...]
+                        Choose one or more steps to skip.
+                        [$PYNONYMIZER_SKIP_STEPS]
+  --stop-at STEP        Choose a step to stop at (inclusive).
+                        [$PYNONYMIZER_STOP_AT]
   -v, --version         show program's version number and exit
+
 ```
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://gitlab.com/jerometwell/pynonymizer/blob/master/LICENSE)
