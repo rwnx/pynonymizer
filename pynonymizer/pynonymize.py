@@ -42,10 +42,10 @@ def _resolve_process_step(step_value):
 
 def _resolve_step(process_step, start_at_step, stop_at_step, skip_steps, func):
     if start_at_step.value > process_step.value:
-        logger.warning(f"Skipping {process_step.name} (start-at)")
+        logger.warning(f"Skipping {process_step.name} (Starting at {start_at_step.name})")
         return False
     elif stop_at_step.value < process_step.value:
-        logger.warning(f"Skipping {process_step.name} (stop-at)")
+        logger.warning(f"Skipping {process_step.name} (Stopped at {stop_at_step.name})")
         return False
     elif skip_steps and process_step in skip_steps:
         logger.warning(f"Skipping {process_step.name} (skip-steps)")
@@ -56,6 +56,25 @@ def _resolve_step(process_step, start_at_step, stop_at_step, skip_steps, func):
         return True
 
 def pynonymize(input_path, strategyfile_path, output_path, db_user, db_password, db_type=None, db_host=None, db_name=None, fake_locale=None, start_at_step=None, stop_at_step=None, skip_steps=None):
+    validations = []
+    if input_path is None:
+        validations.append("Missing INPUT")
+
+    if strategyfile_path is None:
+        validations.append("Missing STRATEGYFILE")
+
+    if output_path is None:
+        validations.append("Missing OUTPUT")
+
+    if db_user is None:
+        validations.append("Missing DB_USER")
+
+    if db_password is None:
+        validations.append("Missing DB_PASSWORD")
+
+    if len(validations) > 0:
+        raise ArgumentValidationError(validations)
+
     if db_type is None:
         db_type = "mysql"
 
@@ -80,25 +99,6 @@ def pynonymize(input_path, strategyfile_path, output_path, db_user, db_password,
 
     if skip_steps and len(skip_steps) > 0:
         skip_steps = [_resolve_process_step(skip) for skip in skip_steps]
-
-    validations = []
-    if input_path is None:
-        validations.append("Missing INPUT")
-
-    if strategyfile_path is None:
-        validations.append("Missing STRATEGYFILE")
-
-    if output_path is None:
-        validations.append("Missing OUTPUT")
-
-    if db_user is None:
-        validations.append("Missing DB_USER")
-
-    if db_password is None:
-        validations.append("Missing DB_PASSWORD")
-
-    if len(validations) > 0:
-        raise ArgumentValidationError(validations)
 
     fake_seeder = FakeColumnSet(fake_locale)
     strategy_parser = StrategyParser(fake_seeder)
