@@ -121,10 +121,10 @@ class ConfigParsingTests(unittest.TestCase):
         assert len(parse_result.table_strategies) == 1
         assert parse_result.table_strategies["accounts"].strategy_type == TableStrategyTypes.TRUNCATE
 
-        assert len(parse_result.scripts.before) == [
+        assert parse_result.scripts["before"] == [
                     "SELECT `before` from `students`;"
                 ]
-        assert len(parse_result.scripts.after) == [
+        assert parse_result.scripts["after"] == [
                     "SELECT `after` from `students`;",
                     "SELECT `after_2` from `example`;"
                 ]

@@ -56,4 +56,10 @@ class StrategyParser:
         for table_name, table_config in config["tables"].items():
             table_strategies[table_name] = self.__parse_table(table_name, table_config)
 
-        return DatabaseStrategy(table_strategies)
+        scripts = {}
+        try:
+            scripts = config["scripts"]
+        except KeyError:
+            pass
+
+        return DatabaseStrategy(table_strategies,scripts)
