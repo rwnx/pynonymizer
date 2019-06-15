@@ -1,5 +1,10 @@
 # This is an example of a strategyfile
 # See doc/strategyfiles.md for more information
+scripts:
+    before:
+        - DELETE FROM `blah` where x = 4;
+    after:
+        - SELECT COUNT(1) FROM `students`;
 tables:
   accounts:
     columns:

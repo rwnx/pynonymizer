@@ -4,21 +4,11 @@ from unittest.mock import Mock
 from pynonymizer.fake import UnsupportedFakeTypeError
 from pynonymizer.strategy import parser, database, table, update_column
 from pynonymizer.strategy.exceptions import UnknownTableStrategyError, UnknownColumnStrategyError
+from pynonymizer.strategy.table import TableStrategyTypes
 import pytest
 
-"""
-tables:
-  accounts:
-    columns:
-      current_sign_in_ip: ipv4_public
-      last_sign_in_ip: ipv4_public
-      username: user_name
-      email: company_email
-  transactions: truncate
-  other_important_table: truncate
-"""
 
-class ConfigParsingTest(unittest.TestCase):
+class ConfigParsingTests(unittest.TestCase):
     valid_config = {
         "tables": {
             "accounts": {
@@ -109,5 +99,35 @@ class ConfigParsingTest(unittest.TestCase):
                     "transactions": 5654654
                 }
             })
+
+    def test_valid_parse_before_after_script(self):
+        parse_result = self.strategy_parser.parse_config({
+            "scripts": {
+                "before": [
+                    "SELECT `before` from `students`;"
+                ],
+                "after": [
+                    "SELECT `after` from `students`;",
+                    "SELECT `after_2` from `example`;"
+                ]
+            },
+            "tables": {
+                "accounts": "truncate"
+            },
+        })
+
+        assert isinstance(parse_result, database.DatabaseStrategy)
+
+        assert len(parse_result.table_strategies) == 1
+        assert parse_result.table_strategies["accounts"].strategy_type == TableStrategyTypes.TRUNCATE
+
+        assert len(parse_result.scripts.before) == [
+                    "SELECT `before` from `students`;"
+                ]
+        assert len(parse_result.scripts.after) == [
+                    "SELECT `after` from `students`;",
+                    "SELECT `after_2` from `example`;"
+                ]
+
 
 

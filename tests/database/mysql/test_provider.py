@@ -108,3 +108,27 @@ class DatabaseQueryExecTests(unittest.TestCase):
         execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_truncate_table.return_value)
         execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_update_table.return_value)
         execution.MySqlCmdRunner.return_value.db_execute.assert_any_call(query_factory.get_drop_seed_table.return_value)
+
+    def test_before_script_run(self,query_factory, execution):
+        database_strategy = DatabaseStrategy({
+                "table1": TruncateTableStrategy()
+            },
+            {
+                "before": ["SELECT `before` FROM `before_table`;"],
+            }
+        )
+
+        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call("SELECT `before` FROM `before_table`;")
+
+    def test_after_script_run(self,query_factory,execution):
+        manager = Mock()
+
+        database_strategy = DatabaseStrategy({
+                "table1": TruncateTableStrategy()
+            },
+            {
+                "after": ["SELECT `after` FROM `after_table`;"]
+            }
+        )
+
+        execution.MySqlCmdRunner.return_value.db_execute.assert_any_call("SELECT `after` FROM `after_table`;")
