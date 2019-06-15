@@ -51,6 +51,8 @@ For a full list of data generation strategies, see the docs on [strategyfiles](h
 1. Dump resulting data to file.
 1. Drop temporary database.
 
+If this workflow doesnt work for you, see [process control](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/process-control.md) to see if it can be adjusted to suit your needs.
+
 ## Supported Databases
 * `mysql`
 * More coming soon!
