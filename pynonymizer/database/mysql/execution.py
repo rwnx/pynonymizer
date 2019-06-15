@@ -5,7 +5,6 @@ from pynonymizer.database.exceptions import MissingPrerequisiteError
 Seperate everything that touches actual query exec into its own module
 """
 
-
 class MySqlDumpRunner:
     def __init__(self, db_host, db_user, db_pass, db_name):
         self.db_host = db_host
@@ -33,17 +32,36 @@ class MySqlCmdRunner:
         if not (shutil.which("mysql")):
             raise MissingPrerequisiteError("The 'mysql' client must be present in the $PATH")
 
+    def __mask_subprocess_error(self, error):
+        """
+        messes with the internals of a CalledProcessError to hide the fact that there's a password in there,
+        in case it bubbles out in a traceback.
+
+        This might be better as a wrapping exception, rather than messing around inside other people's classes.
+        """
+        error.cmd = ["mysql", "-h", self.db_host, "-u", self.db_user, "-p******"]
+        raise error from None
+
     def __get_base_params(self):
         return ["mysql", "-h", self.db_host, "-u", self.db_user, f"-p{self.db_pass}"]
 
     def execute(self, statement):
-        return subprocess.check_output(self.__get_base_params() + ["--execute", statement])
+        try:
+            return subprocess.check_output(self.__get_base_params() + ["--execute", statement])
+        except subprocess.CalledProcessError as error:
+            self.__mask_subprocess_error(error)
 
     def db_execute(self, statement):
-        return subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement])
+        try:
+            return subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement])
+        except subprocess.CalledProcessError as error:
+            self.__mask_subprocess_error(error)
 
     def get_single_result(self, statement):
-        return subprocess.check_output(self.__get_base_params() + ["-sN", self.db_name, "--execute", statement]).decode()
+        try:
+            return subprocess.check_output(self.__get_base_params() + ["-sN", self.db_name, "--execute", statement]).decode()
+        except subprocess.CalledProcessError as error:
+            self.__mask_subprocess_error(error)
 
     def open_batch_processor(self):
         return subprocess.Popen(self.__get_base_params() + [self.db_name], stdin=subprocess.PIPE).stdin
