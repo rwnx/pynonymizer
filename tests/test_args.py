@@ -61,6 +61,12 @@ def mock_getenv_new(name):
         return "ENV_STRATEGY"
     elif name == "PYNONYMIZER_OUTPUT":
         return "ENV_OUTPUT"
+    elif name == "PYNONYMIZER_START_AT":
+        return "ENV_START_AT"
+    elif name == "PYNONYMIZER_SKIP_STEPS":
+        return "ENV_SKIP_STEPS"
+    elif name == "PYNONYMIZER_STOP_AT":
+        return "ENV_STOP_AT"
 
 
 def mock_getenv_old_new_combined(name):
@@ -97,15 +103,18 @@ def test_environmental_defaults():
     :return:
     """
     args = create_parser().parse_args([])
-    assert args.input        == "ENV_INPUT"
-    assert args.strategyfile == "ENV_STRATEGY"
-    assert args.output       == "ENV_OUTPUT"
-    assert args.db_type      == "ENV_DB_TYPE"
-    assert args.db_name      == "ENV_DB_NAME"
-    assert args.db_host      == "ENV_DB_HOST"
-    assert args.db_user      == "ENV_DB_USER"
-    assert args.db_password  == "ENV_DB_PASSWORD"
-    assert args.fake_locale  == "ENV_FAKE_LOCALE"
+    assert args.input         == "ENV_INPUT"
+    assert args.strategyfile  == "ENV_STRATEGY"
+    assert args.output        == "ENV_OUTPUT"
+    assert args.db_type       == "ENV_DB_TYPE"
+    assert args.db_name       == "ENV_DB_NAME"
+    assert args.db_host       == "ENV_DB_HOST"
+    assert args.db_user       == "ENV_DB_USER"
+    assert args.db_password   == "ENV_DB_PASSWORD"
+    assert args.fake_locale   == "ENV_FAKE_LOCALE"
+    assert args.start_at_step == "ENV_START_AT"
+    assert args.skip_steps    == ["ENV_SKIP_STEPS"]
+    assert args.stop_at_step  == "ENV_STOP_AT"
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
@@ -138,17 +147,23 @@ def test_all_args_precedence():
         "--db-name", "ARG_DB_NAME",
         "--db-user", "ARG_DB_USER",
         "--db-password", "ARG_DB_PASSWORD",
-        "--fake-locale", "ARG_FAKE_LOCALE"
+        "--fake-locale", "ARG_FAKE_LOCALE",
+        "--start-at", "ARG_START_AT",
+        "--skip-steps", "ARG_SKIP_STEPS",
+        "--stop-at", "ARG_STOP_AT"
     ])
-    assert args.input        == "input.sql"
-    assert args.strategyfile == "strategyfile.yml"
-    assert args.output       == "output.sql"
-    assert args.db_type      == "ARG_DB_TYPE"
-    assert args.db_name      == "ARG_DB_NAME"
-    assert args.db_host      == "ARG_DB_HOST"
-    assert args.db_user      == "ARG_DB_USER"
-    assert args.db_password  == "ARG_DB_PASSWORD"
-    assert args.fake_locale  == "ARG_FAKE_LOCALE"
+    assert args.input          == "input.sql"
+    assert args.strategyfile   == "strategyfile.yml"
+    assert args.output         == "output.sql"
+    assert args.db_type        == "ARG_DB_TYPE"
+    assert args.db_name        == "ARG_DB_NAME"
+    assert args.db_host        == "ARG_DB_HOST"
+    assert args.db_user        == "ARG_DB_USER"
+    assert args.db_password    == "ARG_DB_PASSWORD"
+    assert args.fake_locale    == "ARG_FAKE_LOCALE"
+    assert args.start_at_step  == "ARG_START_AT"
+    assert args.skip_steps     == ["ARG_SKIP_STEPS"]
+    assert args.stop_at_step   == "ARG_STOP_AT"
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
