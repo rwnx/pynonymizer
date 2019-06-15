@@ -7,11 +7,6 @@ import pynonymizer.database.mysql.execution as execution
 
 from pynonymizer import log
 
-def mask_subprocess_error(func):
-    def wrapper():
-        pass
-    return wrapper
-
 class MySqlProvider:
     """
     A command-line based mysql provider. Uses `mysql` and `mysqldump`,
