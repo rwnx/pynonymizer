@@ -16,6 +16,9 @@ tables:
       email: company_email
   transactions: truncate
   other_important_table: truncate
+scripts:
+  before:
+    - DELETE FROM config where name = 'secret';
 ```
 
 ## Tables
@@ -96,3 +99,25 @@ Wipe the entire table using a truncate statement.
 tables:
   table_name: truncate
 ```
+
+## Scripts
+Scripts can be used to add additional behaviour to the start or the end of an anonymization run. This might help you
+to do something specific that pynonymizer may not have a feature for (yet?).
+
+Scripts are given in the `scripts` top level key. There are two subkeys, `before` and `after`.  In both cases, the required input format
+is a list of strings to be run as individual scripts. 
+
+```
+scripts:
+  after:
+    - DELETE FROM students;
+    - [...]
+  before:
+    - DELETE FROM config where name = 'secret';
+```
+
+### `before`
+Before takes place just before the anonymization starts, after any preparation by the database provider (e.g. seed table, etc)
+
+### `after`
+After takes place directly after the anonymization. 
