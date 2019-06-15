@@ -73,7 +73,8 @@ usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--output OUTPUT] [--db-type DB_TYPE] [--db-host DB_HOST]
                    [--db-name DB_NAME] [--db-user DB_USER]
                    [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
-                   [-v]
+                   [--start-at STEP] [--skip-steps STEP [STEP ...]]
+                   [--stop-at STEP] [-v]
 
 A tool for writing better anonymization strategies for your production
 databases.
@@ -109,8 +110,17 @@ optional arguments:
                         production environments. [$PYNONYMIZER_DB_PASSWORD]
   --fake-locale FAKE_LOCALE, -l FAKE_LOCALE
                         Locale setting to initialize fake data generation.
-                        Affects Names, addresses, formats, etc. [$PYNONYMIZER_FAKE_LOCALE]
+                        Affects Names, addresses, formats, etc.
+                        [$PYNONYMIZER_FAKE_LOCALE]
+  --start-at STEP       Choose a step to begin the process (inclusive).
+                        [$PYNONYMIZER_START_AT]
+  --skip-steps STEP [STEP ...]
+                        Choose one or more steps to skip.
+                        [$PYNONYMIZER_SKIP_STEPS]
+  --stop-at STEP        Choose a step to stop at (inclusive).
+                        [$PYNONYMIZER_STOP_AT]
   -v, --version         show program's version number and exit
+
 ```
 
 ## License

@@ -20,6 +20,8 @@ class ProcessSteps(Enum):
     DROP_DB = 600
     END = 999
 
+    def names(self=None):
+        return [step.name for step in ProcessSteps]
 
 class ArgumentValidationError(Exception):
     def __init__(self, validation_messages):

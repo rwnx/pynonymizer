@@ -62,11 +62,11 @@ def mock_getenv_new(name):
     elif name == "PYNONYMIZER_OUTPUT":
         return "ENV_OUTPUT"
     elif name == "PYNONYMIZER_START_AT":
-        return "ENV_START_AT"
+        return "START"
     elif name == "PYNONYMIZER_SKIP_STEPS":
-        return "ENV_SKIP_STEPS"
+        return "ANONYMIZE_DB"
     elif name == "PYNONYMIZER_STOP_AT":
-        return "ENV_STOP_AT"
+        return "END"
 
 
 def mock_getenv_old_new_combined(name):
@@ -112,9 +112,9 @@ def test_environmental_defaults():
     assert args.db_user       == "ENV_DB_USER"
     assert args.db_password   == "ENV_DB_PASSWORD"
     assert args.fake_locale   == "ENV_FAKE_LOCALE"
-    assert args.start_at_step == "ENV_START_AT"
-    assert args.skip_steps    == ["ENV_SKIP_STEPS"]
-    assert args.stop_at_step  == "ENV_STOP_AT"
+    assert args.start_at_step == "START"
+    assert args.skip_steps    == ["ANONYMIZE_DB"]
+    assert args.stop_at_step  == "END"
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
@@ -148,9 +148,9 @@ def test_all_args_precedence():
         "--db-user", "ARG_DB_USER",
         "--db-password", "ARG_DB_PASSWORD",
         "--fake-locale", "ARG_FAKE_LOCALE",
-        "--start-at", "ARG_START_AT",
-        "--skip-steps", "ARG_SKIP_STEPS",
-        "--stop-at", "ARG_STOP_AT"
+        "--start-at", "START",
+        "--skip-steps", "ANONYMIZE_DB",
+        "--stop-at", "END"
     ])
     assert args.input          == "input.sql"
     assert args.strategyfile   == "strategyfile.yml"
@@ -161,9 +161,9 @@ def test_all_args_precedence():
     assert args.db_user        == "ARG_DB_USER"
     assert args.db_password    == "ARG_DB_PASSWORD"
     assert args.fake_locale    == "ARG_FAKE_LOCALE"
-    assert args.start_at_step  == "ARG_START_AT"
-    assert args.skip_steps     == ["ARG_SKIP_STEPS"]
-    assert args.stop_at_step   == "ARG_STOP_AT"
+    assert args.start_at_step  == "START"
+    assert args.skip_steps     == ["ANONYMIZE_DB"]
+    assert args.stop_at_step   == "END"
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))

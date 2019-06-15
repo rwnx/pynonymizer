@@ -2,7 +2,7 @@ import argparse
 import dotenv
 import os
 import sys
-from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize
+from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize, ProcessSteps
 from pynonymizer.log import get_default_logger
 from pynonymizer.version import __version__
 
@@ -64,16 +64,16 @@ def create_parser():
                         help="Locale setting to initialize fake data generation. Affects Names, addresses, formats, etc. [$PYNONYMIZER_FAKE_LOCALE]")
 
     parser.add_argument("--start-at",
-                        default=os.getenv("PYNONYMIZER_START_AT"), dest="start_at_step",
+                        default=os.getenv("PYNONYMIZER_START_AT"), dest="start_at_step", choices=ProcessSteps.names(), metavar="STEP",
                         help="Choose a step to begin the process (inclusive). [$PYNONYMIZER_START_AT]")
 
     parser.add_argument("--skip-steps",
-                        nargs="+", required=False,
+                        nargs="+", required=False, choices=ProcessSteps.names(), metavar="STEP",
                         default=(lambda: os.getenv("PYNONYMIZER_SKIP_STEPS").split() if os.getenv("PYNONYMIZER_SKIP_STEPS") else [])(), dest="skip_steps",
                         help="Choose one or more steps to skip. [$PYNONYMIZER_SKIP_STEPS]")
 
     parser.add_argument("--stop-at",
-                        default=os.getenv("PYNONYMIZER_STOP_AT"), dest="stop_at_step",
+                        default=os.getenv("PYNONYMIZER_STOP_AT"), dest="stop_at_step", choices=ProcessSteps.names(), metavar="STEP",
                         help="Choose a step to stop at (inclusive). [$PYNONYMIZER_STOP_AT]")
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
