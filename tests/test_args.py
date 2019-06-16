@@ -62,11 +62,11 @@ def mock_getenv_new(name):
     elif name == "PYNONYMIZER_OUTPUT":
         return "ENV_OUTPUT"
     elif name == "PYNONYMIZER_START_AT":
-        return "START"
-    elif name == "PYNONYMIZER_SKIP_STEPS":
         return "ANONYMIZE_DB"
+    elif name == "PYNONYMIZER_SKIP_STEPS":
+        return "ANONYMIZE_DB DUMP_DB"
     elif name == "PYNONYMIZER_STOP_AT":
-        return "END"
+        return "ANONYMIZE_DB"
 
 
 def mock_getenv_old_new_combined(name):
@@ -112,9 +112,9 @@ def test_environmental_defaults():
     assert args.db_user       == "ENV_DB_USER"
     assert args.db_password   == "ENV_DB_PASSWORD"
     assert args.fake_locale   == "ENV_FAKE_LOCALE"
-    assert args.start_at_step == "START"
-    assert args.skip_steps    == ["ANONYMIZE_DB"]
-    assert args.stop_at_step  == "END"
+    assert args.start_at_step == "ANONYMIZE_DB"
+    assert args.skip_steps    == ["ANONYMIZE_DB", "DUMP_DB"]
+    assert args.stop_at_step  == "ANONYMIZE_DB"
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))

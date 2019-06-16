@@ -41,7 +41,7 @@ def create_parser():
 
     parser.add_argument("--db-type", "-t",
                         default=os.getenv("PYNONYMIZER_DB_TYPE") or os.getenv("DB_TYPE"),
-                        help="Type of database to interact with. More databases will be supposed in future versions. default: mysql [$PYNONYMIZER_DB_TYPE]")
+                        help="Type of database to interact with. More databases will be supported in future versions. default: mysql [$PYNONYMIZER_DB_TYPE]")
 
     parser.add_argument("--db-host", "-d",
                         default=os.getenv("PYNONYMIZER_DB_HOST") or os.getenv("DB_HOST"),
