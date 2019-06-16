@@ -94,7 +94,7 @@ optional arguments:
                         [file.sql, file.sql.gz] [$PYNONYMIZER_OUTPUT]
   --db-type DB_TYPE, -t DB_TYPE
                         Type of database to interact with. More databases will
-                        be supposed in future versions. default: mysql
+                        be supported in future versions. default: mysql
                         [$PYNONYMIZER_DB_TYPE]
   --db-host DB_HOST, -d DB_HOST
                         Database hostname or IP address.
@@ -122,6 +122,7 @@ optional arguments:
   --stop-at STEP        Choose a step to stop at (inclusive).
                         [$PYNONYMIZER_STOP_AT]
   -v, --version         show program's version number and exit
+
 
 ```
 
