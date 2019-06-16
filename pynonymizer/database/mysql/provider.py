@@ -52,12 +52,16 @@ class MySqlProvider:
     def __estimate_dumpsize(self):
         """
         Makes a guess on the dump size using internal database metrics
-        :return:
+        :return: A value in bytes, or None (unknown)
         """
         statement = query_factory.get_dumpsize_estimate(self.db_name)
         process_output = self.__runner.get_single_result(statement)
 
-        return int(process_output) * self.__DUMPSIZE_ESTIMATE_INFLATION
+        try:
+            return int(process_output) * self.__DUMPSIZE_ESTIMATE_INFLATION
+        except ValueError:
+            # Value unparsable, likely NULL
+            return None
 
     def __read_until_empty_byte(self, data):
         return iter(lambda: data.read(self.__CHUNK_SIZE), b'')
