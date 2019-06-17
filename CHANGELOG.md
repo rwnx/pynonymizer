@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.3.0] 2019-06-17
 - Fixed some minor spelling errors in the help text.
 - Fixed an issue where dumping an empty database(unlikely, but still possible) could cause an unhandled exception.
 - Changed the way mysql provider handles execution so CalledProcessErrors no longer expose all command parameters by default.
