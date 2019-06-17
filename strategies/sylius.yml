@@ -1,0 +1,33 @@
+tables:
+  sylius_address:
+    columns:
+      postcode: postcode
+      last_name: lastname
+      street: street
+      city: city
+      first_name: firstname
+      phone_number: phone
+      company: company
+
+  sylius_payment: truncate
+
+  sylius_order:
+    columns:
+      email: email
+
+  sylius_user:
+    columns:
+      username: email
+      username_canonical: email
+      email: email
+      email_canonical: email
+      salt: quote
+      first_name: firstname
+      last_name: lastname
+      confirmation_token: empty
+
+  ext_log_entries: truncate
+
+  syluis_credit_card: truncate
+
+  syluis_payment_security_token: truncate
