@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from pynonymizer.database.exceptions import UnsupportedColumnStrategyError
-from pynonymizer.strategy.update_column import ColumnStrategyTypes
+from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 """
 All Static query generation functions
 """
@@ -10,13 +10,13 @@ def _get_column_subquery(seed_table_name, column_name, column_strategy):
     # For preservation of unique values across versions of mysql, and this bug:
     # https://bugs.mysql.com/bug.php?id=89474, use md5 based rand subqueries
 
-    if column_strategy.strategy_type == ColumnStrategyTypes.EMPTY:
+    if column_strategy.strategy_type == UpdateColumnStrategyTypes.EMPTY:
         return "('')"
-    elif column_strategy.strategy_type == ColumnStrategyTypes.UNIQUE_EMAIL:
+    elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
         return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') )"
-    elif column_strategy.strategy_type == ColumnStrategyTypes.UNIQUE_LOGIN:
+    elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
         return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )"
-    elif column_strategy.strategy_type == ColumnStrategyTypes.FAKE_UPDATE:
+    elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
         return f"( SELECT `{column_strategy.fake_column.column_name}` FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
     else:
         raise UnsupportedColumnStrategyError(column_strategy)

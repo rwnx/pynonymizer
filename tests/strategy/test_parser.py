@@ -5,6 +5,7 @@ from pynonymizer.fake import UnsupportedFakeTypeError
 from pynonymizer.strategy import parser, database, table, update_column
 from pynonymizer.strategy.exceptions import UnknownTableStrategyError, UnknownColumnStrategyError
 from pynonymizer.strategy.table import TableStrategyTypes
+from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 import pytest
 
 
@@ -128,6 +129,86 @@ class ConfigParsingTests(unittest.TestCase):
                     "SELECT `after` from `students`;",
                     "SELECT `after_2` from `example`;"
                 ]
+
+    def test_verbose_table_truncate(self):
+        strategy = self.strategy_parser.parse_config({
+            "tables": {
+                "table1": {
+                    "type": "truncate",
+                    # parser should ignore keys from other types when type is specified
+                    "columns": {}
+                }
+            }
+        })
+
+        assert strategy.table_strategies["table1"].strategy_type == TableStrategyTypes.TRUNCATE
+
+    def test_verbose_table_update_columns(self):
+        strategy = self.strategy_parser.parse_config({
+            "tables": {
+                "table1": {
+                    "type": "update_columns",
+                    "columns": {
+                    }
+                }
+            }
+        })
+
+        assert strategy.table_strategies["table1"].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
+
+    def test_verbose_table_update_columns_verbose(self):
+        strategy = self.strategy_parser.parse_config({
+            "tables": {
+                "table1": {
+                    "type": "update_columns",
+                    "columns": {
+                        "column1": {
+                            "type": "empty",
+                            # should ignore keys when specifying type
+                            "fake_type": "email"
+                        },
+                    }
+                }
+            }
+        })
+
+        assert strategy.table_strategies["table1"].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
+        assert strategy.table_strategies["table1"].column_strategies["column1"].strategy_type == UpdateColumnStrategyTypes.EMPTY
+
+    def test_verbose_table_update_columns_where(self):
+        strategy = self.strategy_parser.parse_config({
+            "tables": {
+                "table1": {
+                    "type": "update_columns",
+                    "columns": {
+                        "column1": {
+                            "type": "empty",
+                            "where": "condition = 'value1'"
+                        },
+                        "column2": {
+                            "type": "fake_update",
+                            "fake_type": "email",
+                            "where": "condition = 'value2'"
+                        },
+                        "column3": {
+                            "type": "unique_login",
+                            "where": "condition = 'value3'"
+                        },
+                        "column4": {
+                            "type": "unique_email",
+                            "where": "condition = 'value4'"
+                        },
+                    }
+                }
+            }
+        })
+
+        assert strategy.table_strategies["table1"].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
+
+        assert strategy.table_strategies["table1"].column_strategies["column1"].strategy_type == UpdateColumnStrategyTypes.EMPTY
+        assert strategy.table_strategies["table1"].column_strategies["column2"].strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+        assert strategy.table_strategies["table1"].column_strategies["column3"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN
+        assert strategy.table_strategies["table1"].column_strategies["column4"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
 
 
 

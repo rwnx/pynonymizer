@@ -4,11 +4,11 @@ import pytest
 
 from pynonymizer.database.exceptions import UnsupportedColumnStrategyError
 from pynonymizer.fake import FakeColumn
-from pynonymizer.strategy.update_column import ColumnStrategyTypes, FakeUpdateColumnStrategy
+from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes, FakeUpdateColumnStrategy
 import pynonymizer.database.mysql.query_factory as query_factory
 
 """
-These tests are brittle and based on the actual SQL generated. 
+These tests are brittle and based on the actual SQL generatedColumnStrategyTypes. 
 The sentiment is to test the 'meaning' of the SQL, rather than the actual formatting, so it may be prudent to replace
 these tests with some form of parsing or pattern matching. 
 
@@ -47,12 +47,12 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
 
         self.fake_columns = [self.fake_column1, self.fake_column2]
 
-        self.test_fake_strategy = Mock(spec=FakeUpdateColumnStrategy, strategy_type=ColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column1)
-        self.test_fake_strategy2 = Mock(spec=FakeUpdateColumnStrategy, strategy_type=ColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column2)
+        self.test_fake_strategy = Mock(spec=FakeUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column1)
+        self.test_fake_strategy2 = Mock(spec=FakeUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column2)
 
-        self.empty_strategy = Mock(strategy_type=ColumnStrategyTypes.EMPTY)
-        self.ulogin_strategy = Mock(strategy_type=ColumnStrategyTypes.UNIQUE_LOGIN)
-        self.uemail_strategy = Mock(strategy_type=ColumnStrategyTypes.UNIQUE_EMAIL)
+        self.empty_strategy = Mock(strategy_type=UpdateColumnStrategyTypes.EMPTY)
+        self.ulogin_strategy = Mock(strategy_type=UpdateColumnStrategyTypes.UNIQUE_LOGIN)
+        self.uemail_strategy = Mock(strategy_type=UpdateColumnStrategyTypes.UNIQUE_EMAIL)
 
         self.test_column_strategies = {
             "test_column1": self.test_fake_strategy,
