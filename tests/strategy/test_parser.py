@@ -25,24 +25,6 @@ class ConfigParsingTests(unittest.TestCase):
         }
     }
 
-    invalid_table_strategy_config = {
-        "tables": {
-            "accounts": "cheesecake"
-        }
-    }
-
-    invalid_column_strategy_config = {
-        "tables": {
-            "accounts": {
-                "columns": {
-                    "current_sign_in_ip": 45346  # Not a valid strategy
-                }
-            },
-
-            "transactions": "truncate"
-        }
-    }
-
     def setUp(self):
         self.fake_column_set = Mock()
         self.strategy_parser = parser.StrategyParser(self.fake_column_set)
@@ -51,16 +33,15 @@ class ConfigParsingTests(unittest.TestCase):
         strategy = self.strategy_parser.parse_config(self.valid_config)
         assert isinstance(strategy, database.DatabaseStrategy)
 
-        assert isinstance(strategy.table_strategies["accounts"], table.UpdateColumnsTableStrategy)
-        assert isinstance(strategy.table_strategies["transactions"], table.TruncateTableStrategy)
+        assert strategy.table_strategies["accounts"].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
+        assert strategy.table_strategies["transactions"].strategy_type == TableStrategyTypes.TRUNCATE
 
         accounts_strategy = strategy.table_strategies["accounts"]
-        assert isinstance(accounts_strategy.column_strategies["current_sign_in_ip"], update_column.FakeUpdateColumnStrategy)
-        self.fake_column_set.get_fake_column.assert_called_once_with("ipv4_public")
+        assert accounts_strategy.column_strategies["current_sign_in_ip"].strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
 
-        assert isinstance(accounts_strategy.column_strategies["username"], update_column.UniqueLoginUpdateColumnStrategy)
-        assert isinstance(accounts_strategy.column_strategies["email"], update_column.UniqueEmailUpdateColumnStrategy)
-        assert isinstance(accounts_strategy.column_strategies["name"], update_column.EmptyUpdateColumnStrategy)
+        assert accounts_strategy.column_strategies["username"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN
+        assert accounts_strategy.column_strategies["email"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
+        assert accounts_strategy.column_strategies["name"].strategy_type == UpdateColumnStrategyTypes.EMPTY
 
     def test_unsupported_fake_column_type(self):
         """
@@ -72,11 +53,27 @@ class ConfigParsingTests(unittest.TestCase):
 
     def test_invalid_table_strategy_parse(self):
         with pytest.raises(UnknownTableStrategyError):
-            self.strategy_parser.parse_config(self.invalid_table_strategy_config)
+            self.strategy_parser.parse_config({
+                "tables": {
+                    "accounts": "cheesecake"
+                }
+            })
 
     def test_unknown_column_strategy(self):
         with pytest.raises(UnknownColumnStrategyError):
-            self.strategy_parser.parse_config(self.invalid_column_strategy_config)
+            self.strategy_parser.parse_config({
+                "tables": {
+                    "accounts": {
+                        "columns": {
+                            "current_sign_in_ip": {
+                                "type": "cheese"  # Not a valid strategy
+                            }
+                        }
+                    },
+
+                    "transactions": "truncate"
+                }
+            })
 
     def test_unknown_table_strategy_bad_dict(self):
         with pytest.raises(UnknownTableStrategyError):
@@ -90,14 +87,6 @@ class ConfigParsingTests(unittest.TestCase):
                             "name": "empty",
                         }
                     },
-                }
-            })
-
-    def test_unknown_table_strategy_unknown_notation(self):
-        with pytest.raises(UnknownTableStrategyError):
-            self.strategy_parser.parse_config({
-                "tables": {
-                    "transactions": 5654654
                 }
             })
 
@@ -164,8 +153,18 @@ class ConfigParsingTests(unittest.TestCase):
                     "columns": {
                         "column1": {
                             "type": "empty",
-                            # should ignore keys when specifying type
-                            "fake_type": "email"
+                            "where": "condition = 'value1'",
+                            "fake_type": "email"  # unrelated key, should be ignored
+                        },
+                        "column2": {
+                            "type": "fake_update",
+                            "fake_type": "email",
+                        },
+                        "column3": {
+                            "type": "unique_login",
+                        },
+                        "column4": {
+                            "type": "unique_email",
                         },
                     }
                 }
@@ -173,9 +172,14 @@ class ConfigParsingTests(unittest.TestCase):
         })
 
         assert strategy.table_strategies["table1"].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
-        assert strategy.table_strategies["table1"].column_strategies["column1"].strategy_type == UpdateColumnStrategyTypes.EMPTY
 
-    def test_verbose_table_update_columns_where(self):
+        assert strategy.table_strategies["table1"].column_strategies["column1"].strategy_type == UpdateColumnStrategyTypes.EMPTY
+        assert strategy.table_strategies["table1"].column_strategies["column2"].strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+        assert strategy.table_strategies["table1"].column_strategies["column2"].fake_type == "email"
+        assert strategy.table_strategies["table1"].column_strategies["column3"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN
+        assert strategy.table_strategies["table1"].column_strategies["column4"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
+
+    def test_verbose_table_all_update_columns_where(self):
         strategy = self.strategy_parser.parse_config({
             "tables": {
                 "table1": {
@@ -206,9 +210,16 @@ class ConfigParsingTests(unittest.TestCase):
         assert strategy.table_strategies["table1"].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
 
         assert strategy.table_strategies["table1"].column_strategies["column1"].strategy_type == UpdateColumnStrategyTypes.EMPTY
+        assert strategy.table_strategies["table1"].column_strategies["column1"].where_condition == "condition = 'value1'"
+
         assert strategy.table_strategies["table1"].column_strategies["column2"].strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+        assert strategy.table_strategies["table1"].column_strategies["column2"].where_condition == "condition = 'value2'"
+
         assert strategy.table_strategies["table1"].column_strategies["column3"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN
+        assert strategy.table_strategies["table1"].column_strategies["column3"].where_condition == "condition = 'value3'"
+
         assert strategy.table_strategies["table1"].column_strategies["column4"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
+        assert strategy.table_strategies["table1"].column_strategies["column4"].where_condition == "condition = 'value4"
 
 
 

@@ -5,6 +5,13 @@ class TableStrategyTypes(Enum):
     TRUNCATE = "TRUNCATE"
     UPDATE_COLUMNS = "UPDATE_COLUMNS"
 
+    @staticmethod
+    def from_value(string):
+        try:
+            return TableStrategyTypes(string.upper())
+        except ValueError:
+            return None
+
 
 # boilerplate abstract class for future use
 class TableStrategy():
