@@ -219,7 +219,7 @@ class ConfigParsingTests(unittest.TestCase):
         assert strategy.table_strategies["table1"].column_strategies["column3"].where_condition == "condition = 'value3'"
 
         assert strategy.table_strategies["table1"].column_strategies["column4"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
-        assert strategy.table_strategies["table1"].column_strategies["column4"].where_condition == "condition = 'value4"
+        assert strategy.table_strategies["table1"].column_strategies["column4"].where_condition == "condition = 'value4'"
 
 
 

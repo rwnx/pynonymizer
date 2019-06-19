@@ -54,7 +54,18 @@ class CmdTests(unittest.TestCase):
         cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
         execute_result = cmd_runner.execute("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-u", "db_user", "-pdb_password", "--execute", "SELECT `column` from `table`;"])
+        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-u", "db_user", "-pdb_password", "--execute",
+                                         "SELECT `column` from `table`;"])
+
+    def test_execute_list(self, check_output, popen):
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        execute_result = cmd_runner.execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
+
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-u", "db_user", "-pdb_password", "--execute",
+                                         "SELECT `column` from `table`;"])
+
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-u", "db_user", "-pdb_password", "--execute",
+                                         "SELECT `column2` from `table2`;"])
 
     def test_db_execute(self, check_output, popen):
         """
@@ -64,6 +75,15 @@ class CmdTests(unittest.TestCase):
         execute_result = cmd_runner.db_execute("SELECT `column` from `table`;")
 
         check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-u", "db_user", "-pdb_password", "db_name", "--execute", "SELECT `column` from `table`;"])
+
+    def test_db_execute_list(self, check_output, popen):
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        execute_result = cmd_runner.db_execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
+
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-u", "db_user", "-pdb_password", "db_name", "--execute",
+                                      "SELECT `column` from `table`;"])
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-u", "db_user", "-pdb_password", "db_name", "--execute",
+                                      "SELECT `column2` from `table2`;"])
 
     def test_get_single_result(self, check_output, popen):
         """

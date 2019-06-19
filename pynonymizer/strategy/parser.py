@@ -68,18 +68,23 @@ class StrategyParser:
         column_config = StrategyParser.__normalize_column_config(column_config)
 
         update_column_type = UpdateColumnStrategyTypes.from_value(column_config["type"])
+        where_condition = None
+        try:
+            where_condition = column_config["where"]
+        except KeyError:
+            pass
 
         if update_column_type == UpdateColumnStrategyTypes.EMPTY:
-            return EmptyUpdateColumnStrategy()
+            return EmptyUpdateColumnStrategy(where_condition=where_condition)
 
         elif update_column_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
-            return UniqueLoginUpdateColumnStrategy()
+            return UniqueLoginUpdateColumnStrategy(where_condition=where_condition)
 
         elif update_column_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
-            return UniqueEmailUpdateColumnStrategy()
+            return UniqueEmailUpdateColumnStrategy(where_condition=where_condition)
 
         elif update_column_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-            return FakeUpdateColumnStrategy(self.fake_seeder, column_config["fake_type"])
+            return FakeUpdateColumnStrategy(self.fake_seeder, column_config["fake_type"], where_condition=where_condition)
         else:
             raise UnknownColumnStrategyError(column_config)
 

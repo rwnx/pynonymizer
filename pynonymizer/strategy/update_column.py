@@ -9,6 +9,9 @@ class UpdateColumnStrategyTypes(Enum):
 
     @staticmethod
     def from_value(string):
+        """
+        a method to get an enum value from it's case-insensitive value.
+        """
         try:
             return UpdateColumnStrategyTypes(string.upper())
         except ValueError:
@@ -17,7 +20,8 @@ class UpdateColumnStrategyTypes(Enum):
 
 # boilerplate abstract class for future use
 class UpdateColumnStrategy:
-    pass
+    def __init__(self, where_condition=None):
+        self.where_condition = where_condition
 
 
 class EmptyUpdateColumnStrategy(UpdateColumnStrategy):
@@ -35,6 +39,7 @@ class UniqueEmailUpdateColumnStrategy(UpdateColumnStrategy):
 class FakeUpdateColumnStrategy(UpdateColumnStrategy):
     strategy_type = UpdateColumnStrategyTypes.FAKE_UPDATE
 
-    def __init__(self, fake_seeder, fake_type):
+    def __init__(self, fake_seeder, fake_type, where_condition=None):
+        super().__init__(where_condition)
         self.fake_type = fake_type
         self.fake_column = fake_seeder.get_fake_column(fake_type)
