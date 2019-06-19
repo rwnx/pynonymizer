@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added "verbose-style" strategy format to complement original shorthand autodetection.
+- Added `where` option for where-clause support on all update_column strategies. Columns with a matching where option are grouped together for execution.
 - Added Stock strategies for sylius and wordpress 4.4 in the main repository. 
 
 ## [1.3.0] 2019-06-17
