@@ -8,4 +8,4 @@ class RawInput:
         return os.path.getsize(self.filename)
 
     def open(self):
-        return open(self.filename)
+        return open(self.filename, "rb")

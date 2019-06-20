@@ -66,7 +66,8 @@ class FakeColumnSet:
             FakeColumn(self.faker, "past_date", "DATE"),
             FakeColumn(self.faker, "future_datetime", "DATETIME"),
             FakeColumn(self.faker, "past_datetime", "DATETIME"),
-            FakeColumn(self.faker, "date", "DATE")
+            FakeColumn(self.faker, "date", "DATE"),
+            FakeColumn(self.faker, "user_agent", "VARCHAR(300)")
         ])
 
     def get_fake_column(self, fake_type):

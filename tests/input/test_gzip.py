@@ -9,7 +9,7 @@ def test_gzip_open():
         gz = GzipInput("testfile.gz")
         open_result = gz.open()
 
-        mock_file.assert_called_with("testfile.gz")
+        mock_file.assert_called_with("testfile.gz", "rb")
         assert open_result == mock_file.return_value
 
 
