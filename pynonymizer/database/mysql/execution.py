@@ -45,17 +45,29 @@ class MySqlCmdRunner:
     def __get_base_params(self):
         return ["mysql", "-h", self.db_host, "-u", self.db_user, f"-p{self.db_pass}"]
 
-    def execute(self, statement):
-        try:
-            return subprocess.check_output(self.__get_base_params() + ["--execute", statement])
-        except subprocess.CalledProcessError as error:
-            self.__mask_subprocess_error(error)
+    def execute(self, statements):
+        if not isinstance(statements, list):
+            statements = [statements]
 
-    def db_execute(self, statement):
-        try:
-            return subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement])
-        except subprocess.CalledProcessError as error:
-            self.__mask_subprocess_error(error)
+        for statement in statements:
+            try:
+                subprocess.check_output(self.__get_base_params() + ["--execute", statement])
+            except subprocess.CalledProcessError as error:
+                self.__mask_subprocess_error(error)
+
+        return True
+
+    def db_execute(self, statements):
+        if not isinstance(statements, list):
+            statements = [statements]
+
+        for statement in statements:
+            try:
+                subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement])
+            except subprocess.CalledProcessError as error:
+                self.__mask_subprocess_error(error)
+
+        return True
 
     def get_single_result(self, statement):
         try:

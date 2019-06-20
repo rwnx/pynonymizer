@@ -16,7 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added "verbose-style" strategy format to complement original shorthand autodetection.
+- Added `where` option for where-clause support on all update_column strategies. Columns with a matching where option are grouped together for execution.
 - Added Stock strategies for sylius and wordpress 4.4 in the main repository. 
+- Added column strategy: `literal` for setting literal values e.g. `RAND()`, `'A String'`
+- Changed parsing for mapping column strategy keys to classes: Parser no longer ignored unused keys
+
 
 ## [1.3.0] 2019-06-17
 - Fixed some minor spelling errors in the help text.

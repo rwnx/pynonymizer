@@ -18,4 +18,4 @@ class GzipInput:
             return struct.unpack('<I', size)[0]
 
     def open(self):
-        return gzip.open(self.filename)
+        return gzip.open(self.filename, "rb")

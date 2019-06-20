@@ -8,7 +8,7 @@ tables:
       user_pass: empty
       user_nicename: user_name
       user_email: email
-      user_url: url
+      user_url: uri
       display_name: name
       user_activation_key: empty
   wp_comments:
