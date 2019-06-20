@@ -1,12 +1,18 @@
-from pynonymizer.strategy.exceptions import UnknownColumnStrategyError, UnknownTableStrategyError
+from pynonymizer.strategy.exceptions import UnknownColumnStrategyError, UnknownTableStrategyError, ConfigSyntaxError
 from pynonymizer.log import get_logger
 from pynonymizer.strategy.table import UpdateColumnsTableStrategy, TruncateTableStrategy, TableStrategyTypes
-from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes, EmptyUpdateColumnStrategy, UniqueEmailUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, FakeUpdateColumnStrategy
+from pynonymizer.strategy.update_column import (
+    UpdateColumnStrategyTypes,
+    EmptyUpdateColumnStrategy,
+    UniqueEmailUpdateColumnStrategy,
+    UniqueLoginUpdateColumnStrategy,
+    FakeUpdateColumnStrategy,
+    LiteralUpdateColumnStrategy
+)
 from pynonymizer.strategy.database import DatabaseStrategy
-from enum import Enum
+from copy import deepcopy
 
 logger = get_logger(__name__)
-
 
 
 class StrategyParser:
@@ -64,32 +70,33 @@ class StrategyParser:
         else:
             return column_config
 
-    def __parse_update_column(self, column_config):
-        column_config = StrategyParser.__normalize_column_config(column_config)
+    def __parse_update_column(self, raw_column_config):
+        column_config = StrategyParser.__normalize_column_config(raw_column_config)
 
-        update_column_type = UpdateColumnStrategyTypes.from_value(column_config["type"])
-        where_condition = None
+        update_column_type = UpdateColumnStrategyTypes.from_value(column_config.pop("type"))
         try:
-            where_condition = column_config["where"]
-        except KeyError:
-            pass
+            if update_column_type == UpdateColumnStrategyTypes.EMPTY:
+                return EmptyUpdateColumnStrategy(**column_config)
 
-        if update_column_type == UpdateColumnStrategyTypes.EMPTY:
-            return EmptyUpdateColumnStrategy(where_condition=where_condition)
+            elif update_column_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
+                return UniqueLoginUpdateColumnStrategy(**column_config)
 
-        elif update_column_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
-            return UniqueLoginUpdateColumnStrategy(where_condition=where_condition)
+            elif update_column_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
+                return UniqueEmailUpdateColumnStrategy(**column_config)
 
-        elif update_column_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
-            return UniqueEmailUpdateColumnStrategy(where_condition=where_condition)
+            elif update_column_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
+                return FakeUpdateColumnStrategy(self.fake_seeder, **column_config)
 
-        elif update_column_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-            return FakeUpdateColumnStrategy(self.fake_seeder, column_config["fake_type"], where_condition=where_condition)
-        else:
-            raise UnknownColumnStrategyError(column_config)
+            elif update_column_type == UpdateColumnStrategyTypes.LITERAL:
+                return LiteralUpdateColumnStrategy(**column_config)
+
+            else:
+                raise UnknownColumnStrategyError(column_config)
+        except TypeError as error:
+            # TypeError can be thrown when the dict args dont match the constructors for the types. We need to re-throw
+            raise ConfigSyntaxError()
 
     def __parse_update_column_map(self,  column_map):
-
         parsed_columns = {}
         for name, column_config in column_map.items():
             parsed_columns[name] = self.__parse_update_column(column_config)
@@ -110,7 +117,14 @@ class StrategyParser:
         else:
             raise UnknownTableStrategyError(table_config)
 
-    def parse_config(self, config):
+    def parse_config(self, raw_config):
+        """
+        parse a configuration dict into a DatabaseStrategy.
+        :param raw_config:
+        :return:
+        """
+        # Deepcopy raw_config to avoid mutability issues
+        config = deepcopy(raw_config)
         table_strategies = {}
         for table_name, table_config in config["tables"].items():
             table_strategies[table_name] = self.__parse_table(table_config)

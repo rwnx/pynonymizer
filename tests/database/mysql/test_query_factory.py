@@ -9,7 +9,8 @@ from pynonymizer.strategy.update_column import (
     FakeUpdateColumnStrategy,
     EmptyUpdateColumnStrategy,
     UniqueLoginUpdateColumnStrategy,
-    UniqueEmailUpdateColumnStrategy
+    UniqueEmailUpdateColumnStrategy,
+    LiteralUpdateColumnStrategy
 )
 import pynonymizer.database.mysql.query_factory as query_factory
 
@@ -60,12 +61,15 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
         self.ulogin_strategy = Mock(spec=UniqueLoginUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.UNIQUE_LOGIN, where_condition=None)
         self.uemail_strategy = Mock(spec=UniqueEmailUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.UNIQUE_EMAIL, where_condition=None)
 
+        self.literal_strategy = Mock(spec=LiteralUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.LITERAL, where_condition=None, value="RAND()")
+
         self.test_column_strategies = {
             "test_column1": self.test_fake_strategy,
             "test_column2": self.test_fake_strategy2,
             "test_column3": self.empty_strategy,
             "test_column4": self.ulogin_strategy,
-            "test_column5": self.uemail_strategy
+            "test_column5": self.uemail_strategy,
+            "test_column6": self.literal_strategy
         }
 
     def test_get_insert_seed_row(self):
@@ -94,23 +98,18 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
             })
 
     def test_get_update_table_fake_column(self):
-        assert ["UPDATE `anon_table` SET " \
-            "`test_column1` = ( SELECT `test_fake_column_name` FROM `seed_table` ORDER BY RAND() LIMIT 1)," \
-            "`test_column2` = ( SELECT `test_fake_column_name2` FROM `seed_table` ORDER BY RAND() LIMIT 1)," \
-            "`test_column3` = ('')," \
-            "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )," \
-            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') );"] == \
+        assert [
+            "UPDATE `anon_table` SET "
+            "`test_column1` = ( SELECT `test_fake_column_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+            "`test_column2` = ( SELECT `test_fake_column_name2` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+            "`test_column3` = (''),"
+            "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) ),"
+            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"
+            "`test_column6` = RAND();"
+                ] == \
             query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
 
     def test_get_update_table_fake_column_where(self):
-        self.test_column_strategies = {
-            "test_column1": self.test_fake_strategy,
-            "test_column2": self.test_fake_strategy2,
-            "test_column3": self.empty_strategy,
-            "test_column4": self.ulogin_strategy,
-            "test_column5": self.uemail_strategy
-        }
-
         self.test_fake_strategy.where_condition = "cheese = 'gouda'"
         self.ulogin_strategy.where_condition = "marbles > 50"
         result_queries = query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
@@ -127,7 +126,8 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
         nowhere_query = "UPDATE `anon_table` SET "\
             "`test_column2` = ( SELECT `test_fake_column_name2` FROM `seed_table` ORDER BY RAND() LIMIT 1),"\
             "`test_column3` = (''),"\
-            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') );"
+            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') )," \
+                        "`test_column6` = RAND();"
 
         print(result_queries)
 
@@ -135,3 +135,13 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
         assert where_query2 in result_queries
         assert nowhere_query in result_queries
         assert len(result_queries) == 3
+
+    def test_get_update_table_literal(self):
+
+        result_queries = query_factory.get_update_table("seed_table", "anon_table", {
+            "literal_column": self.literal_strategy
+        })
+
+        assert result_queries == [
+            "UPDATE `anon_table` SET `literal_column` = RAND();"
+        ]

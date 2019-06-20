@@ -18,6 +18,8 @@ def _get_column_subquery(seed_table_name, column_name, column_strategy):
         return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
         return f"( SELECT `{column_strategy.fake_column.column_name}` FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
+    elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
+        return column_strategy.value
     else:
         raise UnsupportedColumnStrategyError(column_strategy)
 

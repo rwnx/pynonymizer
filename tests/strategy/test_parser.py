@@ -3,9 +3,10 @@ from unittest.mock import Mock
 
 from pynonymizer.fake import UnsupportedFakeTypeError
 from pynonymizer.strategy import parser, database, table, update_column
-from pynonymizer.strategy.exceptions import UnknownTableStrategyError, UnknownColumnStrategyError
+from pynonymizer.strategy.exceptions import UnknownTableStrategyError, UnknownColumnStrategyError, ConfigSyntaxError
 from pynonymizer.strategy.table import TableStrategyTypes
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
+import copy
 import pytest
 
 
@@ -28,6 +29,12 @@ class ConfigParsingTests(unittest.TestCase):
     def setUp(self):
         self.fake_column_set = Mock()
         self.strategy_parser = parser.StrategyParser(self.fake_column_set)
+
+    def test_valid_parse_no_mutate(self):
+        old_valid_config = copy.deepcopy(self.valid_config)
+        strategy = self.strategy_parser.parse_config(self.valid_config)
+
+        assert self.valid_config == old_valid_config
 
     def test_valid_parse(self):
         strategy = self.strategy_parser.parse_config(self.valid_config)
@@ -145,6 +152,23 @@ class ConfigParsingTests(unittest.TestCase):
 
         assert strategy.table_strategies["table1"].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
 
+    def test_table_raises_when_given_unrelated_key(self):
+        with pytest.raises(ConfigSyntaxError):
+            strategy = self.strategy_parser.parse_config({
+                "tables": {
+                    "table1": {
+                        "type": "update_columns",
+                        "columns": {
+                            "column1": {
+                                "type": "empty",
+                                "where": "condition = 'value1'",
+                                "fake_type": "email"
+                            },
+                        }
+                    }
+                }
+            })
+
     def test_verbose_table_update_columns_verbose(self):
         strategy = self.strategy_parser.parse_config({
             "tables": {
@@ -154,7 +178,6 @@ class ConfigParsingTests(unittest.TestCase):
                         "column1": {
                             "type": "empty",
                             "where": "condition = 'value1'",
-                            "fake_type": "email"  # unrelated key, should be ignored
                         },
                         "column2": {
                             "type": "fake_update",
@@ -166,6 +189,10 @@ class ConfigParsingTests(unittest.TestCase):
                         "column4": {
                             "type": "unique_email",
                         },
+                        "column5": {
+                            "type": "literal",
+                            "value": "RAND()"
+                        }
                     }
                 }
             }
@@ -178,6 +205,8 @@ class ConfigParsingTests(unittest.TestCase):
         assert strategy.table_strategies["table1"].column_strategies["column2"].fake_type == "email"
         assert strategy.table_strategies["table1"].column_strategies["column3"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN
         assert strategy.table_strategies["table1"].column_strategies["column4"].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
+        assert strategy.table_strategies["table1"].column_strategies["column5"].strategy_type == UpdateColumnStrategyTypes.LITERAL
+        assert strategy.table_strategies["table1"].column_strategies["column5"].value == "RAND()"
 
     def test_verbose_table_all_update_columns_where(self):
         strategy = self.strategy_parser.parse_config({
