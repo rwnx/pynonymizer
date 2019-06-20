@@ -1,15 +1,14 @@
 # Strategyfiles 
 
-Strategyfiles are configurations containing the "What" and the "How" of the anonymization process *for a database*.
+Strategyfiles are YAML configurations containing the "What" and the "How" of the anonymization process *for a database*. 
 
-They say which tables to access, empty or update to transform the data into an anonymized state.
-
-strategyfiles are written in yaml.
+pynonymizer can parse a strategyfile into a `DatabaseStrategy`, which will be used as a set of instructions during an anonymization run.
 
 ```yaml
 tables:
   accounts:
     columns:
+      password: empty
       current_sign_in_ip: ipv4_public
       last_sign_in_ip: ipv4_public
       username: user_name
@@ -24,7 +23,7 @@ scripts:
     - DELETE FROM config where name = 'secret';
 ```
 
-## Philosophy
+# Philosophy
 Wherever there are multiple options for a key, such as a table or update_column strategy, the "verbose" syntax will be a dict, containing a `type` key that specifies the type of configuration.
 
 ```yaml
@@ -37,127 +36,106 @@ In certain circumstances, the `type` key can be determined automatically by the 
 
 When the `type` is automatically determined, this is called the "compact" syntax. 
 
-The compact syntax has significantly fewer options but allows you to build many common configurations quickly and easily. When you need to break out into the verbose form and use more advanced features, you can.
+The compact syntax has significantly fewer options but allows you to build many common configurations quickly and easily. 
 
+# Syntax
 
-## Syntax
+## Key: `tables`
+Tables is a top-level key, containing a subkey for each `table_name:table_strategy`pair.
 
-### Key: `tables`
-Tables is a top-level key, containing a subkey for each table_name-table_strategy pair.
-
-#### Table Strategy
 Each table has an individual strategy.
-
-##### Available Table Strategies
 * `truncate`
 * `update_columns`
 
-##### Table Strategy: `truncate`
-```yaml
-  table_name: 
-    type: truncate
-```
-
+### Table Strategy: `truncate`
 Wipe the entire table, preferably using a truncate statement.
-
-###### Compact Syntax
-`truncate` can be specified with the string `"truncate"`
-
-
-##### Table Strategy: `update_columns`
 ```yaml
-  table_name:
-    type: update_columns
-    columns:
-      column_name1: empty
-      column_name2: unique_login
-      column_name3: unique_email
-      column_name4: first_name
-      column_name5: last_name
+table_name: 
+  type: truncate
+    
+# Compact Syntax:
+table_name: truncate
 ```
-An Update Columns Strategy will modify the values of individual columns.
-
-Each column will need a column strategy to dictate how this will take place.
-
-##### Compact Syntax
-`update_columns` can be specified with a dict containing only the `columns` key. 
-
-##### Info
-Update each column in this table with a column update strategy.
-
-All update_column types support a `where` key, that can be used to add conditions to updates. This is a string containing the where predicate that will be appended to the query. 
-Update statements will be grouped on the content of the where key and executed together.
-
+### Table Strategy: `update_columns`
+Overwrite columns in the table with specific or randomized values. 
+```yaml
+table_name:
+  type: update_columns
+  columns:
+    column_name1: empty
+    #[...]
+  
+# Compact Syntax: `type` can be omitted if `columns` key is present
+table_name:
+  columns:
+    column_name1: empty
+    #[...]
+```
+#### `where`
 ```yaml
 column_name:
     type: empty
     where: username = 'barry'
-
 ```
+All update_column types support a `where` key, that can be used to add conditions to updates. This is only available in the verbose syntax, and must be a string of predicate(s) that will be appended to the query. Pynonymizer does not check syntax for sql, so you must ensure that what you've written works in your database's language.
 
+Update statements will be grouped on the content of the where key and executed together.
 
-###### Available Column Strategies
-* `empty`: Update column with a blank value
-* `unique_login`: Update column with a unique string
-* `unique_email`: Update column with a unique string which is a valid email
-* `fake_update`: Update column with a non-unique generated value
+#### Column Strategy: `empty`
+Replaces a column with an empty value (usually `''`)
 
-###### Column Strategy: `empty`
 ```yaml
 column_name: 
   type: empty
-```
-
-Replaces a column with an empty value (usually `''`)
-
-####### Compact Syntax
-Empty can be specified by supplying the string `"empty"` instead of the strategy dict.
-```yaml
+  
+# Compact Syntax:
 column_name: empty
 ```
 
-##### Column Strategy: `unique_login`
+#### Column Strategy: `unique_login`
+Replaces a column with a unique value that vaguely resembles a username.
+
 ```yaml
 column_name: 
   type: unique_login
-```
 
-Replaces a column with a unique value that vaguely resembles a username.
-
-####### Compact Syntax
-unique_login can be specified by supplying the string `"unique_login"` instead of the strategy dict.
-```yaml
+# Compact Syntax:
 column_name: unique_login
 ```
 
-###### Column Strategy: `unique_email`
+#### Column Strategy: `unique_email`
+Replace a column with a unique value that vaguely resembles an email address.
 ```yaml
 column_name: 
   type: unique_email
-```
 
-####### Compact Syntax
-unique_email can be specified by supplying the string `"unique_email"` instead of the strategy dict.
-```yaml
+# Compact Syntax:
 column_name: unique_email
 ```
 
-###### Column Strategy: `fake_update`
+#### Column Strategy: `literal`
+Replace a column with the value specified. 
+
+This will not perform escaping for your language, so you must ensure that it is correct and executable by your provider.
+```yaml
+column_name: 
+  type: literal
+  value: RAND()
+
+# Compact Syntax: Not available
+```
+
+##### Column Strategy: `fake_update`
+Replace a column with a value from a generated data pool (non-unique).
+
 ```yaml
 column_name: 
   type: fake_update
   fake_type: company_email
-```
-
-####### Compact Syntax
-fake_update can be specified by supply any supported faker method, excluding the keywords `empty`, `unique_login`, `unique_email`
-```yaml
+  
+# Compact Syntax: specify any supported faker method, excluding the keywords `empty`, `unique_login`, `unique_email`
 column_name: company_email
 ```
-
-####### Info
-Note that this value will not be unique, as it will be selected from a pool of generated data. This is to improve speed of updates.
-
 You can specify a fake update with any one of the following generators:
 
 The values themselves are generated from [Faker](https://faker.readthedocs.io/en/master/)
@@ -193,7 +171,7 @@ The aim is to support all of faker's methods, but at the moment, only a small se
 * date
 
 
-### Key: Scripts
+## Key: Scripts
 Scripts is a top-level key describing SQL statements to be run during the anonymization process. These scripts can also return results that will be entered into the logs.
 
 This might help you to do something specific that pynonymizer may not have a feature for (yet?), or to provider a report on something before you dump/drop/etc.
@@ -232,10 +210,8 @@ COUNT(1)
 [...]
 ```
 
-
-
-#### `before`
+### `before`
 Before takes place just before the anonymization starts, after any preparation by the database provider (e.g. seed table, etc)
 
-#### `after`
+### `after`
 After takes place directly after the anonymization. 
