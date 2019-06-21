@@ -73,16 +73,16 @@ def test_literal_where():
 
 
 def test_fake_update():
-    fake_seeder = Mock()
-    fake_update = FakeUpdateColumnStrategy(fake_seeder=fake_seeder, fake_type="company_email")
+    fake_column_generator = Mock()
+    fake_update = FakeUpdateColumnStrategy(fake_column_generator=fake_column_generator, fake_type="company_email")
 
     assert fake_update.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
     assert fake_update.fake_type == "company_email"
 
 
 def test_fake_update_where():
-    fake_seeder = Mock()
-    fake_update_where = FakeUpdateColumnStrategy(fake_seeder=fake_seeder, fake_type="company_email", where="chickens = 1")
+    fake_column_generator = Mock()
+    fake_update_where = FakeUpdateColumnStrategy(fake_column_generator=fake_column_generator, fake_type="company_email", where="chickens = 1")
 
     assert fake_update_where.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
     assert fake_update_where.fake_type == "company_email"

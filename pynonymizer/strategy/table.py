@@ -29,12 +29,9 @@ class UpdateColumnsTableStrategy(TableStrategy):
     def __init__(self, column_strategies):
         self.column_strategies = column_strategies
 
-    def get_fake_columns(self):
-        unique_fake_types = set()
+    def get_column_strategies(self):
+        column_strategies = {}
         for column_name, column_strategy in self.column_strategies.items():
-            try:
-                unique_fake_types.add(column_strategy.fake_column)
-            except AttributeError as error:
-                pass
+            column_strategies[column_name] = column_strategy
 
-        return unique_fake_types
+        return column_strategies

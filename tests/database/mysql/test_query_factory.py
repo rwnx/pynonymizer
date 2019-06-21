@@ -3,7 +3,6 @@ from unittest.mock import Mock
 import pytest
 
 from pynonymizer.database.exceptions import UnsupportedColumnStrategyError
-from pynonymizer.fake import FakeColumn
 from pynonymizer.strategy.update_column import (
     UpdateColumnStrategyTypes,
     FakeUpdateColumnStrategy,
@@ -49,8 +48,11 @@ def test_get_dumpsize_estimate():
 
 class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
     def setUp(self):
-        self.fake_column1 = Mock(spec=FakeColumn, column_name="test_fake_column_name", sql_type="VARCHAR(50)", get_value=Mock(return_value="test_value1"))
-        self.fake_column2 = Mock(spec=FakeColumn, column_name="test_fake_column_name2", sql_type="INT", get_value=Mock(return_value=654))
+
+        self.fake_column_generator = Mock()
+
+        self.fake_column1 = Mock(column_name="test_fake_column_name", sql_type="VARCHAR(50)", get_value=Mock(return_value="test_value1"))
+        self.fake_column2 = Mock(column_name="test_fake_column_name2", sql_type="INT", get_value=Mock(return_value=654))
 
         self.fake_columns = [self.fake_column1, self.fake_column2]
 
