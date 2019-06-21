@@ -27,7 +27,7 @@ def _get_column_subquery(seed_table_name, column_name, column_strategy):
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
         return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-        return f"( SELECT `{column_name}` FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
+        return f"( SELECT `{column_strategy.fake_type}` FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
@@ -53,7 +53,7 @@ def get_create_seed_table(table_name, fake_update_strats):
     if len(fake_update_strats) < 1:
         raise ValueError("Cannot create a seed table with no columns")
 
-    column_types = ",".join(map(lambda col: f"`{col[0]}` {_get_sql_type(col[1].get_data_type())}", fake_update_strats.items()))
+    column_types = ",".join(map(lambda col: f"`{col[1].fake_type}` {_get_sql_type(col[1].get_data_type())}", fake_update_strats.items()))
     return f"CREATE TABLE `{table_name}` ({column_types});"
 
 
@@ -62,7 +62,7 @@ def get_drop_seed_table(table_name):
 
 
 def get_insert_seed_row(table_name, fake_update_strats):
-    column_names = ",".join(map(lambda col: f"`{col[0]}`", fake_update_strats.items()))
+    column_names = ",".join(map(lambda col: f"`{col[1].fake_type}`", fake_update_strats.items()))
     column_values = ",".join(map(lambda col: _escape_sql_value(col[1].get_value()), fake_update_strats.items()))
 
     return f"INSERT INTO `{table_name}`({column_names}) VALUES ({column_values});"

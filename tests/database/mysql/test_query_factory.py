@@ -1,7 +1,9 @@
 import unittest
 from unittest.mock import Mock
 import pytest
-
+import re
+from tests.helpers import ComparableRegex
+from pynonymizer.fake import FakeDataType
 from pynonymizer.database.exceptions import UnsupportedColumnStrategyError
 from pynonymizer.strategy.update_column import (
     UpdateColumnStrategyTypes,
@@ -49,25 +51,28 @@ def test_get_dumpsize_estimate():
 class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
     def setUp(self):
 
-        self.fake_column_generator = Mock()
+        self.str_fake_column_generator = Mock(
+            get_data_type=Mock(return_value=FakeDataType.STRING),
+            get_value=Mock(return_value="test_value")
+        )
 
-        self.fake_column1 = Mock(column_name="test_fake_column_name", sql_type="VARCHAR(50)", get_value=Mock(return_value="test_value1"))
-        self.fake_column2 = Mock(column_name="test_fake_column_name2", sql_type="INT", get_value=Mock(return_value=654))
+        self.int_fake_column_generator = Mock(
+            get_data_type=Mock(return_value=FakeDataType.INT),
+            get_value=Mock(return_value=645)
+        )
 
-        self.fake_columns = [self.fake_column1, self.fake_column2]
 
-        self.test_fake_strategy = Mock(spec=FakeUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column1, where_condition=None)
-        self.test_fake_strategy2 = Mock(spec=FakeUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.FAKE_UPDATE, fake_column=self.fake_column2, where_condition=None)
+        self.fake_strategy1 = FakeUpdateColumnStrategy(self.str_fake_column_generator, "first_name")
+        self.fake_strategy2 = FakeUpdateColumnStrategy(self.int_fake_column_generator, "last_name")
+        self.empty_strategy = EmptyUpdateColumnStrategy()
+        self.ulogin_strategy = UniqueLoginUpdateColumnStrategy()
+        self.uemail_strategy = UniqueEmailUpdateColumnStrategy()
 
-        self.empty_strategy = Mock(spec=EmptyUpdateColumnStrategy ,strategy_type=UpdateColumnStrategyTypes.EMPTY, where_condition=None)
-        self.ulogin_strategy = Mock(spec=UniqueLoginUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.UNIQUE_LOGIN, where_condition=None)
-        self.uemail_strategy = Mock(spec=UniqueEmailUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.UNIQUE_EMAIL, where_condition=None)
-
-        self.literal_strategy = Mock(spec=LiteralUpdateColumnStrategy, strategy_type=UpdateColumnStrategyTypes.LITERAL, where_condition=None, value="RAND()")
+        self.literal_strategy = LiteralUpdateColumnStrategy(value="RAND()")
 
         self.test_column_strategies = {
-            "test_column1": self.test_fake_strategy,
-            "test_column2": self.test_fake_strategy2,
+            "test_column1": self.fake_strategy1,
+            "test_column2": self.fake_strategy2,
             "test_column3": self.empty_strategy,
             "test_column4": self.ulogin_strategy,
             "test_column5": self.uemail_strategy,
@@ -75,13 +80,19 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
         }
 
     def test_get_insert_seed_row(self):
-        assert "INSERT INTO `seed_table`(`test_fake_column_name`,`test_fake_column_name2`) " \
-            "VALUES ('test_value1',654);" == \
-             query_factory.get_insert_seed_row("seed_table", self.fake_columns)
+        insert_seed_row = query_factory.get_insert_seed_row("seed_table", {
+                "test_column1": self.fake_strategy1,
+                "test_column2": self.fake_strategy2,
+            })
+
+        assert insert_seed_row == "INSERT INTO `seed_table`(`first_name`,`last_name`) VALUES ('test_value',645);"
 
     def test_get_create_seed_table(self):
-        assert "CREATE TABLE `seed_table` (`test_fake_column_name` VARCHAR(50),`test_fake_column_name2` INT);" == \
-            query_factory.get_create_seed_table("seed_table", self.fake_columns)
+        assert "CREATE TABLE `seed_table` (`first_name` VARCHAR(4096),`last_name` INT);" == \
+            query_factory.get_create_seed_table("seed_table", {
+                "test_column1": self.fake_strategy1,
+                "test_column2": self.fake_strategy2,
+            })
 
     def test_get_create_seed_table_no_columns(self):
         """
@@ -100,25 +111,26 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
             })
 
     def test_get_update_table_fake_column(self):
+        update_table_all = query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
+
         assert [
-            "UPDATE `anon_table` SET "
-            "`test_column1` = ( SELECT `test_fake_column_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column2` = ( SELECT `test_fake_column_name2` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column3` = (''),"
-            "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) ),"
-            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"
-            "`test_column6` = RAND();"
-                ] == \
-            query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
+                "UPDATE `anon_table` SET "
+                "`test_column1` = ( SELECT `first_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+                "`test_column2` = ( SELECT `last_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+                "`test_column3` = (''),"
+                "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) ),"
+                "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"
+                "`test_column6` = RAND();"
+                ] == update_table_all
 
     def test_get_update_table_fake_column_where(self):
-        self.test_fake_strategy.where_condition = "cheese = 'gouda'"
+        self.fake_strategy1.where_condition = "cheese = 'gouda'"
         self.ulogin_strategy.where_condition = "marbles > 50"
         result_queries = query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
 
         # should return 3 grouped queries in list
         where_query1 = "UPDATE `anon_table` SET "\
-            "`test_column1` = ( SELECT `test_fake_column_name` FROM `seed_table` ORDER BY RAND() LIMIT 1) "\
+            "`test_column1` = ( SELECT `first_name` FROM `seed_table` ORDER BY RAND() LIMIT 1) "\
             "WHERE cheese = 'gouda';"
 
         where_query2 = "UPDATE `anon_table` SET "\
@@ -126,7 +138,7 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
             "WHERE marbles > 50;"
 
         nowhere_query = "UPDATE `anon_table` SET "\
-            "`test_column2` = ( SELECT `test_fake_column_name2` FROM `seed_table` ORDER BY RAND() LIMIT 1),"\
+            "`test_column2` = ( SELECT `last_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"\
             "`test_column3` = (''),"\
             "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') )," \
                         "`test_column6` = RAND();"

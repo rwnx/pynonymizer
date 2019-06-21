@@ -138,7 +138,7 @@ def test_sysexit_on_database_connection_error():
 @patch("dotenv.load_dotenv", Mock())
 @patch("yaml.safe_load")
 @patch("pynonymizer.pynonymize.get_provider")
-@patch("pynonymizer.pynonymize.FakeColumnSet")
+@patch("pynonymizer.pynonymize.FakeColumnGenerator")
 @patch("pynonymizer.pynonymize.StrategyParser")
 @patch("pynonymizer.pynonymize.input.from_location")
 @patch("pynonymizer.pynonymize.output.from_location")

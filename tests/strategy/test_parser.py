@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from pynonymizer.fake import UnsupportedFakeTypeError
+from pynonymizer.fake import UnsupportedFakeTypeError, FakeColumnGenerator
 from pynonymizer.strategy import parser, database, table, update_column
 from pynonymizer.strategy.exceptions import UnknownTableStrategyError, UnknownColumnStrategyError, ConfigSyntaxError
 from pynonymizer.strategy.table import TableStrategyTypes
@@ -11,24 +11,24 @@ import pytest
 
 
 class ConfigParsingTests(unittest.TestCase):
-    valid_config = {
-        "tables": {
-            "accounts": {
-                "columns": {
-                    "current_sign_in_ip": "ipv4_public",
-                    "username": "unique_login",
-                    "email": "unique_email",
-                    "name": "empty",
-                }
-            },
-
-            "transactions": "truncate"
-        }
-    }
 
     def setUp(self):
-        self.fake_column_set = Mock()
-        self.strategy_parser = parser.StrategyParser(self.fake_column_set)
+        self.valid_config = {
+            "tables": {
+                "accounts": {
+                    "columns": {
+                        "current_sign_in_ip": "ipv4_public",
+                        "username": "unique_login",
+                        "email": "unique_email",
+                        "name": "empty",
+                    }
+                },
+
+                "transactions": "truncate"
+            }
+        }
+        self.fake_column_generator = FakeColumnGenerator()
+        self.strategy_parser = parser.StrategyParser(self.fake_column_generator)
 
     def test_valid_parse_no_mutate(self):
         old_valid_config = copy.deepcopy(self.valid_config)
@@ -54,9 +54,22 @@ class ConfigParsingTests(unittest.TestCase):
         """
         get_fake_column's UnsupportedFakeType should kill a parse attempt
         """
-        self.fake_column_set.get_fake_column = Mock(side_effect=UnsupportedFakeTypeError("UNSUPPORTED_TYPE"))
+        invalid_config = {
+            "tables": {
+                "accounts": {
+                    "columns": {
+                        "current_sign_in_ip": "ipv4_public",
+                        "username": "unique_login",
+                        "email": "NOT A VALID FAKE TYPE",
+                        "name": "empty",
+                    }
+                },
+
+                "transactions": "truncate"
+            }
+        }
         with pytest.raises(UnsupportedFakeTypeError):
-            self.strategy_parser.parse_config(self.valid_config)
+            self.strategy_parser.parse_config(invalid_config)
 
     def test_invalid_table_strategy_parse(self):
         with pytest.raises(UnknownTableStrategyError):
