@@ -26,26 +26,26 @@ and the sql returned should be very stable.
 
 
 def test_get_truncate_table():
-    assert "SET FOREIGN_KEY_CHECKS=0; " \
-           "TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;" == query_factory.get_truncate_table("test")
+    assert query_factory.get_truncate_table("test") == "SET FOREIGN_KEY_CHECKS=0; " \
+           "TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;"
 
 
 def test_get_drop_seed_table():
-    assert "DROP TABLE IF EXISTS `seed_table`;" == query_factory.get_drop_seed_table("seed_table")
+    assert query_factory.get_drop_seed_table("seed_table") == "DROP TABLE IF EXISTS `seed_table`;"
 
 
 def test_get_create_database():
-    assert "CREATE DATABASE `test_database`;" == query_factory.get_create_database("test_database")
+    assert query_factory.get_create_database("test_database") == "CREATE DATABASE `test_database`;"
 
 
 def test_get_drop_database():
-    assert "DROP DATABASE IF EXISTS `test_database`;" == query_factory.get_drop_database("test_database")
+    assert query_factory.get_drop_database("test_database") == "DROP DATABASE IF EXISTS `test_database`;"
 
 
 def test_get_dumpsize_estimate():
-    assert "SELECT data_bytes FROM " \
+    assert query_factory.get_dumpsize_estimate("test") == "SELECT data_bytes FROM " \
            "(SELECT SUM(data_length) AS data_bytes " \
-           "FROM information_schema.tables WHERE table_schema = 'test') AS data;" == query_factory.get_dumpsize_estimate("test")
+           "FROM information_schema.tables WHERE table_schema = 'test') AS data;"
 
 
 class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
@@ -83,16 +83,38 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
         insert_seed_row = query_factory.get_insert_seed_row("seed_table", {
                 "test_column1": self.fake_strategy1,
                 "test_column2": self.fake_strategy2,
+                "qualifier_column": FakeUpdateColumnStrategy(self.str_fake_column_generator, "first_name",
+                                                             fake_args={"test_arg": 5})
             })
 
-        assert insert_seed_row == "INSERT INTO `seed_table`(`first_name`,`last_name`) VALUES ('test_value',645);"
+        assert insert_seed_row == "INSERT INTO `seed_table`(`first_name`,`last_name`,`first_name_test_arg_5`) " \
+                                  "VALUES ('test_value',645,'test_value');"
 
-    def test_get_create_seed_table(self):
-        assert "CREATE TABLE `seed_table` (`first_name` VARCHAR(4096),`last_name` INT);" == \
-            query_factory.get_create_seed_table("seed_table", {
+    def test_get_insert_seed_row_duplicate_column_qualifier(self):
+        insert_seed_row = query_factory.get_insert_seed_row("seed_table", {
                 "test_column1": self.fake_strategy1,
                 "test_column2": self.fake_strategy2,
+                "other_column": FakeUpdateColumnStrategy(self.str_fake_column_generator, "first_name")
             })
+
+        assert insert_seed_row == "INSERT INTO `seed_table`(`first_name`,`last_name`) " \
+                                  "VALUES ('test_value',645);"
+
+    def test_get_create_seed_table(self):
+        assert query_factory.get_create_seed_table("seed_table", {
+                "test_column1": self.fake_strategy1,
+                "test_column2": self.fake_strategy2,
+                "other_column": FakeUpdateColumnStrategy(self.str_fake_column_generator, "first_name")
+            }) == "CREATE TABLE `seed_table` (`first_name` VARCHAR(4096),`last_name` INT);"
+
+    def test_get_create_seed_table_duplicate_column_qualifier(self):
+        """duplicate column qualifiers should be grouped and only defined once"""
+        assert query_factory.get_create_seed_table("seed_table", {
+                "test_column1": self.fake_strategy1,
+                "test_column2": self.fake_strategy2,
+                "qualifier_column": FakeUpdateColumnStrategy(self.str_fake_column_generator, "first_name",
+                                                             fake_args={"test_arg": 5})
+            }) == "CREATE TABLE `seed_table` (`first_name` VARCHAR(4096),`last_name` INT,`first_name_test_arg_5` VARCHAR(4096));"
 
     def test_get_create_seed_table_no_columns(self):
         """
@@ -113,15 +135,15 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
     def test_get_update_table_fake_column(self):
         update_table_all = query_factory.get_update_table("seed_table", "anon_table", self.test_column_strategies)
 
-        assert [
+        assert update_table_all == [
                 "UPDATE `anon_table` SET "
                 "`test_column1` = ( SELECT `first_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
                 "`test_column2` = ( SELECT `last_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
                 "`test_column3` = (''),"
-                "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) ),"
+                "`test_column4` = ( SELECT MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())) ),"
                 "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"
                 "`test_column6` = RAND();"
-                ] == update_table_all
+                ]
 
     def test_get_update_table_fake_column_where(self):
         self.fake_strategy1.where_condition = "cheese = 'gouda'"
@@ -134,7 +156,7 @@ class MysqlQueryFactoryUpdateColumnTests(unittest.TestCase):
             "WHERE cheese = 'gouda';"
 
         where_query2 = "UPDATE `anon_table` SET "\
-            "`test_column4` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) ) "\
+            "`test_column4` = ( SELECT MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())) ) "\
             "WHERE marbles > 50;"
 
         nowhere_query = "UPDATE `anon_table` SET "\

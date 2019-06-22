@@ -12,22 +12,28 @@ _FAKE_COLUMN_TYPES = {
     FakeDataType.INT: "INT"
 }
 
+# For preservation of unique values across versions of mysql, and this bug:
+# https://bugs.mysql.com/bug.php?id=89474, use md5 based rand subqueries for unique values (rather than UUIDs)
+_RAND_MD5 = "MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND()))"
+
+def _get_qualifer_map(column_fake_update_strategy_map):
+    return {
+        strategy.qualifier: strategy for column_name, strategy in column_fake_update_strategy_map.items()
+    }
+
 def _get_sql_type(data_type):
     return _FAKE_COLUMN_TYPES[data_type]
 
 
 def _get_column_subquery(seed_table_name, column_name, column_strategy):
-    # For preservation of unique values across versions of mysql, and this bug:
-    # https://bugs.mysql.com/bug.php?id=89474, use md5 based rand subqueries
-
     if column_strategy.strategy_type == UpdateColumnStrategyTypes.EMPTY:
         return "('')"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
-        return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') )"
+        return f"( SELECT CONCAT({_RAND_MD5}, '@', {_RAND_MD5}, '.com') )"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
-        return "( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())))) )"
+        return f"( SELECT {_RAND_MD5} )"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-        return f"( SELECT `{column_strategy.fake_type}` FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
+        return f"( SELECT `{column_strategy.qualifier}` FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
@@ -49,12 +55,15 @@ def get_truncate_table(table_name):
     return f"SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `{table_name}`; SET FOREIGN_KEY_CHECKS=1;"
 
 
-def get_create_seed_table(table_name, fake_update_strats):
-    if len(fake_update_strats) < 1:
+def get_create_seed_table(table_name, fake_update_strategies):
+    if len(fake_update_strategies) < 1:
         raise ValueError("Cannot create a seed table with no columns")
 
-    column_types = ",".join(map(lambda col: f"`{col[1].fake_type}` {_get_sql_type(col[1].get_data_type())}", fake_update_strats.items()))
-    return f"CREATE TABLE `{table_name}` ({column_types});"
+    qualifier_map = _get_qualifer_map(fake_update_strategies)
+
+    create_columns = [f"`{qualifier}` {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
+
+    return "CREATE TABLE `{}` ({});".format(table_name, ",".join(create_columns) )
 
 
 def get_drop_seed_table(table_name):
@@ -62,10 +71,12 @@ def get_drop_seed_table(table_name):
 
 
 def get_insert_seed_row(table_name, fake_update_strats):
-    column_names = ",".join(map(lambda col: f"`{col[1].fake_type}`", fake_update_strats.items()))
-    column_values = ",".join(map(lambda col: _escape_sql_value(col[1].get_value()), fake_update_strats.items()))
+    qualifier_map = _get_qualifer_map(fake_update_strats)
 
-    return f"INSERT INTO `{table_name}`({column_names}) VALUES ({column_values});"
+    column_names = ",".join( [f"`{qualifier}`" for qualifier in qualifier_map.keys()] )
+    column_values = ",".join( [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()] )
+
+    return "INSERT INTO `{}`({}) VALUES ({});".format(table_name, column_names, column_values)
 
 
 def get_create_database(database_name):
@@ -94,7 +105,10 @@ def get_update_table(seed_table_name, table_name, column_strategies):
             if where not in where_update_statements:
                 where_update_statements[where] = []
 
-            where_update_statements[where].append(f"`{column_name}` = {_get_column_subquery(seed_table_name, column_name, column_strategy)}")
+            where_update_statements[where].append("`{}` = {}".format(
+                column_name,
+                _get_column_subquery(seed_table_name, column_name, column_strategy))
+            )
 
         assignments = ",".join( where_update_statements[where] )
         where_clause = f" WHERE {where}" if where else ""
@@ -105,4 +119,6 @@ def get_update_table(seed_table_name, table_name, column_strategies):
 
 
 def get_dumpsize_estimate(database_name):
-    return f"SELECT data_bytes FROM (SELECT SUM(data_length) AS data_bytes FROM information_schema.tables WHERE table_schema = '{database_name}') AS data;"
+    return "SELECT data_bytes " \
+           "FROM (SELECT SUM(data_length) AS data_bytes FROM information_schema.tables WHERE table_schema = '{}') " \
+           "AS data;".format(database_name)

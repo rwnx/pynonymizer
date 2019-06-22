@@ -88,7 +88,7 @@ Replaces a column with an empty value (usually `''`)
 column_name: 
   type: empty
   
-# Compact Syntax:
+# Compact Syntax: string "empty"
 column_name: empty
 ```
 
@@ -99,7 +99,7 @@ Replaces a column with a unique value that vaguely resembles a username.
 column_name: 
   type: unique_login
 
-# Compact Syntax:
+# Compact Syntax: string "unique_login"
 column_name: unique_login
 ```
 
@@ -109,7 +109,7 @@ Replace a column with a unique value that vaguely resembles an email address.
 column_name: 
   type: unique_email
 
-# Compact Syntax:
+# Compact Syntax: string "unique_email"
 column_name: unique_email
 ```
 
@@ -131,44 +131,59 @@ Replace a column with a value from a generated data pool (non-unique).
 ```yaml
 column_name: 
   type: fake_update
-  fake_type: company_email
+  fake_type: file_path
+  # Optional, provide arguments to the faker generator:
+  # For example: fake.file_path(depth=1, category=None, extension=None)
+  fake_args:
+    depth: 1
+    
   
-# Compact Syntax: specify any supported faker method, excluding the keywords `empty`, `unique_login`, `unique_email`
-column_name: company_email
+# Compact Syntax: specify any supported faker method string, excluding the keywords `empty`, `unique_login`, `unique_email`
+column_name: file_path
 ```
-You can specify a fake update with any one of the following generators:
+You can specify a fake update with any default [Faker](https://faker.readthedocs.io/en/master/) provider.
 
-The values themselves are generated from [Faker](https://faker.readthedocs.io/en/master/)
-The aim is to support all of faker's methods, but at the moment, only a small selection are supported.
+While accessible, some generators may not be supported by your provider if they use more complex types or coercion is not properly described. 
+This is an ongoing process to make sure that generators are annotated according to the types they return.
 
-* first_name
-* last_name
-* name
-* user_name
-* email
-* company_email
-* phone_number
-* company
-* bs
-* catch_phrase
-* job
-* city
-* street_addr
-* postcode
-* uri
-* ipv4_private
-* ipv4_public
-* file_name
-* file_path
-* paragraph
-* prefix
-* random_int
-* date_of_birth
-* future_date
-* past_date
-* future_datetime
-* past_datetime
-* date
+Some generators take arguments which can be specified with the `fake_args` key (as a dictionary of kwargs).
+
+To get you started, here's a list of some useful generators.
+* `first_name`
+* `last_name`
+* `name`
+* `user_name`
+* `email`
+* `company_email`
+* `phone_number`
+* `company`
+* `bs`
+* `catch_phrase`
+* `job`
+* `city`
+* `street_addr`
+* `postcode`
+* `uri`
+* `ipv4_private`
+* `ipv4_public`
+* `file_name`
+* `file_path`
+* `paragraph`
+* `prefix`
+* `random_int`
+* `date_of_birth`
+* `future_date`
+* `past_date`
+* `future_datetime`
+* `past_datetime`
+* `date`
+* `user_agent`
+* `domain_name`
+* `mac_address`
+* `isbn13`
+* `paragraph`
+* `word`
+* `credit_card_number`
 
 
 ## Key: Scripts

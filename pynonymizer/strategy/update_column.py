@@ -59,8 +59,30 @@ class FakeUpdateColumnStrategy(UpdateColumnStrategy):
         if not fake_column_generator.supports(fake_type, fake_args):
             raise UnsupportedFakeTypeError(fake_type, fake_args)
 
-    def get_value(self):
+    @property
+    def qualifier(self):
+        """
+        Generate a deterministic qualifier for this fake update column strategy, so that it and it's args can be
+        identified in cases like pre-generation of values
+        e.g. file_path_depth_1
+        :return:
+        """
+        sorted_items = "_".join( [f"{arg}_{value}" for arg, value in sorted(self.fake_args.items(), key=lambda item: item[0])] )
+        return self.fake_type + (("_" + sorted_items) if sorted_items else "")
+
+    @property
+    def value(self):
+        """
+        Generate a value from the faker data this column represents
+        :return:
+        """
         return self.__fake_column_generator.get_value(self.fake_type, self.fake_args)
 
-    def get_data_type(self):
+    @property
+    def data_type(self):
+        """
+        get this generator's data type
+        e.g. FakeDataTypes.STRING
+        :return:
+        """
         return self.__fake_column_generator.get_data_type(self.fake_type)

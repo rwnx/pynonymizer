@@ -93,13 +93,14 @@ class MySqlProvider:
         # Filter supported columns so we're not seeding ALL types by default
         column_strats = database_strategy.get_all_column_strategies()
 
-        fake_update_strats = { k: v for k, v in column_strats.items() if v.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE}
+        fake_update_strategies = { k: v for k, v in column_strats.items() if v.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE}
 
-        self.logger.info("creating seed table with %d columns", len(fake_update_strats))
-        self.__runner.db_execute(query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, fake_update_strats))
+        self.logger.info("creating seed table with %d columns", len(fake_update_strategies))
+        create_seed_table_sql = query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, fake_update_strategies)
+        self.__runner.db_execute(create_seed_table_sql)
 
         self.logger.info("Inserting seed data")
-        self.__seed(fake_update_strats)
+        self.__seed(fake_update_strategies)
 
         try:
             for i, before_script in enumerate(database_strategy.scripts["before"]):

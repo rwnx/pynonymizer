@@ -77,6 +77,8 @@ def test_fake_update():
     fake_update = FakeUpdateColumnStrategy(fake_column_generator=fake_column_generator, fake_type="company_email")
 
     assert fake_update.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+    assert fake_update.value == fake_column_generator.get_value("company_email")
+    assert fake_update.data_type == fake_column_generator.get_data_type("company_email")
     assert fake_update.fake_type == "company_email"
 
 
@@ -85,6 +87,8 @@ def test_fake_update_where():
     fake_update_where = FakeUpdateColumnStrategy(fake_column_generator=fake_column_generator, fake_type="company_email", where="chickens = 1")
 
     assert fake_update_where.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+    assert fake_update_where.value == fake_column_generator.get_value("company_email")
+    assert fake_update_where.data_type == fake_column_generator.get_data_type("company_email")
     assert fake_update_where.fake_type == "company_email"
     assert fake_update_where.where_condition == "chickens = 1"
 
