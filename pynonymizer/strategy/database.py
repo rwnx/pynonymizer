@@ -4,13 +4,14 @@ class DatabaseStrategy:
         self.table_strategies = table_strategies or {}
         self.scripts = scripts or {}
 
-    def get_fake_columns(self):
-        unique_fake_types = set()
+    def get_all_column_strategies(self):
+        column_strategies = {}
         for table_name, table_strategy in self.table_strategies.items():
             try:
-                unique_fake_types = unique_fake_types.union( table_strategy.get_fake_columns() )
+                table_columns = table_strategy.get_column_strategies()
+                column_strategies.update( table_columns )
             except AttributeError as error:
                 pass
 
-        return unique_fake_types
+        return column_strategies
 

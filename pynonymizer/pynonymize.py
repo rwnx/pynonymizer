@@ -3,7 +3,7 @@ import yaml
 from pynonymizer import input, output
 from pynonymizer.log import get_default_logger
 from pynonymizer.database import get_temp_db_name, get_provider
-from pynonymizer.fake import FakeColumnSet
+from pynonymizer.fake import FakeColumnGenerator
 from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer.exceptions import ArgumentValidationError, DatabaseConnectionError
 
@@ -28,16 +28,11 @@ class ProcessSteps(Enum):
     @staticmethod
     def from_value(step_value):
         """
-        resolve a enum value from key or value
+        resolve a enum value from key (case insensitive)
         :return: ProcessSteps property
         """
-        try:
-            # Try to resolve as a string value
-            return ProcessSteps[step_value]
-        except KeyError:
-            # If that fails, it must be a value
-            # If this fails, the resulting ValueError will bubble out -invalid data!
-            return ProcessSteps(step_value)
+        # Try to resolve as a string value
+        return ProcessSteps[step_value.upper()]
 
 
 def _run_step(process_step, start_at_step, stop_at_step, skip_steps, func):
@@ -105,7 +100,7 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
     if skip_steps and len(skip_steps) > 0:
         skip_steps = [ProcessSteps.from_value(skip) for skip in skip_steps]
 
-    fake_seeder = FakeColumnSet(fake_locale)
+    fake_seeder = FakeColumnGenerator(fake_locale)
     strategy_parser = StrategyParser(fake_seeder)
 
     logger.debug("loading strategyfile %s...", strategyfile_path)

@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added **all** faker providers to the `fake_update` type. 
+- Added `fake_args` kwargs key to the `fake_update` type. You can now make use of parameterized providers in faker! 
 - Added "verbose-style" strategy format to complement original shorthand autodetection.
 - Added `where` option for where-clause support on all update_column strategies. Columns with a matching where option are grouped together for execution.
 - Added Stock strategies for sylius and wordpress 4.4 in the main repository. 

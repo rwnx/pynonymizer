@@ -1,37 +1,46 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+import pytest
 
-import pynonymizer.fake
+from pynonymizer.fake import FakeColumnGenerator, FakeDataType, UnsupportedFakeTypeError
+from faker import Faker
 
 
-class FakeColumnTest(unittest.TestCase):
+class FakeColumnGeneratorTests(unittest.TestCase):
     def setUp(self):
-        self.faker = Mock()
-        self.faker.test_field = Mock()
+        self.generator = FakeColumnGenerator()
 
-        self.implicit_generator_args = (self.faker, "test_field", "VARCHAR(10)")
-        self.explicit_generator_args = (self.faker, "test_field", "VARCHAR(10)", lambda: "value")
+    def test_supports_supported(self):
+        assert self.generator.supports("first_name") is True
 
-    def test_fields(self):
-        fake_column = pynonymizer.fake.FakeColumn(*self.implicit_generator_args)
+    def test_supports_unsupported_method(self):
+        assert self.generator.supports("NOT A VALID METHOD") is False
 
-        assert fake_column.column_name == "test_field"
-        assert fake_column.sql_type == "VARCHAR(10)"
+    def test_supports_unsupported_args(self):
+        assert self.generator.supports("first_name", {"arg1": 2, "arg2": 3}) is False
 
-    def test_implicit_generator(self):
-        fake_column = pynonymizer.fake.FakeColumn(*self.implicit_generator_args)
+    def test_get_data_type_known_column(self):
+        assert self.generator.get_data_type("date") == FakeDataType.DATE
 
-        # implicit generator should call faker method by the same name when asked for a value
-        fake_value = fake_column.get_value()
-        self.faker.test_field.assert_called()
+    def test_get_data_type_unknown_column(self):
+        assert self.generator.get_data_type("user_agent") == FakeDataType.STRING
 
-    def test_explicit_generator(self):
-        fake_column = pynonymizer.fake.FakeColumn(*self.explicit_generator_args)
+    @patch("pynonymizer.fake.Faker")
+    def test_get_value_supported(self, faker):
+        faker.return_value = Mock(spec=Faker())
+        faked_generator = FakeColumnGenerator()
+        assert faked_generator.get_value("first_name") == faker().first_name()
 
-        # explicit generator should NOT call faker, as the explicit generator should take precedence
-        fake_value = fake_column.get_value()
-        self.faker.test_field.assert_not_called()
-        assert fake_value == "value"
+    @patch("pynonymizer.fake.Faker")
+    def test_get_value_unsupported(self, faker):
+        faker.return_value = Mock(spec=Faker())
+        faked_generator = FakeColumnGenerator()
+        with pytest.raises(UnsupportedFakeTypeError):
+            faked_generator.get_value("NOT A VALID METHOD")
 
-
-
+    @patch("pynonymizer.fake.Faker")
+    def test_get_value_unsupported_args(self, faker):
+        faker.return_value = Mock(spec=Faker())
+        faked_generator = FakeColumnGenerator()
+        with pytest.raises(UnsupportedFakeTypeError):
+            faked_generator.get_value("ean", {"not_valid_length": 13})

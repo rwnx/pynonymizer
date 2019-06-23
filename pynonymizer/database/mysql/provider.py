@@ -2,6 +2,7 @@ import subprocess
 from tqdm import tqdm
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.strategy.table import TableStrategyTypes
+from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 import pynonymizer.database.mysql.query_factory as query_factory
 import pynonymizer.database.mysql.execution as execution
 
@@ -33,21 +34,21 @@ class MySqlProvider:
 
         elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
             progressbar.set_description("Anonymizing {}".format(table_name))
-            statement = query_factory.get_update_table(self.__SEED_TABLE_NAME, table_name, table_strategy.column_strategies)
-            self.__runner.db_execute(statement)
+            statements = query_factory.get_update_table(self.__SEED_TABLE_NAME, table_name, table_strategy.column_strategies)
+            self.__runner.db_execute(statements)
 
         else:
             raise UnsupportedTableStrategyError(table_strategy)
 
         progressbar.update()
 
-    def __seed(self, columns, seed_rows=150):
+    def __seed(self, fake_update_strats, seed_rows=150):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
         for i in tqdm(range(0, seed_rows), desc="Inserting seed data", unit="rows"):
             self.logger.debug(f"Inserting seed row {i}")
-            self.__runner.db_execute(query_factory.get_insert_seed_row(self.__SEED_TABLE_NAME, columns))
+            self.__runner.db_execute(query_factory.get_insert_seed_row(self.__SEED_TABLE_NAME, fake_update_strats))
 
     def __estimate_dumpsize(self):
         """
@@ -90,13 +91,16 @@ class MySqlProvider:
         :return:
         """
         # Filter supported columns so we're not seeding ALL types by default
-        required_columns = database_strategy.get_fake_columns()
+        column_strats = database_strategy.get_all_column_strategies()
 
-        self.logger.info("creating seed table with %d columns", len(required_columns))
-        self.__runner.db_execute(query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, required_columns))
+        fake_update_strategies = { k: v for k, v in column_strats.items() if v.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE}
+
+        self.logger.info("creating seed table with %d columns", len(fake_update_strategies))
+        create_seed_table_sql = query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, fake_update_strategies)
+        self.__runner.db_execute(create_seed_table_sql)
 
         self.logger.info("Inserting seed data")
-        self.__seed(required_columns)
+        self.__seed(fake_update_strategies)
 
         try:
             for i, before_script in enumerate(database_strategy.scripts["before"]):
