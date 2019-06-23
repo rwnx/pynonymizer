@@ -28,16 +28,11 @@ class ProcessSteps(Enum):
     @staticmethod
     def from_value(step_value):
         """
-        resolve a enum value from key or value
+        resolve a enum value from key (case insensitive)
         :return: ProcessSteps property
         """
-        try:
-            # Try to resolve as a string value
-            return ProcessSteps[step_value]
-        except KeyError:
-            # If that fails, it must be a value
-            # If this fails, the resulting ValueError will bubble out -invalid data!
-            return ProcessSteps(step_value)
+        # Try to resolve as a string value
+        return ProcessSteps[step_value.upper()]
 
 
 def _run_step(process_step, start_at_step, stop_at_step, skip_steps, func):

@@ -1,5 +1,7 @@
 import unittest
 import pynonymizer.input
+import pytest
+from pynonymizer.input import UnknownInputTypeError
 
 
 class ResolveFromFilepathTest(unittest.TestCase):
@@ -22,3 +24,7 @@ class ResolveFromFilepathTest(unittest.TestCase):
             test_path = path + "test.sql.gz"
             with self.subTest(i=test_path):
                 assert isinstance(pynonymizer.input.from_location(test_path), pynonymizer.input.GzipInput)
+
+    def test_resolve_unknown(self):
+        with pytest.raises(UnknownInputTypeError):
+            pynonymizer.input.from_location("unknown_file.bbs")
