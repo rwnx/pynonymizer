@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - strategyfile is optional if ANONYMIZE_DB is skipped
     - output is optional if DUMP_DB is skipped
 
+## [1.4.1] 2019-06-29
+ - Fixed an issue where import syntax was preventing certain modules from being loaded in python 3.6
+ 
 ## [1.4.0] 2019-06-23
 - Added **all** faker providers to the `fake_update` type. 
 - Added `fake_args` kwargs key to the `fake_update` type. You can now make use of parameterized providers in faker! 
