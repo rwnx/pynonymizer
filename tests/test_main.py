@@ -208,7 +208,6 @@ class MainProcessTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             skip_steps=["ANONYMIZE_DB", "CREATE_DB", "DUMP_DB"]
         )
-        StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
 
         provider = get_provider.return_value
@@ -342,7 +341,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             skip_steps=None
         )
 
-        StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
 
         provider = get_provider.return_value
@@ -369,8 +367,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step=None,
             skip_steps=["ANONYMIZE_DB"]
         )
-
-        StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
 
         provider = get_provider.return_value
@@ -397,8 +393,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step=None,
             skip_steps=None
         )
-
-        StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
 
         provider = get_provider.return_value
@@ -425,8 +419,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step="RESTORE_DB",
             skip_steps=None
         )
-
-        StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
 
         provider = get_provider.return_value
@@ -481,8 +473,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step=None,
             skip_steps=None
         )
-
-        StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
 
         provider = get_provider.return_value

@@ -34,9 +34,6 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
     if db_host is None:
         db_host = "127.0.0.1"
 
-    if db_name is None:
-        db_name = get_temp_db_name(strategyfile_path)
-
     if fake_locale is None:
         fake_locale = "en_GB"
 
@@ -52,6 +49,10 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
         if strategyfile_path is None:
             validations.append("Missing STRATEGYFILE")
+        else:
+            # only auto-determine the db_name if we have a strategyfile AND we are anonymizing.
+            if db_name is None:
+                db_name = get_temp_db_name(strategyfile_path)
 
     if not actions.skipped(ProcessSteps.DUMP_DB):
         if output_path is None:
@@ -63,28 +64,19 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
     if db_password is None:
         validations.append("Missing DB_PASSWORD")
 
+    if db_name is None:
+        validations.append("Missing DB_NAME: Auto-resolve failed.")
+
     if len(validations) > 0:
         raise ArgumentValidationError(validations)
 
 
-    fake_seeder = FakeColumnGenerator(fake_locale)
-    strategy_parser = StrategyParser(fake_seeder)
-
-    logger.debug("loading strategyfile %s...", strategyfile_path)
-    with open(strategyfile_path, "r") as strategy_yaml:
-        strategy = strategy_parser.parse_config(yaml.safe_load(strategy_yaml))
-
-    # init and validate DB connection
+    # Initialize and validate DB credentials (always required)
     logger.debug("Database: (%s)%s@%s db_name: %s", db_host, db_type, db_user, db_name)
     db_provider = get_provider(db_type, db_host, db_user, db_password, db_name)
 
     if not db_provider.test_connection():
         raise DatabaseConnectionError()
-
-    # locate i/o
-    input_obj = input.from_location(input_path)
-    output_obj = output.from_location(output_path)
-    logger.debug("input: %s output: %s", input_obj, output_obj)
 
     # main process
     logger.info(actions.summary(ProcessSteps.CREATE_DB))
@@ -93,14 +85,23 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
 
     logger.info(actions.summary(ProcessSteps.RESTORE_DB))
     if not actions.skipped(ProcessSteps.RESTORE_DB):
+        input_obj = input.from_location(input_path)
         db_provider.restore_database(input_obj)
 
     logger.info(actions.summary(ProcessSteps.ANONYMIZE_DB))
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
+        fake_seeder = FakeColumnGenerator(fake_locale)
+        strategy_parser = StrategyParser(fake_seeder)
+
+        logger.debug("loading strategyfile %s...", strategyfile_path)
+        with open(strategyfile_path, "r") as strategy_yaml:
+            strategy = strategy_parser.parse_config(yaml.safe_load(strategy_yaml))
+
         db_provider.anonymize_database(strategy)
 
     logger.info(actions.summary(ProcessSteps.DUMP_DB))
     if not actions.skipped(ProcessSteps.DUMP_DB):
+        output_obj = output.from_location(output_path)
         db_provider.dump_database(output_obj)
 
     logger.info(actions.summary(ProcessSteps.DROP_DB))
