@@ -1,1 +1,1 @@
-# required for python to recognize this as a module
+# Minimum required module file

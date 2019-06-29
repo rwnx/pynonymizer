@@ -2,9 +2,9 @@ import argparse
 import dotenv
 import os
 import sys
-from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize, ProcessSteps
-from pynonymizer.log import get_default_logger
-from pynonymizer.version import __version__
+from .pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize, ProcessSteps
+from .log import get_default_logger
+from .version import __version__
 
 logger = get_default_logger()
 
@@ -94,7 +94,7 @@ def main(rawArgs=None):
     parser = create_parser()
     args = parser.parse_args(rawArgs)
 
-    # legacy posistionals take precendence if specified
+    # legacy positionals take pprecedenceif specified
     # This is to support those not using the new options/env fallbacks
     input        = args.legacy_input or args.input
     strategyfile = args.legacy_strategyfile or args.strategyfile
