@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Changed mandatory arguments for main process to account for different process step permutations:
+    - input is optional if RESTORE_DB is skipped
+    - strategyfile is optional if ANONYMIZE_DB is skipped
+    - output is optional if DUMP_DB is skipped
 
 ## [1.4.0] 2019-06-23
 - Added **all** faker providers to the `fake_update` type. 
