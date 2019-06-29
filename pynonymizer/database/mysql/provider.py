@@ -3,9 +3,7 @@ from tqdm import tqdm
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.strategy.table import TableStrategyTypes
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
-import pynonymizer.database.mysql.query_factory as query_factory
-import pynonymizer.database.mysql.execution as execution
-
+from pynonymizer.database.mysql import query_factory, execution
 from pynonymizer import log
 
 class MySqlProvider:
