@@ -33,7 +33,8 @@ setuptools.setup(
         "pyyaml>=5",
         "tqdm>=4",
         "faker>=1",
-        "python-dotenv>=0.10"
+        "python-dotenv>=0.10",
+        "pymssql>=2.1.4"
     ],
     entry_points={
         'console_scripts': [

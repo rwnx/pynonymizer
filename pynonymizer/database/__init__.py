@@ -1,6 +1,7 @@
 import os
 import uuid
 from pynonymizer.database.mysql import MySqlProvider
+from pynonymizer.database.mssql import MsSqlProvider
 from pynonymizer.database.exceptions import UnknownDatabaseTypeError
 
 
@@ -12,5 +13,7 @@ def get_temp_db_name(filename=None):
 def get_provider(type, *args, **kwargs):
     if type == "mysql":
         return MySqlProvider(*args)
+    if type == "mssql":
+        return MsSqlProvider(*args)
     else:
         raise UnknownDatabaseTypeError(type)

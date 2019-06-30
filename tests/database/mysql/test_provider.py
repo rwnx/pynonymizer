@@ -11,7 +11,7 @@ from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 
 
 class MySqlProviderInitTest(unittest.TestCase):
-    @patch("pynonymizer.database.mysql.provider.execution", autospec=True)
+    @patch("pynonymizer.database.mysql.execution", autospec=True)
     def test_init_runners_correctly(self, execution):
         """
         Test the provider inits dependencies with the correct database information
@@ -21,8 +21,8 @@ class MySqlProviderInitTest(unittest.TestCase):
         execution.MySqlDumpRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
 
 
-@patch("pynonymizer.database.mysql.provider.execution", autospec=True)
-@patch("pynonymizer.database.mysql.provider.query_factory", autospec=True)
+@patch("pynonymizer.database.mysql.execution", autospec=True)
+@patch("pynonymizer.database.mysql.query_factory", autospec=True)
 class DatabaseQueryExecTests(unittest.TestCase):
     def test_create_database(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
