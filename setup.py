@@ -34,7 +34,7 @@ setuptools.setup(
         "tqdm>=4",
         "faker>=1",
         "python-dotenv>=0.10",
-        "pymssql>=2.1.4"
+        "pyodbc>=4.0.26"
     ],
     entry_points={
         'console_scripts': [
