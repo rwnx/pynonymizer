@@ -1,19 +1,43 @@
 from pynonymizer.database.provider import DatabaseProvider
+import pyodbc
+from pynonymizer.log import get_logger
 
 
 class MsSqlProvider(DatabaseProvider):
+    """
+    A pyodbc-based MSSQL provider.
+    """
+    logger = get_logger(__name__)
+
     def __init__(self, db_host, db_user, db_pass, db_name):
+        # MsSql only works with local db server because of backup file location requirements
+        db_host = "(local)"
         super().__init__(db_host, db_user, db_pass, db_name)
-        pass
+
+    def __connection(self):
+        return pyodbc.connect(f"DRIVER={{SQL Server}};SERVER={self.db_host};UID={self.db_user};PWD={self.db_pass}")
+
+    def __db_connection(self):
+        return pyodbc.connect(f"DRIVER={{SQL Server}};DATABASE={self.db_name};SERVER={self.db_host};UID={self.db_user};PWD={self.db_pass}")
+
+    def __execute(self, *args, **kwargs):
+        return self.__connection().execute(*args, **kwargs)
+
+    def __db_execute(self, *args, **kwargs):
+        return self.__db_connection().execute(*args, **kwargs)
 
     def test_connection(self):
-        pass
+        try:
+            self.__execute("SELECT @@VERSION;").fetchall()
+            return True
+        except pyodbc.Error:
+            return False
 
     def create_database(self):
-        pass
+        self.logger.debug("MSSQL: create_database ignored, database will be created when the database is restored")
 
     def drop_database(self):
-        pass
+        self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
         pass
@@ -25,4 +49,5 @@ class MsSqlProvider(DatabaseProvider):
         pass
 
     def dump_database(self, output_obj):
-        pass
+        self.__execute(f"BACKUP DATABASE [{self.db_name}] TO DISK {backup_path};")
+
