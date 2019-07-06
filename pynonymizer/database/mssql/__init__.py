@@ -3,6 +3,7 @@ from pynonymizer.database.provider import DatabaseProvider
 
 class MsSqlProvider(DatabaseProvider):
     def __init__(self, db_host, db_user, db_pass, db_name):
+        super().__init__(db_host, db_user, db_pass, db_name)
         pass
 
     def test_connection(self):

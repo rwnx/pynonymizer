@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
 
+
 class DatabaseProvider(ABC):
     @abstractmethod
     def __init__(self, db_host, db_user, db_pass, db_name):
-        pass
+        self.db_host = db_host
+        self.db_user = db_user
+        self.db_pass = db_pass
+        self.db_name = db_name
 
     @abstractmethod
     def test_connection(self):

@@ -19,10 +19,7 @@ class MySqlProvider(DatabaseProvider):
     logger = log.get_logger(__name__)
 
     def __init__(self, db_host, db_user, db_pass, db_name):
-        self.db_host = db_host
-        self.db_user = db_user
-        self.db_pass = db_pass
-        self.db_name = db_name
+        super().__init__(db_host, db_user, db_pass, db_name)
         self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name)
         self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name)
 
