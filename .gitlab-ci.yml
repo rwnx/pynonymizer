@@ -15,12 +15,6 @@ cache:
     - .cache/pip
     - venv/
 
-before_script:
-  - python -V # Print out python version for debugging
-  - pip install virtualenv
-  - virtualenv venv
-  - source venv/bin/activate
-
 stages:
   - test
   - build
@@ -32,6 +26,12 @@ test:
     paths:
       - htmlcov/
   before_script:
+    - python -V # Print out python version for debugging
+    - apt-get update -y
+    - apt-get install -y unixodbc-dev
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
     - pip install tox
   script:
     - tox
@@ -43,6 +43,12 @@ build:
     paths:
       - dist/
   before_script:
+    - python -V # Print out python version for debugging
+    - apt-get update -y
+    - apt-get install -y unixodbc-dev
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
     - pip install wheel
   script:
     - python setup.py sdist bdist_wheel
@@ -52,6 +58,12 @@ deploy:staging:
   dependencies:
     - build
   before_script:
+    - python -V # Print out python version for debugging
+    - apt-get update -y
+    - apt-get install -y unixodbc-dev
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
     - pip install twine
   variables:
     TWINE_USERNAME: $TEST_PYPI_USERNAME
@@ -66,6 +78,12 @@ deploy:pypi:
   dependencies:
     - build
   before_script:
+    - python -V # Print out python version for debugging
+    - apt-get update -y
+    - apt-get install -y unixodbc-dev
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
     - pip install twine
   variables:
     TWINE_USERNAME: $LIVE_PYPI_USERNAME
