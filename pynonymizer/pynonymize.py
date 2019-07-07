@@ -1,5 +1,4 @@
 import yaml
-from pynonymizer import input, output
 from pynonymizer.log import get_default_logger
 from pynonymizer.database import get_temp_db_name, get_provider
 from pynonymizer.fake import FakeColumnGenerator
@@ -85,8 +84,7 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
 
     logger.info(actions.summary(ProcessSteps.RESTORE_DB))
     if not actions.skipped(ProcessSteps.RESTORE_DB):
-        input_obj = input.from_location(input_path)
-        db_provider.restore_database(input_obj)
+        db_provider.restore_database(input_path)
 
     logger.info(actions.summary(ProcessSteps.ANONYMIZE_DB))
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
@@ -101,8 +99,7 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
 
     logger.info(actions.summary(ProcessSteps.DUMP_DB))
     if not actions.skipped(ProcessSteps.DUMP_DB):
-        output_obj = output.from_location(output_path)
-        db_provider.dump_database(output_obj)
+        db_provider.dump_database(output_path)
 
     logger.info(actions.summary(ProcessSteps.DROP_DB))
     if not actions.skipped(ProcessSteps.DROP_DB):

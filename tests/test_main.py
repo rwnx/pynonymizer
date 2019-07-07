@@ -140,11 +140,9 @@ def test_sysexit_on_database_connection_error():
 @patch("pynonymizer.pynonymize.get_provider")
 @patch("pynonymizer.pynonymize.FakeColumnGenerator")
 @patch("pynonymizer.pynonymize.StrategyParser")
-@patch("pynonymizer.pynonymize.input.from_location")
-@patch("pynonymizer.pynonymize.output.from_location")
 @patch("builtins.open", mock_open(read_data="TESTFILEDATA"))
 class MainProcessTests(unittest.TestCase):
-    def test_pynonymize_main_process(self, output_from, input_from, StrategyParser, FakeColumnSet, get_provider, yaml_safe_load):
+    def test_pynonymize_main_process(self, StrategyParser, FakeColumnSet, get_provider, yaml_safe_load):
         """
         a rough smoke test for the main process. This needs an integration test to back it up.
         """
@@ -170,7 +168,7 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_pynonymize_stop_at_step(self, output_from, input_from, StrategyParser, FakeColumnSet, get_provider, yaml_safe_load):
+    def test_pynonymize_stop_at_step(self, StrategyParser, FakeColumnSet, get_provider, yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -194,7 +192,7 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_not_called()
 
-    def test_pynonymize_skip_steps(self, output_from, input_from, StrategyParser, FakeColumnSet, get_provider,
+    def test_pynonymize_skip_steps(self, StrategyParser, FakeColumnSet, get_provider,
                                      yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
@@ -218,7 +216,7 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_called()
 
-    def test_pynonymize_start_at_step(self, output_from, input_from, StrategyParser, FakeColumnSet, get_provider,
+    def test_pynonymize_start_at_step(self, StrategyParser, FakeColumnSet, get_provider,
                                       yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
@@ -250,8 +248,6 @@ class MainProcessTests(unittest.TestCase):
 @patch("pynonymizer.pynonymize.get_provider")
 @patch("pynonymizer.pynonymize.FakeColumnGenerator")
 @patch("pynonymizer.pynonymize.StrategyParser")
-@patch("pynonymizer.pynonymize.input.from_location")
-@patch("pynonymizer.pynonymize.output.from_location")
 @patch("builtins.open", mock_open(read_data="TESTFILEDATA"))
 class OptionalArgumentsSkippedTests(unittest.TestCase):
     """
@@ -268,7 +264,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
     END = 9999
 
     """
-    def test_optional_input_when_skip_input_steps(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_input_when_skip_input_steps(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path=None,
@@ -296,7 +292,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_input_when_start_at_after_input_steps(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_input_when_start_at_after_input_steps(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path=None,
@@ -324,7 +320,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_input_when_stop_at_before_input_steps(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_input_when_stop_at_before_input_steps(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path=None,
@@ -351,7 +347,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_not_called()
 
-    def test_optional_strategyfile_when_skip_anonymize(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_strategyfile_when_skip_anonymize(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
@@ -377,7 +373,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_strategyfile_when_start_at_after_anonymize(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_strategyfile_when_start_at_after_anonymize(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
@@ -403,7 +399,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_strategyfile_when_stop_at_before_anonymize(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_strategyfile_when_stop_at_before_anonymize(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
@@ -429,7 +425,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_not_called()
 
-    def test_optional_output_when_skip_output_steps(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_output_when_skip_output_steps(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
@@ -457,7 +453,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_called()
 
-    def test_optional_output_when_start_at_after_output_steps(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_output_when_start_at_after_output_steps(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",
@@ -483,7 +479,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_called()
 
-    def test_optional_output_when_stop_at_before_output_steps(self, output_from, input_from, StrategyParser, FakeColumnSet,
+    def test_optional_output_when_stop_at_before_output_steps(self, StrategyParser, FakeColumnSet,
                                                   get_provider, yaml_safe_load):
         pynonymize(
             input_path="TEST_INPUT",

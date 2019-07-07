@@ -1,5 +1,4 @@
-import pynonymizer.output
-from pynonymizer.output import  UnknownOutputTypeError
+from pynonymizer.database.mysql.output import UnknownOutputTypeError, resolve_output, RawOutput, GzipOutput
 import pytest
 
 test_path_examples = [
@@ -14,15 +13,15 @@ test_path_examples = [
 @pytest.mark.parametrize("path_example", test_path_examples)
 def test_resolve_raw(path_example):
     test_path = path_example + "test.sql"
-    assert isinstance(pynonymizer.output.from_location(test_path), pynonymizer.output.RawOutput)
+    assert isinstance(resolve_output(test_path), RawOutput)
 
 
 @pytest.mark.parametrize("path_example", test_path_examples)
 def test_resolve_gzip(path_example):
     test_path = path_example + "test.sql.gz"
-    assert isinstance(pynonymizer.output.from_location(test_path), pynonymizer.output.GzipOutput)
+    assert isinstance(resolve_output(test_path), GzipOutput)
 
 
 def test_resolve_unknown():
     with pytest.raises(UnknownOutputTypeError):
-        pynonymizer.output.from_location("unknown_file.bbs")
+        resolve_output("unknown_file.bbs")

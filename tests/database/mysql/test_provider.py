@@ -45,12 +45,14 @@ class DatabaseQueryExecTests(unittest.TestCase):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         assert provider.test_connection() == execution.MySqlCmdRunner.return_value.test.return_value
 
-    def test_restore_database(self, query_factory, execution):
+    @patch("pynonymizer.database.mysql.resolve_input")
+    def test_restore_database(self, resolve_input, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         rand_data = bytes( os.urandom(8193) )
         mock_input = Mock(get_size=Mock(return_value=8193), open=mock_open(read_data=rand_data))
+        resolve_input.return_value = mock_input
 
-        provider.restore_database(mock_input)
+        provider.restore_database("testfile.bbs")
 
         # ask for size
         mock_input.get_size.assert_called()
@@ -62,14 +64,16 @@ class DatabaseQueryExecTests(unittest.TestCase):
         execution.MySqlCmdRunner.return_value.open_batch_processor.return_value.write.assert_called()
         execution.MySqlCmdRunner.return_value.open_batch_processor.return_value.flush.assert_called()
 
-    def test_dump_database(self, query_factory, execution):
+    @patch("pynonymizer.database.mysql.resolve_output")
+    def test_dump_database(self, resolve_output, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         rand_data = bytes( os.urandom(8192) )
         mock_output = Mock(open=mock_open())
+        resolve_output.return_value = mock_output
 
         execution.MySqlDumpRunner.return_value.open_dumper.return_value = MagicMock(read=MagicMock(side_effect=[rand_data, b""]))
 
-        provider.dump_database(mock_output)
+        provider.dump_database("testfile.bbs")
 
         # open output and write at least once
         mock_output.open.assert_called()
@@ -125,7 +129,7 @@ class DatabaseQueryExecTests(unittest.TestCase):
         provider.anonymize_database(database_strategy)
 
         truncate_call_index = manager.mock_calls.index(call.execution.MySqlCmdRunner().db_execute(query_factory.get_truncate_table.return_value))
-        before_script_call_index =  manager.mock_calls.index( call.execution.MySqlCmdRunner().db_execute("SELECT `before` FROM `before_table`;") )
+        before_script_call_index = manager.mock_calls.index( call.execution.MySqlCmdRunner().db_execute("SELECT `before` FROM `before_table`;") )
 
         # before script should be before any anonymization happens (truncate)
         assert before_script_call_index < truncate_call_index

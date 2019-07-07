@@ -1,5 +1,6 @@
 from pynonymizer.database.provider import DatabaseProvider
 import pyodbc
+from tqdm import tqdm
 from pynonymizer.log import get_logger
 
 
@@ -37,17 +38,17 @@ class MsSqlProvider(DatabaseProvider):
         self.logger.debug("MSSQL: create_database ignored, database will be created when the database is restored")
 
     def drop_database(self):
-        self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
+        self.__execute("DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
         pass
 
-    def restore_database(self, input_obj):
+    def restore_database(self, input_path):
         # use RESTORE FILEGROUP to discover files and construct MOVE statements to tmpdir
 
         # restore, loop using nextset() - if using STATS = 1, should be 100 percentile results sets and 3 summary ones.
         pass
 
-    def dump_database(self, output_obj):
-        self.__execute(f"BACKUP DATABASE [{self.db_name}] TO DISK {backup_path};")
+    def dump_database(self, output_path):
+        self.__execute(f"BACKUP DATABASE [{self.db_name}] TO DISK {output_path};")
 
