@@ -27,7 +27,7 @@ test:
       - htmlcov/
   before_script:
     - python -V # Print out python version for debugging
-    - apt-get update -y
+    - apt-get update
     - apt-get install -y unixodbc-dev
     - pip install virtualenv
     - virtualenv venv
@@ -44,7 +44,7 @@ build:
       - dist/
   before_script:
     - python -V # Print out python version for debugging
-    - apt-get update -y
+    - apt-get update
     - apt-get install -y unixodbc-dev
     - pip install virtualenv
     - virtualenv venv
@@ -59,7 +59,7 @@ deploy:staging:
     - build
   before_script:
     - python -V # Print out python version for debugging
-    - apt-get update -y
+    - apt-get update
     - apt-get install -y unixodbc-dev
     - pip install virtualenv
     - virtualenv venv
@@ -79,7 +79,7 @@ deploy:pypi:
     - build
   before_script:
     - python -V # Print out python version for debugging
-    - apt-get update -y
+    - apt-get update
     - apt-get install -y unixodbc-dev
     - pip install virtualenv
     - virtualenv venv

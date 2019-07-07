@@ -20,8 +20,8 @@ class MySqlProvider(DatabaseProvider):
     __DUMPSIZE_ESTIMATE_INFLATION = 1.15
     logger = log.get_logger(__name__)
 
-    def __init__(self, db_host, db_user, db_pass, db_name):
-        super().__init__(db_host, db_user, db_pass, db_name)
+    def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
+        super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
         self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name)
         self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name)
 
@@ -40,11 +40,11 @@ class MySqlProvider(DatabaseProvider):
 
         progressbar.update()
 
-    def __seed(self, fake_update_strats, seed_rows=150):
+    def __seed(self, fake_update_strats):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
-        for i in tqdm(range(0, seed_rows), desc="Inserting seed data", unit="rows"):
+        for i in tqdm(range(0, self.seed_rows), desc="Inserting seed data", unit="rows"):
             self.logger.debug(f"Inserting seed row {i}")
             self.__runner.db_execute(query_factory.get_insert_seed_row(self.__SEED_TABLE_NAME, fake_update_strats))
 

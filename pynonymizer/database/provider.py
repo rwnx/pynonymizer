@@ -3,11 +3,16 @@ from abc import ABC, abstractmethod
 
 class DatabaseProvider(ABC):
     @abstractmethod
-    def __init__(self, db_host, db_user, db_pass, db_name):
+    def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
         self.db_host = db_host
         self.db_user = db_user
         self.db_pass = db_pass
         self.db_name = db_name
+
+        if seed_rows is None:
+            seed_rows = 150
+
+        self.seed_rows = seed_rows
 
     @abstractmethod
     def test_connection(self):
