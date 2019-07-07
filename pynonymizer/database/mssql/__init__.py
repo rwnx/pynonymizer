@@ -14,17 +14,17 @@ class MsSqlProvider(DatabaseProvider):
     __STATS = 5
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
-        # MsSql only works with local db server because of backup file location requirements
+        if db_host is not None:
+            raise ValueError("MsSqlProvider does not support remove servers due to backup file location requirements. "
+                             "You must omit db_host from your configuration and run pynonymizer on the server.")
+
         db_host = "(local)"
         super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
         self.__conn = None
         self.__db_conn = None
 
     def __connection(self):
-        """
-        a lazy-evaluated connection
-        :return:
-        """
+        """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
                 f"DRIVER={{SQL Server}};SERVER={self.db_host};UID={self.db_user};PWD={self.db_pass}", autocommit=True
@@ -33,10 +33,7 @@ class MsSqlProvider(DatabaseProvider):
         return self.__conn
 
     def __db_connection(self):
-        """
-        a lazy-evaluated db-specific connection
-        :return:
-        """
+        """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
                 f"DRIVER={{SQL Server}};DATABASE={self.db_name};SERVER={self.db_host};UID={self.db_user};PWD={self.db_pass}",
@@ -54,7 +51,13 @@ class MsSqlProvider(DatabaseProvider):
     def __get_default_datafolder(self):
         """
         Locate the default data folder using the `model` database location
-        :return:
+        It's possible that the model database is not the currently set default, i.e if it's been changed after install
+        The solution to this would be to make a new database and then perform the below check on that instead.
+        See https://blogs.technet.microsoft.com/sqlman/2009/07/19/tsql-script-determining-default-database-file-log-path/
+
+        However, this seems like a heavyweight solution for what is essentially a tsql-writeable tempfolder, so
+        checking the model db seems like a good 'boring' solution
+        :return: Default data directory e.g. "C:\\DATA"
         """
         datafile = self.__execute("""
         SELECT physical_name   
@@ -69,6 +72,7 @@ class MsSqlProvider(DatabaseProvider):
     def __get_default_logfolder(self):
         """
         Locate the default log folder using the `model` database location
+        __get_default_datafolder: for more info
         :return:
         """
         logfile = self.__execute("""
@@ -83,35 +87,34 @@ class MsSqlProvider(DatabaseProvider):
 
     def __get_file_moves(self, input_path):
         """
-        Using RESTORE FILELISTONLY, get a list of all the files in the backup that need to be moved to the local system
+        Using RESTORE FILELISTONLY, get all the files in the backup that need to be moved to the local system for restore
+        :return: a dict of file name: new destination
         """
         datadir = self.__get_default_datafolder()
         logdir = self.__get_default_logfolder()
 
         filelist = self.__execute(f"RESTORE FILELISTONLY FROM DISK = ?;", input_path).fetchall()
 
-        move_clauses = []
-        move_clause_params = []
+        move_file_map = {}
         for file in filelist:
             name = file[0]
             full_path = file[1]
+            type = file[2].upper()
             basename = os.path.basename(full_path)
-            _, ext = os.path.splitext(basename)
 
-            if ext.lower() == "ldf":
+            # log files can go into the default log directory, everything else can go into the data directory
+            if type == "L":
                 target_path = os.path.join(logdir, f"{self.db_name}_{basename}")
             else:
                 target_path = os.path.join(datadir, f"{self.db_name}_{basename}")
 
-            move_clauses.append(f"MOVE ? TO ?")
-            move_clause_params.append(name)
-            move_clause_params.append(target_path)
+            move_file_map[name] = target_path
 
-        return move_clauses, move_clause_params
+        return move_file_map
 
     def __backup_restore_progress(self, cursor):
-        # With STATS=5, we should recieve 20 resultsets, provided the backup is slow enough.
-        # With some databases, it will jump from xx% to 100, so we'll only get 40x nextset calls.
+        # With STATS=x, we should recieve 100/x resultsets, provided the backup is slow enough.
+        # With some databases, it will jump from y% to 100, so we'll only get <x nextset calls.
         # Even SSMS doesn't get informed - this is the best we can do at the moment
         with tqdm(desc="Restoring database", total=math.floor(100 / self.__STATS)) as progressbar:
             while cursor.nextset():
@@ -137,16 +140,20 @@ class MsSqlProvider(DatabaseProvider):
         pass
 
     def restore_database(self, input_path):
-        move_clauses, move_clause_params = self.__get_file_moves(input_path)
+        move_files = self.__get_file_moves(input_path)
 
-        move_statement_combined = ", ".join(move_clauses)
+        self.logger.info("Found %d files", len(move_files) )
 
-        restore_cursor = self.__execute(f"RESTORE DATABASE ? FROM DISK = ? WITH {move_statement_combined}, STATS = ?;",
+        # get move statements and flatten pairs out so we can do the 2-param substitution
+        move_clauses = ", ".join( ["MOVE ? TO ?"] * len(move_files) )
+        move_clause_params = [item for pair in move_files.items() for item in pair]
+
+        restore_cursor = self.__execute(f"RESTORE DATABASE ? FROM DISK = ? WITH {move_clauses}, STATS = ?;",
                                         [self.db_name, input_path, *move_clause_params, self.__STATS])
 
         self.__backup_restore_progress(restore_cursor)
 
     def dump_database(self, output_path):
-        dump_cursor = self.__execute(f"BACKUP DATABASE ? TO DISK = ? WITH STATS = 5;", [self.db_name, output_path])
+        dump_cursor = self.__execute(f"BACKUP DATABASE ? TO DISK = ? WITH STATS = ?;", [self.db_name, output_path, self.__STATS])
         self.__backup_restore_progress(dump_cursor)
 
