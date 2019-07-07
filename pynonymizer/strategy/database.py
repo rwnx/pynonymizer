@@ -1,8 +1,16 @@
 class DatabaseStrategy:
     def __init__(self, table_strategies=None, scripts=None):
 
-        self.table_strategies = table_strategies or {}
-        self.scripts = scripts or {}
+        self.__table_strategies = table_strategies or {}
+        self.__scripts = scripts or {}
+
+    @property
+    def table_strategies(self):
+        return self.__table_strategies
+
+    @property
+    def scripts(self):
+        return self.__scripts
 
     def get_all_column_strategies(self):
         column_strategies = {}

@@ -27,11 +27,19 @@ class UpdateColumnsTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.UPDATE_COLUMNS
 
     def __init__(self, column_strategies):
-        self.column_strategies = column_strategies
+        self.__column_strategies = column_strategies
 
-    def get_column_strategies(self):
+    @property
+    def column_strategies(self):
         column_strategies = {}
-        for column_name, column_strategy in self.column_strategies.items():
+        for column_name, column_strategy in self.__column_strategies.items():
             column_strategies[column_name] = column_strategy
 
         return column_strategies
+
+    def get_column_strategies(self):
+        """
+        Legacy, replace with property
+        :return:
+        """
+        return self.column_strategies
