@@ -25,10 +25,8 @@ class StrategyParser:
         if "type" not in table_config:
             if "columns" in table_config:
                 return {
+                    **table_config,
                     "type": TableStrategyTypes.UPDATE_COLUMNS.value,
-                    "columns": {
-                        **table_config["columns"]
-                    }
                 }
 
             elif table_config == "truncate":
@@ -70,8 +68,33 @@ class StrategyParser:
         else:
             return column_config
 
-    def __parse_update_column(self, raw_column_config):
-        column_config = StrategyParser.__normalize_column_config(raw_column_config)
+    @staticmethod
+    def __normalize_config(config):
+        # if tables is given in dict form, normalize to list with table_name key
+        if "tables" in config and isinstance(config["tables"], dict):
+            tables_list = []
+            for table_name, table_config in config["tables"].items():
+                normalized_table = StrategyParser.__normalize_table_config(table_config)
+                normalized_table["table_name"] = table_name
+                tables_list.append(normalized_table)
+
+            config["tables"] = tables_list
+
+        return config
+
+    @staticmethod
+    def __normalize_update_columns_list(columns_config):
+        # if columns is given in dict form, normalize to list
+        if isinstance(columns_config, dict):
+            column_list = []
+            for column_name, column_config in columns_config.items():
+                normalized_column = StrategyParser.__normalize_column_config(column_config)
+                normalized_column["column_name"] = column_name
+                column_list = normalized_column
+
+            return column_list
+
+    def __parse_update_column(self, column_config):
 
         update_column_type = UpdateColumnStrategyTypes.from_value(column_config.pop("type"))
         try:
@@ -96,24 +119,17 @@ class StrategyParser:
             # TypeError can be thrown when the dict args dont match the constructors for the types. We need to re-throw
             raise ConfigSyntaxError()
 
-    def __parse_update_column_map(self,  column_map):
-        parsed_columns = {}
-        for name, column_config in column_map.items():
-            parsed_columns[name] = self.__parse_update_column(column_config)
-
-        return parsed_columns
-
     def __parse_table(self, table_config):
-        table_config = StrategyParser.__normalize_table_config(table_config)
-
-        table_strategy = TableStrategyTypes.from_value(table_config["type"])
+        table_strategy = TableStrategyTypes.from_value(table_config.pop("type"))
 
         if table_strategy == TableStrategyTypes.TRUNCATE:
-            return TruncateTableStrategy()
+            return TruncateTableStrategy(**table_config)
         elif table_strategy == TableStrategyTypes.UPDATE_COLUMNS:
-            raw_column_map = table_config["columns"]
-            column_strategy_map = self.__parse_update_column_map(raw_column_map)
-            return UpdateColumnsTableStrategy(column_strategy_map)
+            # update columns supports dict and list columns, so this has to be normalized again during parsing.
+            normalized_columns = StrategyParser.__normalize_update_columns_list( table_config.pop("columns") )
+            parsed_columns = [self.__parse_update_column(column) for column in normalized_columns]
+
+            return UpdateColumnsTableStrategy(column_strategies=parsed_columns, **table_config)
         else:
             raise UnknownTableStrategyError(table_config)
 
@@ -123,11 +139,11 @@ class StrategyParser:
         :param raw_config:
         :return:
         """
-        # Deepcopy raw_config to avoid mutability issues
-        config = deepcopy(raw_config)
-        table_strategies = {}
-        for table_name, table_config in config["tables"].items():
-            table_strategies[table_name] = self.__parse_table(table_config)
+        # Deepcopy raw_config to avoid normalization mutability issues
+        config = StrategyParser.__normalize_config( deepcopy(raw_config) )
+        table_strategies = []
+        for table_config in config["tables"]:
+            table_strategies.append( self.__parse_table(table_config) )
 
         scripts = {}
         try:

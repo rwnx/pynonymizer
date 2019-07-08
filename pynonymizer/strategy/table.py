@@ -1,4 +1,5 @@
 from enum import Enum
+from abc import ABC, abstractmethod
 
 
 class TableStrategyTypes(Enum):
@@ -13,33 +14,42 @@ class TableStrategyTypes(Enum):
             return None
 
 
-# boilerplate abstract class for future use
-class TableStrategy():
-    pass
+class TableStrategy(ABC):
+    def __init__(self, table_name):
+        self.table_name = table_name
 
 
 class TruncateTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.TRUNCATE
-    pass
 
 
 class UpdateColumnsTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.UPDATE_COLUMNS
 
-    def __init__(self, column_strategies):
+    def __init__(self, table_name, column_strategies):
+        super().__init__(table_name)
         self.__column_strategies = column_strategies
+
+    def group_by_where(self):
+        """
+        returns a map of columns, grouped in a map of where conditions
+        :return:
+        """
+        grouped_columns = {}
+
+        for column_strategy in self.__column_strategies:
+            where_condition = column_strategy.where
+            if where_condition not in grouped_columns:
+                grouped_columns[where_condition] = {}
+
+            grouped_columns[where_condition][column_strategy.column_name] = column_strategy
+
+        return grouped_columns
 
     @property
     def column_strategies(self):
-        column_strategies = {}
-        for column_name, column_strategy in self.__column_strategies.items():
-            column_strategies[column_name] = column_strategy
-
-        return column_strategies
+        return self.__column_strategies
 
     def get_column_strategies(self):
-        """
-        Legacy, replace with property
-        :return:
-        """
+        """Legacy, replace with property"""
         return self.column_strategies

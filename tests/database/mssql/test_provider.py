@@ -5,7 +5,7 @@ from unittest.mock import patch, Mock
 
 @pytest.fixture
 def provider():
-    return MsSqlProvider("DB_HOST", "DB_USER", "DB_PASS", "DB_NAME")
+    return MsSqlProvider(None, "DB_USER", "DB_PASS", "DB_NAME")
 
 
 @patch("pyodbc.connect")

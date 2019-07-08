@@ -89,6 +89,7 @@ def get_drop_database(database_name):
 
 def get_update_table(seed_table_name, table_name, column_strategies):
     # group on where_condition
+    # TODO: replace with table_strategy.group_by_where
     grouped_columns = {}
     for column_name, column_strategy in column_strategies.items():
         where_condition = column_strategy.where_condition

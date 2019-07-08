@@ -1,6 +1,6 @@
 from enum import Enum
 from pynonymizer.fake import  UnsupportedFakeTypeError
-
+from abc import ABC, abstractmethod
 
 class UpdateColumnStrategyTypes(Enum):
     EMPTY = "EMPTY"
@@ -21,8 +21,9 @@ class UpdateColumnStrategyTypes(Enum):
 
 
 # boilerplate abstract class for future use
-class UpdateColumnStrategy:
-    def __init__(self, where=None):
+class UpdateColumnStrategy(ABC):
+    def __init__(self, column_name, where=None):
+        self.column_name = column_name
         self.where_condition = where
 
 
