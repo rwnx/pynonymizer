@@ -16,16 +16,12 @@ _FAKE_COLUMN_TYPES = {
 # https://bugs.mysql.com/bug.php?id=89474, use md5 based rand subqueries for unique values (rather than UUIDs)
 _RAND_MD5 = "MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND()))"
 
-def _get_qualifer_map(column_fake_update_strategy_map):
-    return {
-        strategy.qualifier: strategy for column_name, strategy in column_fake_update_strategy_map.items()
-    }
 
 def _get_sql_type(data_type):
     return _FAKE_COLUMN_TYPES[data_type]
 
 
-def _get_column_subquery(seed_table_name, column_name, column_strategy):
+def _get_column_subquery(seed_table_name, column_strategy):
     if column_strategy.strategy_type == UpdateColumnStrategyTypes.EMPTY:
         return "('')"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
@@ -55,11 +51,9 @@ def get_truncate_table(table_name):
     return f"SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `{table_name}`; SET FOREIGN_KEY_CHECKS=1;"
 
 
-def get_create_seed_table(table_name, fake_update_strategies):
-    if len(fake_update_strategies) < 1:
+def get_create_seed_table(table_name, qualifier_map):
+    if len(qualifier_map) < 1:
         raise ValueError("Cannot create a seed table with no columns")
-
-    qualifier_map = _get_qualifer_map(fake_update_strategies)
 
     create_columns = [f"`{qualifier}` {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
 
@@ -70,8 +64,7 @@ def get_drop_seed_table(table_name):
     return f"DROP TABLE IF EXISTS `{table_name}`;"
 
 
-def get_insert_seed_row(table_name, fake_update_strats):
-    qualifier_map = _get_qualifer_map(fake_update_strats)
+def get_insert_seed_row(table_name, qualifier_map):
 
     column_names = ",".join( [f"`{qualifier}`" for qualifier in qualifier_map.keys()] )
     column_values = ",".join( [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()] )
@@ -87,34 +80,23 @@ def get_drop_database(database_name):
     return f"DROP DATABASE IF EXISTS `{database_name}`;"
 
 
-def get_update_table(seed_table_name, table_name, column_strategies):
+def get_update_table(seed_table_name, update_table_strategy):
     # group on where_condition
-    # TODO: replace with table_strategy.group_by_where
-    grouped_columns = {}
-    for column_name, column_strategy in column_strategies.items():
-        where_condition = column_strategy.where_condition
-        if where_condition not in grouped_columns:
-            grouped_columns[where_condition] = {}
-
-        grouped_columns[where_condition][column_name] = column_strategy
-
     # build lists of update statements based on the where
     output_statements = []
     where_update_statements = {}
-    for where, column_map in grouped_columns.items():
+    for where, column_map in update_table_strategy.group_by_where().items():
+        where_update_statements[where] = []
         for column_name, column_strategy in column_map.items():
-            if where not in where_update_statements:
-                where_update_statements[where] = []
-
             where_update_statements[where].append("`{}` = {}".format(
                 column_name,
-                _get_column_subquery(seed_table_name, column_name, column_strategy))
+                _get_column_subquery(seed_table_name, column_strategy))
             )
 
         assignments = ",".join( where_update_statements[where] )
         where_clause = f" WHERE {where}" if where else ""
 
-        output_statements.append( f"UPDATE `{table_name}` SET {assignments}{where_clause};")
+        output_statements.append( f"UPDATE `{update_table_strategy.table_name}` SET {assignments}{where_clause};")
 
     return output_statements
 

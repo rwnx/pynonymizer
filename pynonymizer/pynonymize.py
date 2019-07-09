@@ -30,9 +30,6 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
     if db_type is None:
         db_type = "mysql"
 
-    if db_host is None:
-        db_host = "127.0.0.1"
-
     if fake_locale is None:
         fake_locale = "en_GB"
 

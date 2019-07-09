@@ -90,12 +90,17 @@ class StrategyParser:
             for column_name, column_config in columns_config.items():
                 normalized_column = StrategyParser.__normalize_column_config(column_config)
                 normalized_column["column_name"] = column_name
-                column_list = normalized_column
+                column_list.append( normalized_column )
 
             return column_list
 
-    def __parse_update_column(self, column_config):
+        elif isinstance(columns_config, list):
+            return [StrategyParser.__normalize_column_config(col) for col in columns_config]
+        else:
+            raise ConfigSyntaxError("Unknown update column config syntax: {}".format(columns_config))
 
+
+    def __parse_update_column(self, column_config):
         update_column_type = UpdateColumnStrategyTypes.from_value(column_config.pop("type"))
         try:
             if update_column_type == UpdateColumnStrategyTypes.EMPTY:
@@ -108,7 +113,7 @@ class StrategyParser:
                 return UniqueEmailUpdateColumnStrategy(**column_config)
 
             elif update_column_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-                return FakeUpdateColumnStrategy(self.fake_seeder, **column_config)
+                return FakeUpdateColumnStrategy(fake_column_generator=self.fake_seeder, **column_config)
 
             elif update_column_type == UpdateColumnStrategyTypes.LITERAL:
                 return LiteralUpdateColumnStrategy(**column_config)
@@ -122,16 +127,23 @@ class StrategyParser:
     def __parse_table(self, table_config):
         table_strategy = TableStrategyTypes.from_value(table_config.pop("type"))
 
-        if table_strategy == TableStrategyTypes.TRUNCATE:
-            return TruncateTableStrategy(**table_config)
-        elif table_strategy == TableStrategyTypes.UPDATE_COLUMNS:
-            # update columns supports dict and list columns, so this has to be normalized again during parsing.
-            normalized_columns = StrategyParser.__normalize_update_columns_list( table_config.pop("columns") )
-            parsed_columns = [self.__parse_update_column(column) for column in normalized_columns]
+        try:
+            if table_strategy == TableStrategyTypes.TRUNCATE:
+                return TruncateTableStrategy(**table_config)
+            elif table_strategy == TableStrategyTypes.UPDATE_COLUMNS:
+                # update columns supports dict and list columns, so this has to be normalized again during parsing.
+                normalized_columns = StrategyParser.__normalize_update_columns_list(table_config.pop("columns"))
+                parsed_columns = [self.__parse_update_column(column) for column in normalized_columns]
 
-            return UpdateColumnsTableStrategy(column_strategies=parsed_columns, **table_config)
-        else:
-            raise UnknownTableStrategyError(table_config)
+                return UpdateColumnsTableStrategy(column_strategies=parsed_columns, **table_config)
+            else:
+                raise UnknownTableStrategyError(table_config)
+
+        except TypeError as error:
+            # TypeError can be thrown when the dict args dont match the constructors for the types. We need to re-throw
+            raise ConfigSyntaxError()
+
+
 
     def parse_config(self, raw_config):
         """
@@ -140,15 +152,26 @@ class StrategyParser:
         :return:
         """
         # Deepcopy raw_config to avoid normalization mutability issues
-        config = StrategyParser.__normalize_config( deepcopy(raw_config) )
+        config = StrategyParser.__normalize_config(deepcopy(raw_config))
         table_strategies = []
         for table_config in config["tables"]:
-            table_strategies.append( self.__parse_table(table_config) )
+            table_strategies.append(self.__parse_table(table_config))
 
-        scripts = {}
+        before_scripts = None
+        after_scripts = None
         try:
             scripts = config["scripts"]
+
+            if "before" in scripts:
+                before_scripts = scripts["before"]
+
+            if "after" in scripts:
+                after_scripts = scripts["after"]
         except KeyError:
             pass
 
-        return DatabaseStrategy(table_strategies, scripts)
+        return DatabaseStrategy(
+            table_strategies=table_strategies,
+            before_scripts=before_scripts,
+            after_scripts=after_scripts
+        )

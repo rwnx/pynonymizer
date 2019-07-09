@@ -28,7 +28,9 @@ class UpdateColumnsTableStrategy(TableStrategy):
 
     def __init__(self, table_name, column_strategies):
         super().__init__(table_name)
-        self.__column_strategies = column_strategies
+        self.__column_strategies = []
+        for column_strategy in column_strategies:
+            self.__column_strategies.append(column_strategy)
 
     def group_by_where(self):
         """
@@ -38,7 +40,7 @@ class UpdateColumnsTableStrategy(TableStrategy):
         grouped_columns = {}
 
         for column_strategy in self.__column_strategies:
-            where_condition = column_strategy.where
+            where_condition = column_strategy.where_condition
             if where_condition not in grouped_columns:
                 grouped_columns[where_condition] = {}
 

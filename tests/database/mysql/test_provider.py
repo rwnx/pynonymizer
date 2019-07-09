@@ -10,15 +10,14 @@ from pynonymizer.strategy.update_column import UniqueEmailUpdateColumnStrategy, 
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 
 
-class MySqlProviderInitTest(unittest.TestCase):
-    @patch("pynonymizer.database.mysql.execution", autospec=True)
-    def test_init_runners_correctly(self, execution):
-        """
-        Test the provider inits dependencies with the correct database information
-        """
-        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        execution.MySqlCmdRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
-        execution.MySqlDumpRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
+@patch("pynonymizer.database.mysql.execution", autospec=True)
+def test_init_runners_correctly(execution):
+    """
+    Test the provider inits dependencies with the correct database information
+    """
+    MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    execution.MySqlCmdRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
+    execution.MySqlDumpRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
 
 
 @patch("pynonymizer.database.mysql.execution", autospec=True)
@@ -86,23 +85,23 @@ class DatabaseQueryExecTests(unittest.TestCase):
     def test_anonymize_database_unsupported_table_strategy(self, query_factory, execution):
         with pytest.raises(UnsupportedTableStrategyError) as e_info:
             provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-            database_strategy = DatabaseStrategy({
-                    "table1": Mock(spec=TruncateTableStrategy, strategy_type="DEFINITELY_NOT_A_SUPPORTED_STRATEGY_TYPE"),
-            })
+            database_strategy = DatabaseStrategy([
+                    Mock(table_name="table1", spec=TruncateTableStrategy, strategy_type="DEFINITELY_NOT_A_SUPPORTED_STRATEGY_TYPE"),
+            ])
             provider.anonymize_database(database_strategy)
 
 
     def test_anonymize_database(self, query_factory, execution):
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        database_strategy = DatabaseStrategy({
-                "table1": TruncateTableStrategy(),
-                "table2": UpdateColumnsTableStrategy({
-                    "column1": UniqueEmailUpdateColumnStrategy(),
-                    "column2": UniqueLoginUpdateColumnStrategy(),
-                    "column3": FakeUpdateColumnStrategy(Mock(), "user_name"),
-                    "column4": EmptyUpdateColumnStrategy()
-                })
-            })
+        database_strategy = DatabaseStrategy([
+                TruncateTableStrategy("table1"),
+                UpdateColumnsTableStrategy("table2", [
+                    UniqueEmailUpdateColumnStrategy("column1"),
+                    UniqueLoginUpdateColumnStrategy("column2"),
+                    FakeUpdateColumnStrategy("column3", Mock(), "user_name"),
+                    EmptyUpdateColumnStrategy("column4")
+                ])
+            ])
 
         provider.anonymize_database(database_strategy)
 
@@ -118,12 +117,10 @@ class DatabaseQueryExecTests(unittest.TestCase):
         manager.attach_mock(execution, "execution")
 
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        database_strategy = DatabaseStrategy({
-                "table1": TruncateTableStrategy()
-            },
-            {
-                "before": ["SELECT `before` FROM `before_table`;"],
-            }
+        database_strategy = DatabaseStrategy(table_strategies=[
+                TruncateTableStrategy("table1")
+            ],
+            before_scripts=["SELECT `before` FROM `before_table`;"]
         )
 
         provider.anonymize_database(database_strategy)
@@ -139,12 +136,10 @@ class DatabaseQueryExecTests(unittest.TestCase):
         manager.attach_mock(execution, "execution")
 
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-        database_strategy = DatabaseStrategy({
-                "table1": TruncateTableStrategy()
-            },
-            {
-                "after": ["SELECT `after` FROM `after_table`;"]
-            }
+        database_strategy = DatabaseStrategy(table_strategies=[
+                TruncateTableStrategy("table1")
+            ],
+            after_scripts=["SELECT `after` FROM `after_table`;"]
         )
         provider.anonymize_database(database_strategy)
 

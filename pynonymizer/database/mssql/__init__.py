@@ -16,7 +16,8 @@ class MsSqlProvider(DatabaseProvider):
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
         if db_host is not None:
             raise ValueError("MsSqlProvider does not support remove servers due to backup file location requirements. "
-                             "You must omit db_host from your configuration and run pynonymizer on the server.")
+                             "You must omit db_host from your configuration and run pynonymizer on the same "
+                             "server as the database.")
 
         db_host = "(local)"
         super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
@@ -72,7 +73,7 @@ class MsSqlProvider(DatabaseProvider):
     def __get_default_logfolder(self):
         """
         Locate the default log folder using the `model` database location
-        __get_default_datafolder: for more info
+        __get_default_datafolder: see for more info
         :return:
         """
         logfile = self.__execute("""
@@ -112,16 +113,16 @@ class MsSqlProvider(DatabaseProvider):
 
         return move_file_map
 
-    def __backup_restore_progress(self, cursor):
+    def __async_operation_progress(self, desc, cursor):
         # With STATS=x, we should recieve 100/x resultsets, provided the backup is slow enough.
         # With some databases, it will jump from y% to 100, so we'll only get <x nextset calls.
         # Even SSMS doesn't get informed - this is the best we can do at the moment
-        with tqdm(desc="Restoring database", total=math.floor(100 / self.__STATS)) as progressbar:
+        with tqdm(desc=desc, total=math.floor(100 / self.__STATS)) as progressbar:
             while cursor.nextset():
                 progressbar.update()
 
             # finish the progress - less confusing than a dangling 40% progressbar
-            progressbar.update(tqdm.total - tqdm.n)
+            progressbar.update(progressbar.total - progressbar.n)
 
     def test_connection(self):
         try:
@@ -131,13 +132,13 @@ class MsSqlProvider(DatabaseProvider):
             return False
 
     def create_database(self):
-        self.logger.debug("MSSQL: create_database ignored, database will be created when the database is restored")
+        self.logger.warn("MSSQL: create_database ignored, database will be created when the database is restored")
 
     def drop_database(self):
-        self.__execute(f"DROP DATABASE IF EXISTS ?;", [self.db_name])
+        self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
-        pass
+        self.logger.warn("MSSQL: anonymize_database not yet implemented")
 
     def restore_database(self, input_path):
         move_files = self.__get_file_moves(input_path)
@@ -151,9 +152,9 @@ class MsSqlProvider(DatabaseProvider):
         restore_cursor = self.__execute(f"RESTORE DATABASE ? FROM DISK = ? WITH {move_clauses}, STATS = ?;",
                                         [self.db_name, input_path, *move_clause_params, self.__STATS])
 
-        self.__backup_restore_progress(restore_cursor)
+        self.__async_operation_progress("Restoring Database", restore_cursor)
 
     def dump_database(self, output_path):
         dump_cursor = self.__execute(f"BACKUP DATABASE ? TO DISK = ? WITH STATS = ?;", [self.db_name, output_path, self.__STATS])
-        self.__backup_restore_progress(dump_cursor)
+        self.__async_operation_progress("Dumping Database", dump_cursor)
 

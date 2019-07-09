@@ -21,18 +21,20 @@ class MySqlProvider(DatabaseProvider):
     logger = log.get_logger(__name__)
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
+        if db_host is None:
+            db_host = "127.0.0.1"
         super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
         self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name)
         self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name)
 
-    def __anonymize_table(self, table_name, table_strategy, progressbar):
+    def __anonymize_table(self, table_strategy, progressbar):
         if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-            progressbar.set_description("Truncating {}".format(table_name))
-            self.__runner.db_execute(query_factory.get_truncate_table(table_name))
+            progressbar.set_description("Truncating {}".format(table_strategy.table_name))
+            self.__runner.db_execute(query_factory.get_truncate_table(table_strategy.table_name))
 
         elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
-            progressbar.set_description("Anonymizing {}".format(table_name))
-            statements = query_factory.get_update_table(self.__SEED_TABLE_NAME, table_name, table_strategy.column_strategies)
+            progressbar.set_description("Anonymizing {}".format(table_strategy.table_name))
+            statements = query_factory.get_update_table(self.__SEED_TABLE_NAME, table_strategy)
             self.__runner.db_execute(statements)
 
         else:
@@ -40,13 +42,13 @@ class MySqlProvider(DatabaseProvider):
 
         progressbar.update()
 
-    def __seed(self, fake_update_strats):
+    def __seed(self, qualifier_map):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
         for i in tqdm(range(0, self.seed_rows), desc="Inserting seed data", unit="rows"):
             self.logger.debug(f"Inserting seed row {i}")
-            self.__runner.db_execute(query_factory.get_insert_seed_row(self.__SEED_TABLE_NAME, fake_update_strats))
+            self.__runner.db_execute(query_factory.get_insert_seed_row(self.__SEED_TABLE_NAME, qualifier_map))
 
     def __estimate_dumpsize(self):
         """
@@ -88,17 +90,14 @@ class MySqlProvider(DatabaseProvider):
         :param database_strategy: a strategy.DatabaseStrategy configuration
         :return:
         """
-        # Filter supported columns so we're not seeding ALL types by default
-        column_strats = database_strategy.get_all_column_strategies()
+        qualifier_map = database_strategy.fake_update_qualifier_map
 
-        fake_update_strategies = { k: v for k, v in column_strats.items() if v.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE}
-
-        self.logger.info("creating seed table with %d columns", len(fake_update_strategies))
-        create_seed_table_sql = query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, fake_update_strategies)
+        self.logger.info("creating seed table with %d columns", len(qualifier_map))
+        create_seed_table_sql = query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, qualifier_map)
         self.__runner.db_execute(create_seed_table_sql)
 
         self.logger.info("Inserting seed data")
-        self.__seed(fake_update_strategies)
+        self.__seed(qualifier_map)
 
         try:
             for i, before_script in enumerate(database_strategy.scripts["before"]):
@@ -111,8 +110,8 @@ class MySqlProvider(DatabaseProvider):
         self.logger.info("Anonymizing %d tables", len(table_strategies))
 
         with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
-            for table_name, table_strategy in table_strategies.items():
-                self.__anonymize_table(table_name, table_strategy, progressbar)
+            for table_strategy in table_strategies:
+                self.__anonymize_table(table_strategy, progressbar)
 
         try:
             for i, after_script in enumerate(database_strategy.scripts["after"]):
