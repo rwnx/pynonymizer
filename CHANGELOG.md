@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Add MSSQL support
 - Changed mandatory arguments for main process to account for different process step permutations:
     - input is optional if RESTORE_DB is skipped
     - strategyfile is optional if ANONYMIZE_DB is skipped
