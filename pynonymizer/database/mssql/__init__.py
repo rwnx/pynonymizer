@@ -132,13 +132,13 @@ class MsSqlProvider(DatabaseProvider):
             return False
 
     def create_database(self):
-        self.logger.warn("MSSQL: create_database ignored, database will be created when the database is restored")
+        self.logger.warning("MSSQL: create_database ignored, database will be created when the database is restored")
 
     def drop_database(self):
         self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
-        self.logger.warn("MSSQL: anonymize_database not yet implemented")
+        self.logger.warning("MSSQL: anonymize_database not yet implemented")
 
     def restore_database(self, input_path):
         move_files = self.__get_file_moves(input_path)
