@@ -3,7 +3,7 @@ import pyodbc
 import math
 from tqdm import tqdm
 import os
-from pathlib import Path
+from pathlib import PureWindowsPath
 from pynonymizer.log import get_logger
 
 
@@ -69,7 +69,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 0
         """).fetchone()[0]
 
-        return Path(datafile).parent
+        return PureWindowsPath(datafile).parent
 
     def __get_default_logfolder(self):
         """
@@ -85,7 +85,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 1
         """).fetchone()[0]
 
-        return Path(logfile).parent
+        return PureWindowsPath(logfile).parent
 
     def __get_file_moves(self, input_path):
         """
@@ -101,7 +101,7 @@ class MsSqlProvider(DatabaseProvider):
         for file in filelist:
             name = file[0]
             type = file[2].upper()
-            filepath = Path(file[1])
+            filepath = PureWindowsPath(file[1])
 
             # log files can go into the default log directory, everything else can go into the data directory
             if type == "L":
