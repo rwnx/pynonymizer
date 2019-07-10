@@ -70,6 +70,7 @@ def test_restore_database(connect, provider):
     connect.return_value.execute.side_effect = mock_restore_side_effect
     provider.restore_database("test.bak")
 
+    print(connect.return_value.execute.call_args_list)
     connect.return_value.execute.assert_any_call( 'RESTORE DATABASE ? FROM DISK = ? WITH MOVE ? TO ?, MOVE ? TO ?, MOVE ? TO ?, STATS = ?;', ['DB_NAME', 'test.bak', 'AdventureWorks2016_EXT_Data', 'C:\\DB_NAME_AdventureWorks2016_EXT_Data.mdf', 'AdventureWorks2016_EXT_Log', 'C:\\DB_NAME_AdventureWorks2016_EXT_Log.ldf', 'AdventureWorks2016_EXT_mod', 'C:\\DB_NAME_AdventureWorks2016_EXT_mod', 5])
 
 
