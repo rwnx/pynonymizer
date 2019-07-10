@@ -3,6 +3,7 @@ import pyodbc
 import math
 from tqdm import tqdm
 import os
+from pathlib import Path
 from pynonymizer.log import get_logger
 
 
@@ -68,7 +69,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 0
         """).fetchone()[0]
 
-        return os.path.dirname(datafile)
+        return Path(datafile).parent
 
     def __get_default_logfolder(self):
         """
@@ -84,7 +85,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 1
         """).fetchone()[0]
 
-        return os.path.dirname(logfile)
+        return Path(logfile).parent
 
     def __get_file_moves(self, input_path):
         """
@@ -105,9 +106,9 @@ class MsSqlProvider(DatabaseProvider):
 
             # log files can go into the default log directory, everything else can go into the data directory
             if type == "L":
-                target_path = os.path.join(logdir, f"{self.db_name}_{basename}")
+                target_path = str(logdir.joinpath(f"{self.db_name}_{basename}"))
             else:
-                target_path = os.path.join(datadir, f"{self.db_name}_{basename}")
+                target_path = str(datadir.joinpath(f"{self.db_name}_{basename}"))
 
             move_file_map[name] = target_path
 
