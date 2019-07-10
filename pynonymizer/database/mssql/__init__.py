@@ -100,15 +100,14 @@ class MsSqlProvider(DatabaseProvider):
         move_file_map = {}
         for file in filelist:
             name = file[0]
-            full_path = file[1]
             type = file[2].upper()
-            basename = os.path.basename(full_path)
+            filepath = Path(file[1])
 
             # log files can go into the default log directory, everything else can go into the data directory
             if type == "L":
-                target_path = str(logdir.joinpath(f"{self.db_name}_{basename}"))
+                target_path = str(logdir.joinpath(f"{self.db_name}_{filepath.name}"))
             else:
-                target_path = str(datadir.joinpath(f"{self.db_name}_{basename}"))
+                target_path = str(datadir.joinpath(f"{self.db_name}_{filepath.name}"))
 
             move_file_map[name] = target_path
 
