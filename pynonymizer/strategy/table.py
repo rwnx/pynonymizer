@@ -15,8 +15,9 @@ class TableStrategyTypes(Enum):
 
 
 class TableStrategy(ABC):
-    def __init__(self, table_name):
+    def __init__(self, table_name, schema=None):
         self.table_name = table_name
+        self.schema = schema
 
 
 class TruncateTableStrategy(TableStrategy):
@@ -26,8 +27,8 @@ class TruncateTableStrategy(TableStrategy):
 class UpdateColumnsTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.UPDATE_COLUMNS
 
-    def __init__(self, table_name, column_strategies):
-        super().__init__(table_name)
+    def __init__(self, table_name, column_strategies, schema=None):
+        super().__init__(table_name=table_name, schema=schema)
         self.__column_strategies = []
         for column_strategy in column_strategies:
             self.__column_strategies.append(column_strategy)
