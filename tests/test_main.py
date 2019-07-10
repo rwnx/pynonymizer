@@ -36,7 +36,8 @@ class MainArgTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step="TEST_START_AT_STEP",
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
-            stop_at_step="TEST_STOP_AT_STEP"
+            stop_at_step="TEST_STOP_AT_STEP",
+            seed_rows=None
         )
     def test_dotenv_called(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
@@ -77,7 +78,8 @@ class MainArgTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step="TEST_START_AT_STEP",
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
-            stop_at_step="TEST_STOP_AT_STEP"
+            stop_at_step="TEST_STOP_AT_STEP",
+            seed_rows=None
         )
 
     def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
@@ -103,7 +105,8 @@ class MainArgTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step="TEST_START_AT_STEP",
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
-            stop_at_step="TEST_STOP_AT_STEP"
+            stop_at_step="TEST_STOP_AT_STEP",
+            seed_rows=None
         )
 
 
@@ -155,10 +158,11 @@ class MainProcessTests(unittest.TestCase):
             db_name="TEST_NAME",
             db_user="TEST_USER",
             db_password="TEST_PASSWORD",
-            fake_locale="TEST_LOCALE"
+            fake_locale="TEST_LOCALE",
+            seed_rows=999
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=999)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -182,7 +186,7 @@ class MainProcessTests(unittest.TestCase):
             stop_at_step="ANONYMIZE_DB"
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -206,7 +210,7 @@ class MainProcessTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             skip_steps=["ANONYMIZE_DB", "CREATE_DB", "DUMP_DB"]
         )
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -231,7 +235,7 @@ class MainProcessTests(unittest.TestCase):
             start_at_step="ANONYMIZE_DB"
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -282,7 +286,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -310,7 +314,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -337,7 +341,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             skip_steps=None
         )
 
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -363,7 +367,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step=None,
             skip_steps=["ANONYMIZE_DB"]
         )
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -389,7 +393,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step=None,
             skip_steps=None
         )
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -415,7 +419,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step="RESTORE_DB",
             skip_steps=None
         )
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -443,7 +447,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -469,7 +473,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             stop_at_step=None,
             skip_steps=None
         )
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()
@@ -497,7 +501,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with("TEST_TYPE", "TEST_HOST", "TEST_USER", "TEST_PASSWORD", "TEST_NAME")
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
         provider.test_connection.assert_called()

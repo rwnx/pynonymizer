@@ -78,7 +78,7 @@ def create_parser():
 
     parser.add_argument("--seed-rows",
                         default=os.getenv("PYNONYMIZER_SEED_ROWS"),
-                        help="Specify a number of rows to populate the fake data table with.  [$PYNONYMIZER_SEED_ROWS]")
+                        help="Specify a number of rows to populate the fake data table used during anonymization.  [$PYNONYMIZER_SEED_ROWS]")
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
