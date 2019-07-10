@@ -86,7 +86,7 @@ class DatabaseQueryExecTests(unittest.TestCase):
         with pytest.raises(UnsupportedTableStrategyError) as e_info:
             provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
             database_strategy = DatabaseStrategy([
-                    Mock(table_name="table1", spec=TruncateTableStrategy, strategy_type="DEFINITELY_NOT_A_SUPPORTED_STRATEGY_TYPE"),
+                    Mock(table_name="table1", strategy_type="DEFINITELY_NOT_A_SUPPORTED_STRATEGY_TYPE"),
             ])
             provider.anonymize_database(database_strategy)
 
