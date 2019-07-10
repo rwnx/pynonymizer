@@ -143,7 +143,7 @@ def test_get_insert_seed_row(qualifier_column_map):
 
 
 def test_get_create_seed_table(qualifier_column_map):
-    assert query_factory.get_create_seed_table("seed_table", qualifier_column_map) == "CREATE TABLE `seed_table` (`first_name` VARCHAR(4096),`last_name` INT,`first_name_test_arg_5` VARCHAR(4096));"
+    assert query_factory.get_create_seed_table("seed_table", qualifier_column_map) == "CREATE TABLE `seed_table` (`first_name` VARCHAR(65535),`last_name` INT,`first_name_test_arg_5` VARCHAR(65535));"
 
 
 def test_get_create_seed_table_no_columns():

@@ -6,7 +6,7 @@ from pynonymizer.fake import FakeDataType
 All Static query generation functions
 """
 _FAKE_COLUMN_TYPES = {
-    FakeDataType.STRING: "VARCHAR(4096)",
+    FakeDataType.STRING: "VARCHAR(65535)",
     FakeDataType.DATE: "DATE",
     FakeDataType.DATETIME: "DATETIME",
     FakeDataType.INT: "INT"

@@ -1,3 +1,4 @@
+from pynonymizer.database.provider import SEED_TABLE_NAME
 from tqdm import tqdm
 from pynonymizer import log
 from pynonymizer.database.provider import DatabaseProvider
@@ -15,7 +16,6 @@ class MySqlProvider(DatabaseProvider):
     Because of the efficiency of piping mass amounts of sql into the command-line client.
     Unfortunately, this implementation provides limited feedback when things go wrong.
     """
-    __SEED_TABLE_NAME = "_pynonymizer_seed_fake_data"
     __CHUNK_SIZE = 8192
     __DUMPSIZE_ESTIMATE_INFLATION = 1.15
     logger = log.get_logger(__name__)
@@ -27,28 +27,13 @@ class MySqlProvider(DatabaseProvider):
         self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name)
         self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name)
 
-    def __anonymize_table(self, table_strategy, progressbar):
-        if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-            progressbar.set_description("Truncating {}".format(table_strategy.table_name))
-            self.__runner.db_execute(query_factory.get_truncate_table(table_strategy.table_name))
-
-        elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
-            progressbar.set_description("Anonymizing {}".format(table_strategy.table_name))
-            statements = query_factory.get_update_table(self.__SEED_TABLE_NAME, table_strategy)
-            self.__runner.db_execute(statements)
-
-        else:
-            raise UnsupportedTableStrategyError(table_strategy)
-
-        progressbar.update()
-
     def __seed(self, qualifier_map):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
         for i in tqdm(range(0, self.seed_rows), desc="Inserting seed data", unit="rows"):
             self.logger.debug(f"Inserting seed row {i}")
-            self.__runner.db_execute(query_factory.get_insert_seed_row(self.__SEED_TABLE_NAME, qualifier_map))
+            self.__runner.db_execute(query_factory.get_insert_seed_row(SEED_TABLE_NAME, qualifier_map))
 
     def __estimate_dumpsize(self):
         """
@@ -67,21 +52,20 @@ class MySqlProvider(DatabaseProvider):
     def __read_until_empty_byte(self, data):
         return iter(lambda: data.read(self.__CHUNK_SIZE), b'')
 
+    def __run_scripts(self, script_list, title=""):
+        for i, script in enumerate(script_list):
+            self.logger.info(f"Running f{title} script #{i} \"{script[:50]}\"")
+            self.logger.info(self.__runner.db_execute(script).decode())
+
     def test_connection(self):
         return self.__runner.test()
 
     def create_database(self):
-        """
-        Create the working database
-        :return:
-        """
+        """Create the working database"""
         self.__runner.execute(query_factory.get_create_database(self.db_name))
 
     def drop_database(self):
-        """
-        Drop the working database
-        :return:
-        """
+        """Drop the working database"""
         self.__runner.execute(query_factory.get_drop_database(self.db_name))
 
     def anonymize_database(self, database_strategy):
@@ -93,35 +77,37 @@ class MySqlProvider(DatabaseProvider):
         qualifier_map = database_strategy.fake_update_qualifier_map
 
         self.logger.info("creating seed table with %d columns", len(qualifier_map))
-        create_seed_table_sql = query_factory.get_create_seed_table(self.__SEED_TABLE_NAME, qualifier_map)
+        create_seed_table_sql = query_factory.get_create_seed_table(SEED_TABLE_NAME, qualifier_map)
         self.__runner.db_execute(create_seed_table_sql)
 
         self.logger.info("Inserting seed data")
         self.__seed(qualifier_map)
 
-        try:
-            for i, before_script in enumerate(database_strategy.scripts["before"]):
-                self.logger.info(f"Running before script {i} \"{before_script[:50]}\"")
-                self.logger.info(self.__runner.db_execute(before_script).decode())
-        except KeyError:
-            pass
+        self.__run_scripts(database_strategy.before_scripts, "before")
 
         table_strategies = database_strategy.table_strategies
         self.logger.info("Anonymizing %d tables", len(table_strategies))
 
         with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
             for table_strategy in table_strategies:
-                self.__anonymize_table(table_strategy, progressbar)
+                if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
+                    progressbar.set_description("Truncating {}".format(table_strategy.table_name))
+                    self.__runner.db_execute(query_factory.get_truncate_table(table_strategy.table_name))
 
-        try:
-            for i, after_script in enumerate(database_strategy.scripts["after"]):
-                self.logger.info(f"Running after script {i}: \"{after_script[:50]}\"")
-                self.logger.info( self.__runner.db_execute(after_script).decode() )
-        except KeyError:
-            pass
+                elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
+                    progressbar.set_description("Anonymizing {}".format(table_strategy.table_name))
+                    statements = query_factory.get_update_table(SEED_TABLE_NAME, table_strategy)
+                    self.__runner.db_execute(statements)
+
+                else:
+                    raise UnsupportedTableStrategyError(table_strategy)
+
+                progressbar.update()
+
+        self.__run_scripts(database_strategy.after_scripts, "after")
 
         self.logger.info("dropping seed table")
-        self.__runner.db_execute(query_factory.get_drop_seed_table(self.__SEED_TABLE_NAME))
+        self.__runner.db_execute(query_factory.get_drop_seed_table(SEED_TABLE_NAME))
 
     def restore_database(self, input_path):
         """

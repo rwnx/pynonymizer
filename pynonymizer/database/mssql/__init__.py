@@ -1,4 +1,9 @@
 from pynonymizer.database.provider import DatabaseProvider
+from pynonymizer.database.provider import SEED_TABLE_NAME
+from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
+from pynonymizer.strategy.table import TableStrategyTypes
+from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, UnsupportedTableStrategyError
+from pynonymizer.fake import FakeDataType
 import pyodbc
 import math
 from tqdm import tqdm
@@ -6,6 +11,12 @@ import os
 from pathlib import PureWindowsPath
 from pynonymizer.log import get_logger
 
+_FAKE_COLUMN_TYPES = {
+    FakeDataType.STRING: "VARCHAR(MAX)",
+    FakeDataType.DATE: "DATE",
+    FakeDataType.DATETIME: "DATETIME",
+    FakeDataType.INT: "INT"
+}
 
 class MsSqlProvider(DatabaseProvider):
     """
@@ -116,13 +127,60 @@ class MsSqlProvider(DatabaseProvider):
     def __async_operation_progress(self, desc, cursor):
         # With STATS=x, we should recieve 100/x resultsets, provided the backup is slow enough.
         # With some databases, it will jump from y% to 100, so we'll only get <x nextset calls.
-        # Even SSMS doesn't get informed - this is the best we can do at the moment
+        # Even SSMS doesn't get informed (read: it's not my fault, blame microsoft)
         with tqdm(desc=desc, total=math.floor(100 / self.__STATS)) as progressbar:
             while cursor.nextset():
                 progressbar.update()
 
             # finish the progress - less confusing than a dangling 40% progressbar
             progressbar.update(progressbar.total - progressbar.n)
+
+    def __run_scripts(self, script_list, title=""):
+        for i, script in enumerate(script_list):
+            self.logger.info(f"Running f{title} script #{i} \"{script[:50]}\"")
+            cursor = self.__db_execute(script)
+            results = None
+            try:
+                results = cursor.fetchall()
+            except pyodbc.Error:
+                pass
+            self.logger.info(results)
+
+    def __create_seed_table(self, qualifier_map):
+        seed_column_lines = ["[{}] {}".format(name, _FAKE_COLUMN_TYPES[col.data_type]) for name, col in qualifier_map.items()]
+        create_statement = "CREATE TABLE [{}]({});".format(SEED_TABLE_NAME, ",".join(seed_column_lines))
+
+        self.__execute(create_statement)
+
+    def __drop_seed_table(self):
+        self.__execute("DROP TABLE IF EXISTS [{}]".format(SEED_TABLE_NAME))
+
+    def __insert_seed_row(self, qualifier_map):
+        column_list = ",".join(["[{}]".format(qualifier) for qualifier in qualifier_map])
+        substitution_list = ",".join([" ?".format(qualifier) for qualifier in qualifier_map])
+        value_list = [column.value for qualifier, column in qualifier_map.items()]
+
+        statement = "INSERT INTO [{}]({}) VALUES ({});".format(SEED_TABLE_NAME, column_list, substitution_list)
+        self.__db_execute(statement, value_list)
+
+    def __seed(self, qualifier_map):
+        for i in range(self.seed_rows):
+            self.__insert_seed_row(qualifier_map)
+
+
+    def _get_column_subquery(seed_table_name, column_strategy):
+        if column_strategy.strategy_type == UpdateColumnStrategyTypes.EMPTY:
+            return "('')"
+        elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
+            return f"( SELECT CONCAT(NEWID(), '@', NEWID(), '.com') )"
+        elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
+            return f"( SELECT NEWID() )"
+        elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
+            return f"( SELECT [{column_strategy.qualifier}] FROM [{seed_table_name}] ORDER BY NEWID() LIMIT 1)"
+        elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
+            return column_strategy.value
+        else:
+            raise UnsupportedColumnStrategyError(column_strategy)
 
     def test_connection(self):
         try:
@@ -138,7 +196,47 @@ class MsSqlProvider(DatabaseProvider):
         self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
-        self.logger.warning("MSSQL: anonymize_database not yet implemented")
+        qualifier_map = database_strategy.fake_update_qualifier_map
+
+        self.logger.info("creating seed table with %d columns", len(qualifier_map))
+        self.__create_seed_table(qualifier_map)
+
+        self.logger.info("Inserting seed data")
+        self.__seed(qualifier_map)
+
+        self.__run_scripts(database_strategy.before_scripts, "before")
+
+        table_strategies = database_strategy.table_strategies
+        self.logger.info("Anonymizing %d tables", len(table_strategies))
+
+        with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
+            for table_strategy in table_strategies:
+                table_name = table_strategy.table_name
+
+                if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
+                    progressbar.set_description("Truncating {}".format(table_name))
+                    self.__db_execute("TRUNCATE TABLE [{}];".format(table_name))
+
+                elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
+                    progressbar.set_description("Anonymizing {}".format(table_name))
+                    where_grouping = table_strategy.group_by_where()
+                    total_wheres = len(where_grouping)
+
+                    for i, (where, columns) in enumerate(where_grouping.items()):
+                        column_assignments = ",".join(["[{}] = {}".format(column.column_name, self._get_column_subquery) for column in columns])
+                        where_clause = f" WHERE {where}" if where else ""
+                        progressbar.set_description("Anonymizing {}: {}/{}".format(table_name, i, total_wheres))
+                        self.__db_execute("UPDATE [{}] SET {}{};".format(table_name, column_assignments, where_clause))
+
+                else:
+                    raise UnsupportedTableStrategyError(table_strategy)
+
+                progressbar.update()
+
+        self.__run_scripts(database_strategy.after_scripts, "after")
+
+        self.logger.info("dropping seed table")
+        self.__drop_seed_table()
 
     def restore_database(self, input_path):
         move_files = self.__get_file_moves(input_path)
