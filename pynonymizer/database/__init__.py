@@ -11,8 +11,8 @@ def get_temp_db_name(filename=None):
 
 def get_provider(type, *args, **kwargs):
     if type == "mysql":
-        return MySqlProvider(*args)
+        return MySqlProvider(*args, **kwargs)
     if type == "mssql":
-        return MsSqlProvider(*args)
+        return MsSqlProvider(*args, **kwargs)
     else:
         raise UnknownDatabaseTypeError(type)

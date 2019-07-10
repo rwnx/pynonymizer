@@ -11,7 +11,8 @@ logger = get_default_logger()
 
 
 def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_user=None, db_password=None, db_type=None,
-               db_host=None, db_name=None, fake_locale=None, start_at_step=None, stop_at_step=None, skip_steps=None):
+               db_host=None, db_name=None, fake_locale=None, start_at_step=None, stop_at_step=None, skip_steps=None,
+               seed_rows=None):
 
     # Default and Normalize args
     if start_at_step is None:
@@ -32,6 +33,9 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
 
     if fake_locale is None:
         fake_locale = "en_GB"
+
+    if seed_rows is None:
+        seed_rows = 150
 
     actions = StepActionMap(start_at_step, stop_at_step, skip_steps)
 
@@ -69,7 +73,14 @@ def pynonymize(input_path=None, strategyfile_path=None, output_path=None, db_use
 
     # Initialize and validate DB credentials (always required)
     logger.debug("Database: (%s)%s@%s db_name: %s", db_host, db_type, db_user, db_name)
-    db_provider = get_provider(db_type, db_host, db_user, db_password, db_name)
+    db_provider = get_provider(
+        type=db_type,
+        db_host=db_host,
+        db_user=db_user,
+        db_pass=db_password,
+        db_name=db_name,
+        seed_rows=seed_rows
+    )
 
     if not db_provider.test_connection():
         raise DatabaseConnectionError()

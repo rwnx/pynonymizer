@@ -18,6 +18,7 @@ _FAKE_COLUMN_TYPES = {
     FakeDataType.INT: "INT"
 }
 
+
 class MsSqlProvider(DatabaseProvider):
     """
     A pyodbc-based MSSQL provider.

@@ -16,11 +16,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
-- Add MSSQL support
+- Added option `--seed-rows`: specify the seed row size for fake data generated.
+- Added MSSQL provider: use `--db-type/-t mssql`
+- Added table strategy key: `schema`. For supported databases (mssql), you can now specify the schema of the table strategy.
+- Added strategy parsing mode for multi-table and multi-column updates of the same table/column names
 - Changed mandatory arguments for main process to account for different process step permutations:
-    - input is optional if RESTORE_DB is skipped
-    - strategyfile is optional if ANONYMIZE_DB is skipped
-    - output is optional if DUMP_DB is skipped
+    - input is optional if `RESTORE_DB` is skipped
+    - strategyfile is optional if `ANONYMIZE_DB` is skipped
+    - output is optional if `DUMP_DB` is skipped
+    - db_name is mandatory if a step prevents it from being determined automatically e.g. strategyfile is missing
 
 ## [1.4.1] 2019-06-29
  - Fixed an issue where import syntax was preventing certain modules from being loaded in python 3.6

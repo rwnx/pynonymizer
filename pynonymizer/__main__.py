@@ -76,6 +76,10 @@ def create_parser():
                         default=os.getenv("PYNONYMIZER_STOP_AT"), dest="stop_at_step", choices=ProcessSteps.names(), metavar="STEP",
                         help="Choose a step to stop at (inclusive). [$PYNONYMIZER_STOP_AT]")
 
+    parser.add_argument("--seed-rows",
+                        default=os.getenv("PYNONYMIZER_SEED_ROWS"),
+                        help="Specify a number of rows to populate the fake data table with.  [$PYNONYMIZER_SEED_ROWS]")
+
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
     return parser
@@ -113,7 +117,8 @@ def main(rawArgs=None):
             fake_locale=args.fake_locale,
             start_at_step=args.start_at_step,
             skip_steps=args.skip_steps,
-            stop_at_step=args.stop_at_step
+            stop_at_step=args.stop_at_step,
+            seed_rows=args.seed_rows
         )
     except DatabaseConnectionError as error:
         logger.error("Failed to connect to database.")

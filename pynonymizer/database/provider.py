@@ -13,7 +13,7 @@ class DatabaseProvider(ABC):
         if seed_rows is None:
             seed_rows = 150
 
-        self.seed_rows = seed_rows
+        self.seed_rows = int(seed_rows)
 
     @abstractmethod
     def test_connection(self):
