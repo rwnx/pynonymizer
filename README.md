@@ -65,6 +65,11 @@ If this workflow doesnt work for you, see [process control](https://gitlab.com/j
 * An active database connection, (mysql >= 5.5) either local or remote (to restore, anonymize, and dump from)
 * A backup in Single-file mysqldump output (schema and data)
 
+### mssql
+* MSSQL >= 2008
+* Due to backup/restore limitations, you must be running pynonymizer on the *same server* as the database engine.
+* A backup in `.bak` format
+
 # Getting Started
 
 ## Usage
