@@ -37,7 +37,8 @@ class MainArgTests(unittest.TestCase):
             start_at_step="TEST_START_AT_STEP",
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
             stop_at_step="TEST_STOP_AT_STEP",
-            seed_rows=None
+            seed_rows=None,
+            mssql_backup_compression=False
         )
     def test_dotenv_called(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
@@ -79,7 +80,8 @@ class MainArgTests(unittest.TestCase):
             start_at_step="TEST_START_AT_STEP",
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
             stop_at_step="TEST_STOP_AT_STEP",
-            seed_rows=None
+            seed_rows=None,
+            mssql_backup_compression=False
         )
 
     def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
@@ -106,7 +108,8 @@ class MainArgTests(unittest.TestCase):
             start_at_step="TEST_START_AT_STEP",
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
             stop_at_step="TEST_STOP_AT_STEP",
-            seed_rows=None
+            seed_rows=None,
+            mssql_backup_compression=False
         )
 
 
@@ -145,6 +148,26 @@ def test_sysexit_on_database_connection_error():
 @patch("pynonymizer.pynonymize.StrategyParser")
 @patch("builtins.open", mock_open(read_data="TESTFILEDATA"))
 class MainProcessTests(unittest.TestCase):
+    def test_any_db_kwarg(self, StrategyParser, FakeColumnSet, get_provider, yaml_safe_load):
+        """
+        test that dynamic args are passed to the provider properly e.g. mssql_blah
+        """
+        pynonymize(
+            input_path="TEST_INPUT",
+            strategyfile_path="TEST_STRATEGYFILE",
+            output_path="TEST_OUTPUT",
+            db_type="mssql",
+            db_host="TEST_HOST",
+            db_name="TEST_NAME",
+            db_user="TEST_USER",
+            db_password="TEST_PASSWORD",
+            fake_locale="TEST_LOCALE",
+            mysql_other_amazing_var="TEST_DYNAMIC_VAR", # as this is mssql, this should be ignored
+            mssql_special_provider_var="TEST_DYNAMIC_VAR2"
+        )
+        StrategyParser.return_value.parse_config.assert_called()
+        get_provider.assert_called_with(type="mssql", db_host="TEST_HOST", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150, special_provider_var="TEST_DYNAMIC_VAR2")
+
     def test_pynonymize_main_process(self, StrategyParser, FakeColumnSet, get_provider, yaml_safe_load):
         """
         a rough smoke test for the main process. This needs an integration test to back it up.

@@ -82,7 +82,8 @@ usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--db-name DB_NAME] [--db-user DB_USER]
                    [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
                    [--start-at STEP] [--skip-steps STEP [STEP ...]]
-                   [--stop-at STEP] [--seed-rows SEED_ROWS] [-v]
+                   [--stop-at STEP] [--seed-rows SEED_ROWS]
+                   [--mssql-backup-compression] [-v]
 
 A tool for writing better anonymization strategies for your production
 databases.
@@ -131,6 +132,9 @@ optional arguments:
                         Specify a number of rows to populate the fake data
                         table used during anonymization.
                         [$PYNONYMIZER_SEED_ROWS]
+  --mssql-backup-compression
+                        [MSSQL] Use compression when backing up the database.
+                        [PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
   -v, --version         show program's version number and exit
 
 ```

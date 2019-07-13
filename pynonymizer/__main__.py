@@ -80,6 +80,11 @@ def create_parser():
                         default=os.getenv("PYNONYMIZER_SEED_ROWS"),
                         help="Specify a number of rows to populate the fake data table used during anonymization.  [$PYNONYMIZER_SEED_ROWS]")
 
+    parser.add_argument("--mssql-backup-compression",
+                        action="store_true",
+                        default=bool(os.getenv("PYNONYMIZER_MSSQL_BACKUP_COMPRESSION")),
+                        help="[MSSQL] Use compression when backing up the database.  [PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]")
+
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
     return parser
@@ -98,7 +103,7 @@ def main(rawArgs=None):
     parser = create_parser()
     args = parser.parse_args(rawArgs)
 
-    # legacy positionals take pprecedenceif specified
+    # legacy positionals take precedence if specified
     # This is to support those not using the new options/env fallbacks
     input        = args.legacy_input or args.input
     strategyfile = args.legacy_strategyfile or args.strategyfile
@@ -118,7 +123,8 @@ def main(rawArgs=None):
             start_at_step=args.start_at_step,
             skip_steps=args.skip_steps,
             stop_at_step=args.stop_at_step,
-            seed_rows=args.seed_rows
+            seed_rows=args.seed_rows,
+            mssql_backup_compression=args.mssql_backup_compression
         )
     except DatabaseConnectionError as error:
         logger.error("Failed to connect to database.")

@@ -26,7 +26,7 @@ class MsSqlProvider(DatabaseProvider):
     logger = get_logger(__name__)
     __STATS = 5
 
-    def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
+    def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
         if db_host is not None:
             raise ValueError("MsSqlProvider does not support remove servers due to backup file location requirements. "
                              "You must omit db_host from your configuration and run pynonymizer on the same "
@@ -36,6 +36,7 @@ class MsSqlProvider(DatabaseProvider):
         super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
         self.__conn = None
         self.__db_conn = None
+        self.__backup_compression = backup_compression
 
     def __connection(self):
         """a lazy-evaluated connection"""
@@ -190,9 +191,11 @@ class MsSqlProvider(DatabaseProvider):
             return False
 
     def create_database(self):
-        self.logger.warning("MSSQL: create_database ignored, database will be created when the database is restored")
+        self.logger.warning("MSSQL: create_database ignored, database will be created when restore_db is run")
 
     def drop_database(self):
+        # force connection close so we can always drop the db: sometimes timing makes a normal drop impossible.
+        self.__execute(f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE")
         self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
@@ -242,7 +245,8 @@ class MsSqlProvider(DatabaseProvider):
     def restore_database(self, input_path):
         move_files = self.__get_file_moves(input_path)
 
-        self.logger.info("Found %d files", len(move_files) )
+        self.logger.info("Found %d files in %s", len(move_files), input_path )
+        self.logger.debug(move_files)
 
         # get move statements and flatten pairs out so we can do the 2-param substitution
         move_clauses = ", ".join( ["MOVE ? TO ?"] * len(move_files) )
@@ -254,6 +258,11 @@ class MsSqlProvider(DatabaseProvider):
         self.__async_operation_progress("Restoring Database", restore_cursor)
 
     def dump_database(self, output_path):
-        dump_cursor = self.__execute(f"BACKUP DATABASE ? TO DISK = ? WITH STATS = ?;", [self.db_name, output_path, self.__STATS])
-        self.__async_operation_progress("Dumping Database", dump_cursor)
+        with_options = []
+        if self.__backup_compression:
+            with_options.append("COMPRESSION")
 
+        with_options_str = ",".join(with_options) + ", " if len(with_options) > 0 else ""
+
+        dump_cursor = self.__execute(f"BACKUP DATABASE ? TO DISK = ? WITH {with_options_str}STATS = ?;", [self.db_name, output_path, self.__STATS])
+        self.__async_operation_progress("Dumping Database", dump_cursor)

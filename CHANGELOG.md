@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Added option `--seed-rows`: specify the seed row size for fake data generated.
 - Added MSSQL provider: use `--db-type/-t mssql`
-- Added table strategy key: `schema`. For supported databases (mssql), you can now specify the schema of the table strategy.
+- Added MSSQL option `---mssql-backup-compression` and added convention for provider-specific arguments (prefixed by `dbtype-`)
+- Added optional table strategy key: `schema`. For supported databases (mssql), you can now specify the schema of the table strategy.
 - Added strategy parsing mode for multi-table and multi-column updates of the same table/column names
 - Changed mandatory arguments for main process to account for different process step permutations:
     - input is optional if `RESTORE_DB` is skipped

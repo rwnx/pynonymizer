@@ -10,6 +10,10 @@ from tests.helpers import list_rindex
 def provider():
     return MsSqlProvider(None, "DB_USER", "DB_PASS", "DB_NAME")
 
+@pytest.fixture
+def provider_with_compression():
+    return MsSqlProvider(None, "DB_USER", "DB_PASS", "DB_NAME", backup_compression=True)
+
 
 def mock_restore_side_effect(statement, *args, **kwargs):
     if statement.strip().startswith("RESTORE FILELISTONLY"):
@@ -87,6 +91,13 @@ def test_dump_database(connect, provider):
     provider.dump_database("test_output.bak")
 
     connect.return_value.execute.assert_any_call("BACKUP DATABASE ? TO DISK = ? WITH STATS = ?;", ["DB_NAME", "test_output.bak", 5])
+
+@patch("pyodbc.connect")
+def test_dump_database_compression(connect, provider_with_compression):
+    connect.return_value.execute.side_effect = mock_backup_side_effect
+    provider_with_compression.dump_database("test_output.bak")
+
+    connect.return_value.execute.assert_any_call("BACKUP DATABASE ? TO DISK = ? WITH COMPRESSION, STATS = ?;", ["DB_NAME", "test_output.bak", 5])
 
 
 @patch("pyodbc.connect")
