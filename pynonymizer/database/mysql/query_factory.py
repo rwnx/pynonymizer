@@ -80,6 +80,7 @@ def get_drop_database(database_name):
     return f"DROP DATABASE IF EXISTS `{database_name}`;"
 
 
+# TODO: this where-grouping behaviour should probably return to the provider, rather than implementing as q-gen logic
 def get_update_table(seed_table_name, update_table_strategy):
     # group on where_condition
     # build lists of update statements based on the where
