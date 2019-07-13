@@ -91,14 +91,13 @@ databases.
 optional arguments:
   -h, --help            show this help message and exit
   --input INPUT, -i INPUT
-                        The source dumpfile to read from. [file.sql,
-                        file.sql.gz] [$PYNONYMIZER_INPUT]
+                        The source dumpfile to read from. [$PYNONYMIZER_INPUT]
   --strategy STRATEGYFILE, -s STRATEGYFILE
                         A strategyfile to use during anonymization.
                         [$PYNONYMIZER_STRATEGY]
   --output OUTPUT, -o OUTPUT
                         The destination to write the dumped output to.
-                        [file.sql, file.sql.gz] [$PYNONYMIZER_OUTPUT]
+                        [$PYNONYMIZER_OUTPUT]
   --db-type DB_TYPE, -t DB_TYPE
                         Type of database to interact with. More databases will
                         be supported in future versions. default: mysql
@@ -134,9 +133,8 @@ optional arguments:
                         [$PYNONYMIZER_SEED_ROWS]
   --mssql-backup-compression
                         [MSSQL] Use compression when backing up the database.
-                        [PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
+                        [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
   -v, --version         show program's version number and exit
-
 ```
 
 ## License

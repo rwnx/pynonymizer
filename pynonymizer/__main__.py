@@ -28,7 +28,7 @@ def create_parser():
 
     input_positional.add_argument("--input", "-i",
                         default=os.getenv("PYNONYMIZER_INPUT"),
-                        help="The source dumpfile to read from. [file.sql, file.sql.gz] [$PYNONYMIZER_INPUT]")
+                        help="The source dumpfile to read from. [$PYNONYMIZER_INPUT]")
 
     strategy_positional.add_argument("--strategy", "-s",
                         dest="strategyfile",
@@ -37,7 +37,7 @@ def create_parser():
 
     output_positional.add_argument("--output", "-o",
                         default=os.getenv("PYNONYMIZER_OUTPUT"),
-                        help="The destination to write the dumped output to. [file.sql, file.sql.gz] [$PYNONYMIZER_OUTPUT]")
+                        help="The destination to write the dumped output to. [$PYNONYMIZER_OUTPUT]")
 
     parser.add_argument("--db-type", "-t",
                         default=os.getenv("PYNONYMIZER_DB_TYPE") or os.getenv("DB_TYPE"),
@@ -83,7 +83,7 @@ def create_parser():
     parser.add_argument("--mssql-backup-compression",
                         action="store_true",
                         default=bool(os.getenv("PYNONYMIZER_MSSQL_BACKUP_COMPRESSION")),
-                        help="[MSSQL] Use compression when backing up the database.  [PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]")
+                        help="[MSSQL] Use compression when backing up the database.  [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]")
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
