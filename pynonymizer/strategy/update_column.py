@@ -1,6 +1,6 @@
 from enum import Enum
 from pynonymizer.fake import  UnsupportedFakeTypeError
-
+from abc import ABC, abstractmethod
 
 class UpdateColumnStrategyTypes(Enum):
     EMPTY = "EMPTY"
@@ -21,8 +21,9 @@ class UpdateColumnStrategyTypes(Enum):
 
 
 # boilerplate abstract class for future use
-class UpdateColumnStrategy:
-    def __init__(self, where=None):
+class UpdateColumnStrategy(ABC):
+    def __init__(self, column_name, where=None):
+        self.column_name = column_name
         self.where_condition = where
 
 
@@ -41,17 +42,17 @@ class UniqueEmailUpdateColumnStrategy(UpdateColumnStrategy):
 class LiteralUpdateColumnStrategy(UpdateColumnStrategy):
     strategy_type = UpdateColumnStrategyTypes.LITERAL
 
-    def __init__(self, value, where=None):
-        super().__init__(where)
+    def __init__(self, column_name,  value, where=None):
+        super().__init__(column_name, where)
         self.value = value
 
 
 class FakeUpdateColumnStrategy(UpdateColumnStrategy):
     strategy_type = UpdateColumnStrategyTypes.FAKE_UPDATE
 
-    def __init__(self, fake_column_generator, fake_type, where=None, fake_args=None):
+    def __init__(self, column_name, fake_column_generator, fake_type, where=None, fake_args=None):
         fake_args = {} if fake_args is None else fake_args
-        super().__init__(where)
+        super().__init__(column_name, where)
         self.fake_type = fake_type
         self.fake_args = fake_args
         self.__fake_column_generator = fake_column_generator

@@ -1,5 +1,12 @@
+import os
 import struct
 import gzip
+
+
+class UnknownInputTypeError(Exception):
+    def __init__(self, filename):
+        super().__init__("Unable to detect input type for file: {}".format(filename))
+
 
 class GzipInput:
     def __init__(self, filename):
@@ -19,3 +26,25 @@ class GzipInput:
 
     def open(self):
         return gzip.open(self.filename, "rb")
+
+
+class RawInput:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get_size(self):
+        return os.path.getsize(self.filename)
+
+    def open(self):
+        return open(self.filename, "rb")
+
+
+def resolve_input(filename):
+    name, ext = os.path.splitext(filename)
+
+    if ext == ".sql":
+        return RawInput(filename)
+    elif ext == ".gz":
+        return GzipInput(filename)
+    else:
+        raise UnknownInputTypeError(filename)

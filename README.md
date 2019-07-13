@@ -65,6 +65,12 @@ If this workflow doesnt work for you, see [process control](https://gitlab.com/j
 * An active database connection, (mysql >= 5.5) either local or remote (to restore, anonymize, and dump from)
 * A backup in Single-file mysqldump output (schema and data)
 
+### mssql
+* MSSQL >= 2008
+* Due to backup/restore limitations, you must be running pynonymizer on the *same server* as the database engine.
+* Database must be running on Windows, due to complexities when moving files around during restore. 
+* A backup in `.bak` format
+
 # Getting Started
 
 ## Usage
@@ -76,7 +82,8 @@ usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--db-name DB_NAME] [--db-user DB_USER]
                    [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
                    [--start-at STEP] [--skip-steps STEP [STEP ...]]
-                   [--stop-at STEP] [-v]
+                   [--stop-at STEP] [--seed-rows SEED_ROWS]
+                   [--mssql-backup-compression] [-v]
 
 A tool for writing better anonymization strategies for your production
 databases.
@@ -121,8 +128,14 @@ optional arguments:
                         [$PYNONYMIZER_SKIP_STEPS]
   --stop-at STEP        Choose a step to stop at (inclusive).
                         [$PYNONYMIZER_STOP_AT]
+  --seed-rows SEED_ROWS
+                        Specify a number of rows to populate the fake data
+                        table used during anonymization.
+                        [$PYNONYMIZER_SEED_ROWS]
+  --mssql-backup-compression
+                        [MSSQL] Use compression when backing up the database.
+                        [PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
   -v, --version         show program's version number and exit
-
 
 ```
 
