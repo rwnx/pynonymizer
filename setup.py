@@ -34,7 +34,8 @@ setuptools.setup(
         "tqdm>=4",
         "faker>=1",
         "python-dotenv>=0.10",
-        "pyodbc>=4.0.26"
+        "pyodbc>=4.0.26",
+        "inflection>=0.3.1"
     ],
     entry_points={
         'console_scripts': [

@@ -38,3 +38,13 @@ class DatabaseProvider(ABC):
     @abstractmethod
     def dump_database(self, output_obj):
         pass
+
+def something(parser):
+    ("--fake-locale", "-l")
+    {
+        "default":os.getenv("PYNONYMIZER_FAKE_LOCALE") or os.getenv("FAKE_LOCALE"),
+        "help": "Locale setting to initialize fake data generation. Affects Names, addresses, formats, etc. [$PYNONYMIZER_FAKE_LOCALE]"
+    }
+
+class ProviderArg():
+    def __init__(self, name, description):
