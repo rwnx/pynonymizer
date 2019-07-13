@@ -3,6 +3,7 @@ import pytest
 import pyodbc
 from decimal import Decimal
 from unittest.mock import patch, Mock, call
+from tests.helpers import list_rindex
 
 
 @pytest.fixture
@@ -70,7 +71,14 @@ def test_restore_database(connect, provider):
     connect.return_value.execute.side_effect = mock_restore_side_effect
     provider.restore_database("test.bak")
 
-    connect.return_value.execute.assert_any_call( 'RESTORE DATABASE ? FROM DISK = ? WITH MOVE ? TO ?, MOVE ? TO ?, MOVE ? TO ?, STATS = ?;', ['DB_NAME', 'test.bak', 'AdventureWorks2016_EXT_Data', 'C:\\DB_NAME_AdventureWorks2016_EXT_Data.mdf', 'AdventureWorks2016_EXT_Log', 'C:\\DB_NAME_AdventureWorks2016_EXT_Log.ldf', 'AdventureWorks2016_EXT_mod', 'C:\\DB_NAME_AdventureWorks2016_EXT_mod', 5])
+    connect.return_value.execute.assert_any_call(
+        'RESTORE DATABASE ? FROM DISK = ? WITH MOVE ? TO ?, MOVE ? TO ?, MOVE ? TO ?, STATS = ?;',
+        [
+            'DB_NAME', 'test.bak', 'AdventureWorks2016_EXT_Data', 'C:\\DB_NAME_AdventureWorks2016_EXT_Data.mdf',
+            'AdventureWorks2016_EXT_Log', 'C:\\DB_NAME_AdventureWorks2016_EXT_Log.ldf', 'AdventureWorks2016_EXT_mod',
+            'C:\\DB_NAME_AdventureWorks2016_EXT_mod', 5
+        ]
+    )
 
 
 @patch("pyodbc.connect")
@@ -86,3 +94,33 @@ def test_drop_database(connect, provider):
     provider.drop_database()
 
     connect.return_value.execute.assert_any_call("DROP DATABASE IF EXISTS [DB_NAME];")
+
+
+@patch("pyodbc.connect")
+def test_anonymize(connect, provider, simple_strategy, simple_strategy_fake_generator):
+    provider.anonymize_database(simple_strategy)
+
+    execute_calls = connect().execute.mock_calls
+
+    ix_create_seed = execute_calls.index(call('CREATE TABLE [_pynonymizer_seed_fake_data]([user_name] VARCHAR(MAX));'))
+    ix_insert_seed_first = execute_calls.index(call('INSERT INTO [_pynonymizer_seed_fake_data]([user_name]) VALUES ( ?);', ['TEST_VALUE']))
+    ix_insert_seed_last = list_rindex(execute_calls, call('INSERT INTO [_pynonymizer_seed_fake_data]([user_name]) VALUES ( ?);', ['TEST_VALUE']) )
+    ix_trunc_table = execute_calls.index(call('TRUNCATE TABLE [truncate_table];'))
+    ix_update_table_1 = execute_calls.index(call("UPDATE [update_table_where_3] SET [column1] = ( SELECT CONCAT(NEWID(), '@', NEWID(), '.com') ),[column2] = ( SELECT NEWID() ) WHERE BANANAS < 5;"))
+    ix_update_table_2 = execute_calls.index(call('UPDATE [update_table_where_3] SET [column3] = ( SELECT TOP 1 [user_name] FROM [_pynonymizer_seed_fake_data] ORDER BY NEWID()) WHERE BANANAS < 3;'))
+    ix_update_table_3 = execute_calls.index(call("UPDATE [update_table_where_3] SET [column4] = ('');"))
+    ix_drop_seed = execute_calls.index(call('DROP TABLE IF EXISTS [_pynonymizer_seed_fake_data];'))
+
+    # seed table create needs to happen before inserting data
+    assert ix_create_seed < ix_insert_seed_first
+
+    # last insert of seed data before update anonymize starts
+    assert ix_insert_seed_last < ix_trunc_table
+    assert ix_insert_seed_last < ix_update_table_1
+    assert ix_insert_seed_last < ix_update_table_2
+    assert ix_insert_seed_last < ix_update_table_3
+
+    # update anonymize should all be before seed table drop
+    assert ix_update_table_1 < ix_drop_seed
+    assert ix_update_table_2 < ix_drop_seed
+    assert ix_update_table_3 < ix_drop_seed

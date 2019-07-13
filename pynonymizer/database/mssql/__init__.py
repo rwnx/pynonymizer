@@ -154,7 +154,7 @@ class MsSqlProvider(DatabaseProvider):
         self.__db_execute(create_statement)
 
     def __drop_seed_table(self):
-        self.__db_execute("DROP TABLE IF EXISTS [{}]".format(SEED_TABLE_NAME))
+        self.__db_execute("DROP TABLE IF EXISTS [{}];".format(SEED_TABLE_NAME))
 
     def __insert_seed_row(self, qualifier_map):
         column_list = ",".join(["[{}]".format(qualifier) for qualifier in qualifier_map])
@@ -226,7 +226,7 @@ class MsSqlProvider(DatabaseProvider):
                     for i, (where, column_map) in enumerate(where_grouping.items()):
                         column_assignments = ",".join(["[{}] = {}".format(name, self.__get_column_subquery(column)) for name, column in column_map.items()])
                         where_clause = f" WHERE {where}" if where else ""
-                        progressbar.set_description("Anonymizing {}: {}/{}".format(table_name, i, total_wheres))
+                        progressbar.set_description("Anonymizing {}: w[{}/{}]".format(table_name, i+1, total_wheres))
                         self.__db_execute("UPDATE {}[{}] SET {}{};".format(schema_prefix, table_name, column_assignments, where_clause))
 
                 else:
