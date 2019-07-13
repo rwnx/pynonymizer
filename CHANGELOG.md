@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added Support for different strategyfile formats: `.json`/`.yaml`/`.yml`
 - Added option `--seed-rows`: specify the seed row size for fake data generated.
 - Added MSSQL provider: use `--db-type/-t mssql`
 - Added MSSQL option `---mssql-backup-compression` and added convention for provider-specific arguments (prefixed by `dbtype-`)

@@ -1,0 +1,12 @@
+{
+  "tables": {
+    "Person": {
+      "schema": "Person",
+      "columns": {
+        "FirstName": "first_name",
+        "LastName": "last_name",
+        "Title": "prefix"
+      }
+    }
+  }
+}

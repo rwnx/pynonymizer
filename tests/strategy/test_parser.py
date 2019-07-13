@@ -197,6 +197,28 @@ def test_verbose_table_update_columns(strategy_parser):
     assert strategy.table_strategies[0].strategy_type == TableStrategyTypes.UPDATE_COLUMNS
 
 
+def test_verbose_table_list_duplicate(strategy_parser):
+    """parser should allow multiple tables of the same name in list-parse-mode"""
+    strategy = strategy_parser.parse_config({
+        "tables": [
+            {
+                "table_name": "table1",
+                "type": "truncate",
+            },
+            {
+                "table_name": "table1",
+                "type": "truncate",
+            }
+        ]
+    })
+
+    assert len(strategy.table_strategies) == 2
+    assert strategy.table_strategies[0].table_name == "table1"
+    assert strategy.table_strategies[0].strategy_type == TableStrategyTypes.TRUNCATE
+    assert strategy.table_strategies[1].table_name == "table1"
+    assert strategy.table_strategies[1].strategy_type == TableStrategyTypes.TRUNCATE
+
+
 def test_table_raises_when_given_unrelated_key(strategy_parser):
     with pytest.raises(ConfigSyntaxError):
         strategy_parser.parse_config({

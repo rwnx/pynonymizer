@@ -3,6 +3,7 @@ from pynonymizer.log import get_default_logger
 from pynonymizer.database import get_temp_db_name, get_provider
 from pynonymizer.fake import FakeColumnGenerator
 from pynonymizer.strategy.parser import StrategyParser
+from pynonymizer.strategy.config import read_config
 from pynonymizer.exceptions import ArgumentValidationError, DatabaseConnectionError
 from pynonymizer.process_steps import StepActionMap, ProcessSteps
 
@@ -74,8 +75,13 @@ def pynonymize(
     if len(validations) > 0:
         raise ArgumentValidationError(validations)
 
+    # init strategy as it relies on I/O - fail fast here preferred to after restore
+    if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
+        fake_seeder = FakeColumnGenerator(fake_locale)
+        strategy_parser = StrategyParser(fake_seeder)
 
-    # Initialize and validate DB credentials (always required)
+        logger.debug("loading strategyfile %s...", strategyfile_path)
+        strategy = strategy_parser.parse_config(read_config(strategyfile_path))
 
     # Discover db-type kwargs
     # mssql_backup_option -> backup_option and pass these to the constructor
@@ -110,13 +116,6 @@ def pynonymize(
 
     logger.info(actions.summary(ProcessSteps.ANONYMIZE_DB))
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
-        fake_seeder = FakeColumnGenerator(fake_locale)
-        strategy_parser = StrategyParser(fake_seeder)
-
-        logger.debug("loading strategyfile %s...", strategyfile_path)
-        with open(strategyfile_path, "r") as strategy_yaml:
-            strategy = strategy_parser.parse_config(yaml.safe_load(strategy_yaml))
-
         db_provider.anonymize_database(strategy)
 
     logger.info(actions.summary(ProcessSteps.DUMP_DB))
