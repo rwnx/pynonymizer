@@ -1,8 +1,13 @@
 # Strategyfiles 
 
-Strategyfiles are YAML configurations containing the "What" and the "How" of the anonymization process *for a database*. 
+Strategyfiles are configurations containing the "What" and the "How" of the anonymization process *for a database*. 
 
 pynonymizer can parse a strategyfile into a `DatabaseStrategy`, which will be used as a set of instructions during an anonymization run.
+
+## Format
+Strategyfiles can be written in json or yaml, as the basic structure is the same. As long as your file has a well-formed file + extension, pynonymizer should be able to use the appropriate parser.
+
+The below examples will be given in yaml, although the underlying structures will be the same in both languages.
 
 ```yaml
 tables:
@@ -41,7 +46,27 @@ The compact syntax has significantly fewer options but allows you to build many 
 # Syntax
 
 ## Key: `tables`
-Tables is a top-level key, containing a subkey for each `table_name:table_strategy`pair.
+Tables is a top-level key, containing a either a subkey for each `table_name:table_strategy`pair, or a list of verbose-style objects. 
+
+The latter syntax is useful if you want to specify multiple strategies for the same table in different schemas or different selective options.
+
+```yaml
+# `tables` key in compact and list type syntax.
+# The two examples below are functionally equivalent
+tables:
+    table1: truncate
+    table2: 
+      columns: [...]
+
+# List-of-objects verbose syntax    
+tables:
+ - table_name: table1
+   type: truncate
+ - table_name: table2
+   type: update_column
+   columns: [...]
+
+```
 
 Each table has an individual strategy.
 * `truncate`
@@ -55,9 +80,11 @@ table_name:
     
 # Compact Syntax:
 table_name: truncate
+
 ```
 ### Table Strategy: `update_columns`
 Overwrite columns in the table with specific or randomized values. 
+ 
 ```yaml
 table_name:
   type: update_columns
@@ -70,6 +97,16 @@ table_name:
   columns:
     column_name1: empty
     #[...]
+    
+#Columns can also be given in a list of verbose objects, if multiple column strategies for the same column are required.
+table_name:
+    columns:
+      - column_name: column_name1
+      type: empty
+      where: cake OR death
+      - column_name: column_name1
+      type: empty
+
 ```
 #### `where`
 ```yaml
@@ -79,7 +116,7 @@ column_name:
 ```
 All update_column types support a `where` key, that can be used to add conditions to updates. This is only available in the verbose syntax, and must be a string of predicate(s) that will be appended to the query. Pynonymizer does not check syntax for sql, so you must ensure that what you've written works in your database's language.
 
-Update statements will be grouped on the content of the where key and executed together.
+Update statements will be grouped on the content of the where key and executed together, i.e. if you have 2 unique WHERE statements, pynonymizer will execute 3 update statements: 1 with 1st where clause, 1 with 2nd where clause, 3rd with no where clause. 
 
 #### Column Strategy: `empty`
 Replaces a column with an empty value (usually `''`)
