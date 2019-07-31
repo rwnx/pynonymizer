@@ -7,8 +7,7 @@ from pynonymizer.fake import FakeDataType
 
 import math
 from tqdm import tqdm
-import os
-from pathlib import PureWindowsPath
+from pathlib import PureWindowsPath, PurePosixPath
 from pynonymizer.log import get_logger
 
 _FAKE_COLUMN_TYPES = {
@@ -68,6 +67,12 @@ class MsSqlProvider(DatabaseProvider):
     def __db_execute(self, *args, **kwargs):
         return self.__db_connection().execute(*args, **kwargs)
 
+    def __get_path(self, filepath):
+        if "\\" in filepath:
+            return PureWindowsPath(filepath)
+        else:
+            return PurePosixPath(filepath)
+
     def __get_default_datafolder(self):
         """
         Locate the default data folder using the `model` database location
@@ -87,7 +92,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 0
         """).fetchone()[0]
 
-        return PureWindowsPath(datafile).parent
+        return self.__get_path(datafile).parent
 
     def __get_default_logfolder(self):
         """
@@ -103,7 +108,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 1
         """).fetchone()[0]
 
-        return PureWindowsPath(logfile).parent
+        return self.__get_path(logfile).parent
 
     def __get_file_moves(self, input_path):
         """
@@ -119,7 +124,7 @@ class MsSqlProvider(DatabaseProvider):
         for file in filelist:
             name = file[0]
             type = file[2].upper()
-            filepath = PureWindowsPath(file[1])
+            filepath = self.__get_path(file[1])
 
             # log files can go into the default log directory, everything else can go into the data directory
             if type == "L":

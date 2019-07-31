@@ -65,7 +65,6 @@ If this workflow doesnt work for you, see [process control](https://gitlab.com/j
 * Requires extra dependencies: install package `pynonymizer[mssql]`
 * MSSQL >= 2008
 * Due to backup/restore limitations, you must be running pynonymizer on the *same server* as the database engine.
-* Database must be running on Windows, due to complexities when moving files around during restore. 
 * A backup in `.bak` format
 
 # Getting Started
