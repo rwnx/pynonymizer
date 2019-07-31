@@ -2,13 +2,12 @@ from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 from pynonymizer.strategy.table import TableStrategyTypes
-from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, UnsupportedTableStrategyError
+from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, UnsupportedTableStrategyError, DependencyError
 from pynonymizer.fake import FakeDataType
-import pyodbc
+
 import math
 from tqdm import tqdm
-import os
-from pathlib import PureWindowsPath
+from pathlib import PureWindowsPath, PurePosixPath
 from pynonymizer.log import get_logger
 
 _FAKE_COLUMN_TYPES = {
@@ -23,14 +22,17 @@ class MsSqlProvider(DatabaseProvider):
     """
     A pyodbc-based MSSQL provider.
     """
+
+    # import here for fast-failiness
+    import pyodbc
     logger = get_logger(__name__)
     __STATS = 5
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
         if db_host is not None:
-            raise ValueError("MsSqlProvider does not support remove servers due to backup file location requirements. "
-                             "You must omit db_host from your configuration and run pynonymizer on the same "
-                             "server as the database.")
+            raise DependencyError("db_host", "MsSqlProvider does not support remote servers due to backup file "
+                                             "location requirements. You must omit db_host from your configuration "
+                                             "and run pynonymizer on the same server as the database.")
 
         db_host = "(local)"
         super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
@@ -39,6 +41,7 @@ class MsSqlProvider(DatabaseProvider):
         self.__backup_compression = backup_compression
 
     def __connection(self):
+        import pyodbc
         """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
@@ -48,6 +51,7 @@ class MsSqlProvider(DatabaseProvider):
         return self.__conn
 
     def __db_connection(self):
+        import pyodbc
         """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
@@ -62,6 +66,12 @@ class MsSqlProvider(DatabaseProvider):
 
     def __db_execute(self, *args, **kwargs):
         return self.__db_connection().execute(*args, **kwargs)
+
+    def __get_path(self, filepath):
+        if "\\" in filepath:
+            return PureWindowsPath(filepath)
+        else:
+            return PurePosixPath(filepath)
 
     def __get_default_datafolder(self):
         """
@@ -82,7 +92,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 0
         """).fetchone()[0]
 
-        return PureWindowsPath(datafile).parent
+        return self.__get_path(datafile).parent
 
     def __get_default_logfolder(self):
         """
@@ -98,7 +108,7 @@ class MsSqlProvider(DatabaseProvider):
         WHERE d.[name] = 'model' AND type = 1
         """).fetchone()[0]
 
-        return PureWindowsPath(logfile).parent
+        return self.__get_path(logfile).parent
 
     def __get_file_moves(self, input_path):
         """
@@ -114,7 +124,7 @@ class MsSqlProvider(DatabaseProvider):
         for file in filelist:
             name = file[0]
             type = file[2].upper()
-            filepath = PureWindowsPath(file[1])
+            filepath = self.__get_path(file[1])
 
             # log files can go into the default log directory, everything else can go into the data directory
             if type == "L":
@@ -138,6 +148,7 @@ class MsSqlProvider(DatabaseProvider):
             progressbar.update(progressbar.total - progressbar.n)
 
     def __run_scripts(self, script_list, title=""):
+        import pyodbc
         for i, script in enumerate(script_list):
             self.logger.info(f"Running f{title} script #{i} \"{script[:50]}\"")
             cursor = self.__db_execute(script)
@@ -184,6 +195,7 @@ class MsSqlProvider(DatabaseProvider):
             raise UnsupportedColumnStrategyError(column_strategy)
 
     def test_connection(self):
+        import pyodbc
         try:
             self.__execute("SELECT @@VERSION;").fetchall()
             return True

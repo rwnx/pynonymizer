@@ -1,4 +1,5 @@
 from pynonymizer.database.mssql import MsSqlProvider
+from pynonymizer.database.exceptions import DependencyError
 import pytest
 import pyodbc
 from decimal import Decimal
@@ -40,6 +41,10 @@ def mock_backup_side_effect(statement, *args, **kwargs):
 
     return Mock()
 
+
+def test_raise_on_remote_server():
+    with pytest.raises(DependencyError):
+        MsSqlProvider("192.168.2.1", "username", "password", "dbname")
 
 @patch("pyodbc.connect")
 def test_create_database_noop(connect, provider):

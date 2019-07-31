@@ -1,7 +1,7 @@
 import pytest
 import unittest
 from unittest.mock import patch, Mock
-from pynonymizer.database.exceptions import MissingPrerequisiteError
+from pynonymizer.database.exceptions import DependencyError
 from pynonymizer.database.mysql.execution import MySqlDumpRunner, MySqlCmdRunner
 import subprocess
 
@@ -9,12 +9,12 @@ import subprocess
 @patch("shutil.which", Mock(return_value=None))
 class NoExecutablesInPathTests(unittest.TestCase):
     def test_dump_runner_missing_mysqldump(self):
-        with pytest.raises(MissingPrerequisiteError):
+        with pytest.raises(DependencyError):
             MySqlDumpRunner("1.2.3.4", "user", "password", "name")
 
 
     def test_cmd_runner_missing_mysql(self):
-        with pytest.raises(MissingPrerequisiteError):
+        with pytest.raises(DependencyError):
             MySqlCmdRunner("1.2.3.4", "user", "password", "name")
 
 

@@ -34,7 +34,6 @@ setuptools.setup(
         "tqdm>=4",
         "faker>=1",
         "python-dotenv>=0.10",
-        "pyodbc>=4.0.26"
     ],
     entry_points={
         'console_scripts': [
@@ -42,5 +41,8 @@ setuptools.setup(
         ]
     },
     setup_requires=["pytest-runner"],
-    tests_require=["pytest"]
+    tests_require=["pytest"],
+    extras_require={
+        'mssql': ["pyodbc>=4.0.26"]
+    }
  )

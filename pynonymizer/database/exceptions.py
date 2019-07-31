@@ -4,9 +4,10 @@ from pynonymizer.exceptions import PynonymizerError
 class DatabaseProviderError(PynonymizerError):
     pass
 
-
-class MissingPrerequisiteError(DatabaseProviderError):
-    pass
+class DependencyError(DatabaseProviderError):
+    def __init__(self, names, message):
+        self.names = names
+        super().__init__("Bad dependency: {}, {}".format(names, message))
 
 
 class UnsupportedTableStrategyError(DatabaseProviderError):
