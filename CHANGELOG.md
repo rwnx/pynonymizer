@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Changed mssql support to an package extra. If mssql support is required, install extra `pynonymizer[mssql]`
+- Added errors for mssql ODBC installation issues, missing extras
 
 ## [1.5.0] 2019-07-13
 - Added Support for different strategyfile formats: `.json`/`.yaml`/`.yml`

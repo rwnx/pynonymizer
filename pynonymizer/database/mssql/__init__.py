@@ -24,6 +24,7 @@ class MsSqlProvider(DatabaseProvider):
     A pyodbc-based MSSQL provider.
     """
 
+    # import here for fast-failiness
     import pyodbc
     logger = get_logger(__name__)
     __STATS = 5

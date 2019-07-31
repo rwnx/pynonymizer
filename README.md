@@ -53,10 +53,6 @@ For a full list of data generation strategies, see the docs on [strategyfiles](h
 
 If this workflow doesnt work for you, see [process control](https://gitlab.com/jerometwell/pynonymizer/blob/master/doc/process-control.md) to see if it can be adjusted to suit your needs.
 
-## Supported Databases
-* `mysql`
-* More coming soon!
-
 ## Requirements
 * Python >= 3.6
 
@@ -66,6 +62,7 @@ If this workflow doesnt work for you, see [process control](https://gitlab.com/j
 * A backup in Single-file mysqldump output (schema and data)
 
 ### mssql
+* Requires extra dependencies: install package `pynonymizer[mssql]`
 * MSSQL >= 2008
 * Due to backup/restore limitations, you must be running pynonymizer on the *same server* as the database engine.
 * Database must be running on Windows, due to complexities when moving files around during restore. 
