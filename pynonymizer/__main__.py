@@ -126,6 +126,20 @@ def main(rawArgs=None):
             seed_rows=args.seed_rows,
             mssql_backup_compression=args.mssql_backup_compression
         )
+    except ModuleNotFoundError as error:
+        if error.name == "pyodbc" and args.db_type == "mssql":
+            logger.error("Missing Required Packages for database support.")
+            logger.error("Install package extras: pip install pynonymizer[mssql]")
+            sys.exit(1)
+        else:
+            raise error
+    except ImportError as error:
+        if error.name == "pyodbc" and args.db_type == "mssql":
+            logger.error("Error importing pyodbc (mssql). "
+                         "The ODBC driver may not be installed on your system. See package `unixodbc`.")
+            sys.exit(1)
+        else:
+            raise error
     except DatabaseConnectionError as error:
         logger.error("Failed to connect to database.")
         sys.exit(1)

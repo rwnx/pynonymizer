@@ -4,7 +4,7 @@ from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 from pynonymizer.strategy.table import TableStrategyTypes
 from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, UnsupportedTableStrategyError
 from pynonymizer.fake import FakeDataType
-import pyodbc
+
 import math
 from tqdm import tqdm
 import os
@@ -27,6 +27,8 @@ class MsSqlProvider(DatabaseProvider):
     __STATS = 5
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
+        import pyodbc
+
         if db_host is not None:
             raise ValueError("MsSqlProvider does not support remove servers due to backup file location requirements. "
                              "You must omit db_host from your configuration and run pynonymizer on the same "
