@@ -23,12 +23,12 @@ class MsSqlProvider(DatabaseProvider):
     """
     A pyodbc-based MSSQL provider.
     """
+
+    import pyodbc
     logger = get_logger(__name__)
     __STATS = 5
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
-        import pyodbc
-
         if db_host is not None:
             raise ValueError("MsSqlProvider does not support remove servers due to backup file location requirements. "
                              "You must omit db_host from your configuration and run pynonymizer on the same "
@@ -41,6 +41,7 @@ class MsSqlProvider(DatabaseProvider):
         self.__backup_compression = backup_compression
 
     def __connection(self):
+        import pyodbc
         """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
@@ -50,6 +51,7 @@ class MsSqlProvider(DatabaseProvider):
         return self.__conn
 
     def __db_connection(self):
+        import pyodbc
         """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
@@ -140,6 +142,7 @@ class MsSqlProvider(DatabaseProvider):
             progressbar.update(progressbar.total - progressbar.n)
 
     def __run_scripts(self, script_list, title=""):
+        import pyodbc
         for i, script in enumerate(script_list):
             self.logger.info(f"Running f{title} script #{i} \"{script[:50]}\"")
             cursor = self.__db_execute(script)
@@ -186,6 +189,7 @@ class MsSqlProvider(DatabaseProvider):
             raise UnsupportedColumnStrategyError(column_strategy)
 
     def test_connection(self):
+        import pyodbc
         try:
             self.__execute("SELECT @@VERSION;").fetchall()
             return True
