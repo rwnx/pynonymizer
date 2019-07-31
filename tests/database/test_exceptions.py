@@ -1,5 +1,5 @@
 import pytest
-from pynonymizer.database.exceptions import DatabaseProviderError, MissingPrerequisiteError, UnsupportedTableStrategyError, UnsupportedColumnStrategyError
+from pynonymizer.database.exceptions import DatabaseProviderError, DependencyError, UnsupportedTableStrategyError, UnsupportedColumnStrategyError
 
 
 def test_database_provider_error():
@@ -7,7 +7,7 @@ def test_database_provider_error():
 
 
 def test_missing_prerequisite_error():
-    error = MissingPrerequisiteError("error message")
+    error = DependencyError("mysqldump", "error message")
 
 
 def test_unsupported_table_strategy():

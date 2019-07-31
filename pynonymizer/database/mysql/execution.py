@@ -1,6 +1,6 @@
 import shutil
 import subprocess
-from pynonymizer.database.exceptions import MissingPrerequisiteError
+from pynonymizer.database.exceptions import DependencyError
 """
 Seperate everything that touches actual query exec into its own module
 """
@@ -13,7 +13,7 @@ class MySqlDumpRunner:
         self.db_name = db_name
 
         if not (shutil.which("mysqldump")):
-            raise MissingPrerequisiteError("The 'mysqldump' client must be present in the $PATH")
+            raise DependencyError( "mysqldump", "The 'mysqldump' client must be present in the $PATH")
 
     def __get_base_params(self):
         return ["mysqldump", "--host", self.db_host, "--user", self.db_user, f"-p{self.db_pass}"]
@@ -30,7 +30,7 @@ class MySqlCmdRunner:
         self.db_name = db_name
 
         if not (shutil.which("mysql")):
-            raise MissingPrerequisiteError("The 'mysql' client must be present in the $PATH")
+            raise DependencyError("mysql", "The 'mysql' client must be present in the $PATH")
 
     def __mask_subprocess_error(self, error):
         """

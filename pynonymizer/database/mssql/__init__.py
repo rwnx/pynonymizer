@@ -2,7 +2,7 @@ from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 from pynonymizer.strategy.table import TableStrategyTypes
-from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, UnsupportedTableStrategyError
+from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, UnsupportedTableStrategyError, DependencyError
 from pynonymizer.fake import FakeDataType
 
 import math
@@ -30,9 +30,9 @@ class MsSqlProvider(DatabaseProvider):
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
         if db_host is not None:
-            raise ValueError("MsSqlProvider does not support remove servers due to backup file location requirements. "
-                             "You must omit db_host from your configuration and run pynonymizer on the same "
-                             "server as the database.")
+            raise DependencyError("db_host", "MsSqlProvider does not support remote servers due to backup file "
+                                             "location requirements. You must omit db_host from your configuration "
+                                             "and run pynonymizer on the same server as the database.")
 
         db_host = "(local)"
         super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
