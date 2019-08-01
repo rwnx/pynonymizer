@@ -6,8 +6,9 @@ def test_database_provider_error():
     error = DatabaseProviderError()
 
 
-def test_missing_prerequisite_error():
+def test_dependency_error():
     error = DependencyError("mysqldump", "error message")
+    assert error.name == "mysqldump"
 
 
 def test_unsupported_table_strategy():
