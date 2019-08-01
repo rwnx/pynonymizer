@@ -23,8 +23,6 @@ class MsSqlProvider(DatabaseProvider):
     A pyodbc-based MSSQL provider.
     """
 
-    # import here for fast-failiness
-    import pyodbc
     logger = get_logger(__name__)
 
     # stats value for restore/backup command: Report progress every X percent
@@ -33,6 +31,9 @@ class MsSqlProvider(DatabaseProvider):
     __STATS = 5
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
+        # import here for fast-failiness
+        import pyodbc
+
         if db_host is not None:
             raise DependencyError("db_host", "MsSqlProvider does not support remote servers due to backup file "
                                              "location requirements. You must omit db_host from your configuration "
