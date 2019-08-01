@@ -1,4 +1,4 @@
-from pynonymizer.database.mysql.output import UnknownOutputTypeError, resolve_output, RawOutput, GzipOutput
+from pynonymizer.database.basic.output import UnknownOutputTypeError, resolve_output, RawOutput, GzipOutput
 import pytest
 
 test_path_examples = [
