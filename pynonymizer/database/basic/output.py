@@ -1,5 +1,8 @@
 import gzip
 import os
+"""
+Streaming output files for streamable providers
+"""
 
 
 class UnknownOutputTypeError(Exception):

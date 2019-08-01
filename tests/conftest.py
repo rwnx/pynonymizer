@@ -31,6 +31,10 @@ def simple_strategy_update(simple_strategy_update_fake_column):
 def simple_strategy_trunc():
     return TruncateTableStrategy("truncate_table")
 
+@pytest.fixture
+def simple_strategy_schema_trunc():
+    return TruncateTableStrategy("truncate_schema_table", schema="schema")
+
 
 @pytest.fixture
 def simple_strategy(simple_strategy_trunc, simple_strategy_update):
@@ -38,3 +42,4 @@ def simple_strategy(simple_strategy_trunc, simple_strategy_update):
         simple_strategy_trunc,
         simple_strategy_update
     ])
+

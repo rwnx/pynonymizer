@@ -19,6 +19,10 @@ class TableStrategy(ABC):
         self.table_name = table_name
         self.schema = schema
 
+    @property
+    def qualified_name(self):
+        return f"{self.schema}.{self.table_name}" if self.schema else self.table_name
+
 
 class TruncateTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.TRUNCATE

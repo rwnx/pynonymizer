@@ -57,15 +57,20 @@ If this workflow doesnt work for you, see [process control](https://gitlab.com/j
 * Python >= 3.6
 
 ### mysql
-* `mysql`/`mysqldump`: You will need these utilities in your path. 
-* An active database connection, (mysql >= 5.5) either local or remote (to restore, anonymize, and dump from)
-* A backup in Single-file mysqldump output (schema and data)
+* `mysql`/`mysqldump` Must be in $PATH
+* backup file in plain .sql/sql.gz (schema and data)
+* Local or remote mysql >= 5.5
 
 ### mssql
 * Requires extra dependencies: install package `pynonymizer[mssql]`
 * MSSQL >= 2008
 * Due to backup/restore limitations, you must be running pynonymizer on the *same server* as the database engine.
 * A backup in `.bak` format
+
+### postgres
+* `psql`/`pg_dump` Must be in $PATH
+* backup file in plain .sql/sql.gz (schema and data)
+* Local or remote postgres server
 
 # Getting Started
 
