@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.6.0] 2019-08-02
 - Changed mssql support to an package extra. If mssql support is required, install extra `pynonymizer[mssql]`.
 - Added errors for mssql ODBC installation issues, missing extras.
 - Added support for linux paths in MSSQL backup file moves/restore.
