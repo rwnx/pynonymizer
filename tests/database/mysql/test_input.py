@@ -1,7 +1,7 @@
 import pytest
 from unittest import TestCase
 from unittest.mock import mock_open, patch
-from pynonymizer.database.mysql.input import GzipInput, RawInput, UnknownInputTypeError, resolve_input
+from pynonymizer.database.basic.input import GzipInput, RawInput, UnknownInputTypeError, resolve_input
 
 
 def test_gzip_open():

@@ -4,10 +4,9 @@ from pynonymizer import log
 from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.mysql import execution, query_factory
-from pynonymizer.database.mysql.input import resolve_input
-from pynonymizer.database.mysql.output import resolve_output
+from pynonymizer.database.basic.input import resolve_input
+from pynonymizer.database.basic.output import resolve_output
 from pynonymizer.strategy.table import TableStrategyTypes
-from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 
 
 class MySqlProvider(DatabaseProvider):
