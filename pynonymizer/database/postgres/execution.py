@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 from pynonymizer.database.exceptions import DependencyError
+import os
 """
 Seperate everything that touches actual query exec into its own module
 """
@@ -16,10 +17,19 @@ class PSqlDumpRunner:
             raise DependencyError( "pg_dump", "The 'pg_dump' client must be present in the $PATH")
 
     def __get_base_params(self):
-        return ["pg_dump", "--host", self.db_host, "--username", self.db_user, f"-p{self.db_pass}"]
+        return ["pg_dump", "--host", self.db_host, "--username", self.db_user]
+
+    def __get_env(self):
+        new_env = os.environ.copy()
+        new_env.update({"PGPASSWORD": self.db_pass})
+
+        return new_env
 
     def open_dumper(self):
-        return subprocess.Popen(self.__get_base_params() + [self.db_name], stdout=subprocess.PIPE).stdout
+        return subprocess.Popen(self.__get_base_params() + [self.db_name],
+                                stdout=subprocess.PIPE,
+                                env=self.__get_env()
+                                ).stdout
 
 
 class PSqlCmdRunner:
@@ -32,28 +42,21 @@ class PSqlCmdRunner:
         if not (shutil.which("psql")):
             raise DependencyError("psql", "The 'psql' client must be present in the $PATH")
 
-    def __mask_subprocess_error(self, error):
-        """
-        messes with the internals of a CalledProcessError to hide the fact that there's a password in there,
-        in case it bubbles out in a traceback.
-
-        This might be better as a wrapping exception, rather than messing around inside other people's classes.
-        """
-        error.cmd = ["mysql", "-h", self.db_host, "-u", self.db_user, "-p******"]
-        raise error from None
-
     def __get_base_params(self):
-        return ["mysql", "-h", self.db_host, "-u", self.db_user, f"-p{self.db_pass}"]
+        return ["psql", "--host", self.db_host, "--username", self.db_user]
+
+    def __get_env(self):
+        new_env = os.environ.copy()
+        new_env.update({"PGPASSWORD": self.db_pass})
+
+        return new_env
 
     def execute(self, statements):
         if not isinstance(statements, list):
             statements = [statements]
 
         for statement in statements:
-            try:
-                subprocess.check_output(self.__get_base_params() + ["--execute", statement])
-            except subprocess.CalledProcessError as error:
-                self.__mask_subprocess_error(error)
+            subprocess.check_output(self.__get_base_params() + ["--command", statement], env=self.__get_env())
 
         return True
 
@@ -62,21 +65,26 @@ class PSqlCmdRunner:
             statements = [statements]
 
         for statement in statements:
-            try:
-                subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement])
-            except subprocess.CalledProcessError as error:
-                self.__mask_subprocess_error(error)
+            subprocess.check_output(
+                self.__get_base_params() + ["--dbname", self.db_name,  "--command", statement],
+                env=self.__get_env()
+            )
 
         return True
 
     def get_single_result(self, statement):
-        try:
-            return subprocess.check_output(self.__get_base_params() + ["-sN", self.db_name, "--execute", statement]).decode()
-        except subprocess.CalledProcessError as error:
-            self.__mask_subprocess_error(error)
+        return subprocess.check_output(
+            self.__get_base_params() + ["--dbname", self.db_name, "-tA", "--command", statement],
+            env=self.__get_env()
+        ).decode()
+
 
     def open_batch_processor(self):
-        return subprocess.Popen(self.__get_base_params() + [self.db_name], stdin=subprocess.PIPE).stdin
+        return subprocess.Popen(
+            self.__get_base_params() + ["--dbname", self.db_name, "--quiet"],
+            env=self.__get_env(),
+            stdin=subprocess.PIPE
+        ).stdin
 
     def test(self):
         """
@@ -85,7 +93,7 @@ class PSqlCmdRunner:
         :return True on success, False on Failure
         """
         try:
-            self.execute("SELECT @@VERSION;")
+            self.execute("SELECT VERSION();")
             return True
         except subprocess.CalledProcessError:
             return False

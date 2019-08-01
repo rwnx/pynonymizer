@@ -11,12 +11,11 @@ from pynonymizer.strategy.table import TableStrategyTypes
 
 class PostgreSqlProvider(DatabaseProvider):
     """
-    A command-line based mysql provider. Uses `psql` and `psqldump`,
+    A command-line based postgres provider. Uses `psql` and `psqldump`,
     Because of the efficiency of piping mass amounts of sql into the command-line client.
     Unfortunately, this implementation provides limited feedback when things go wrong.
     """
     __CHUNK_SIZE = 8192
-    __DUMPSIZE_ESTIMATE_INFLATION = 1.15
     logger = log.get_logger(__name__)
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
@@ -43,7 +42,7 @@ class PostgreSqlProvider(DatabaseProvider):
         process_output = self.__runner.get_single_result(statement)
 
         try:
-            return int(process_output) * self.__DUMPSIZE_ESTIMATE_INFLATION
+            return int(process_output)
         except ValueError:
             # Value unparsable, likely NULL
             return None
@@ -89,18 +88,12 @@ class PostgreSqlProvider(DatabaseProvider):
 
         with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
             for table_strategy in table_strategies:
-                if table_strategy.schema is not None:
-                    self.logger.warning(
-                        "%s: MySQL provider does not support table schema. This option will be ignored.",
-                        table_strategy.table_name
-                    )
-
                 if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-                    progressbar.set_description("Truncating {}".format(table_strategy.table_name))
-                    self.__runner.db_execute(query_factory.get_truncate_table(table_strategy.table_name))
+                    progressbar.set_description("Truncating {}".format(table_strategy.qualified_name))
+                    self.__runner.db_execute(query_factory.get_truncate_table(table_strategy))
 
                 elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
-                    progressbar.set_description("Anonymizing {}".format(table_strategy.table_name))
+                    progressbar.set_description("Anonymizing {}".format(table_strategy.qualified_name))
                     statements = query_factory.get_update_table(SEED_TABLE_NAME, table_strategy)
                     self.__runner.db_execute(statements)
 
@@ -133,7 +126,7 @@ class PostgreSqlProvider(DatabaseProvider):
 
     def dump_database(self, output_path):
         """
-        Feed an output with stdout from the mysqldump binary
+        Feed an output with stdout from the dump binary
         :param output_path:
         :return:
         """

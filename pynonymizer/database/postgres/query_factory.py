@@ -28,7 +28,7 @@ def _get_column_subquery(seed_table_name, column_strategy):
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
         return f"( SELECT {_RAND_MD5} )"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-        return f"( SELECT `{column_strategy.qualifier}` FROM `{seed_table_name}` ORDER BY RANDOM() LIMIT 1)"
+        return f"( SELECT {column_strategy.qualifier} FROM {seed_table_name} ORDER BY RANDOM() LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
@@ -46,37 +46,45 @@ def _escape_sql_value(value):
         return str(value)
 
 
-def get_truncate_table(table_name):
-    return f"TRUNCATE TABLE `{table_name}`;"
+def _get_qualified_table_name(schema, table):
+    return f"{schema}.{table}" if schema else table
+
+
+def get_truncate_table(table_strategy):
+    return f"TRUNCATE TABLE {_get_qualified_table_name(table_strategy.schema, table_strategy.table_name)} CASCADE;"
 
 
 def get_create_seed_table(table_name, qualifier_map):
     if len(qualifier_map) < 1:
         raise ValueError("Cannot create a seed table with no columns")
 
-    create_columns = [f"`{qualifier}` {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
+    create_columns = [f"{qualifier} {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
 
-    return "CREATE TABLE `{}` ({});".format(table_name, ",".join(create_columns) )
+    return "CREATE TABLE {} ({});".format(table_name, ",".join(create_columns) )
 
 
 def get_drop_seed_table(table_name):
-    return f"DROP TABLE IF EXISTS `{table_name}`;"
+    return f"DROP TABLE IF EXISTS {table_name};"
 
 
 def get_insert_seed_row(table_name, qualifier_map):
 
-    column_names = ",".join( [f"`{qualifier}`" for qualifier in qualifier_map.keys()] )
+    column_names = ",".join( [f"{qualifier}" for qualifier in qualifier_map.keys()] )
     column_values = ",".join( [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()] )
 
-    return "INSERT INTO `{}`({}) VALUES ({});".format(table_name, column_names, column_values)
+    return "INSERT INTO {}({}) VALUES ({});".format(table_name, column_names, column_values)
 
 
 def get_create_database(database_name):
-    return f"CREATE DATABASE `{database_name}`;"
+    return f"CREATE DATABASE {database_name};"
 
 
 def get_drop_database(database_name):
-    return f"DROP DATABASE IF EXISTS `{database_name}`;"
+    return [
+        # terminate other connections so we can drop
+        f"SELECT pid, pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{database_name}' AND pid != pg_backend_pid();",
+        f"DROP DATABASE IF EXISTS {database_name};"
+    ]
 
 
 def get_update_table(seed_table_name, update_table_strategy):
@@ -87,7 +95,7 @@ def get_update_table(seed_table_name, update_table_strategy):
     for where, column_map in update_table_strategy.group_by_where().items():
         where_update_statements[where] = []
         for column_name, column_strategy in column_map.items():
-            where_update_statements[where].append("`{}` = {}".format(
+            where_update_statements[where].append("{} = {}".format(
                 column_name,
                 _get_column_subquery(seed_table_name, column_strategy))
             )
@@ -95,7 +103,13 @@ def get_update_table(seed_table_name, update_table_strategy):
         assignments = ",".join( where_update_statements[where] )
         where_clause = f" WHERE {where}" if where else ""
 
-        output_statements.append( f"UPDATE `{update_table_strategy.table_name}` SET {assignments}{where_clause};")
+        output_statements.append(
+            "UPDATE {} SET {}{};".format(
+                _get_qualified_table_name(update_table_strategy.schema, update_table_strategy.table_name),
+                assignments,
+                where_clause
+            )
+        )
 
     return output_statements
 

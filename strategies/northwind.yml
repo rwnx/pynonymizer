@@ -1,0 +1,13 @@
+# An unfinished test strategy for northwind sample database
+
+tables:
+  customers:
+    columns:
+      company_name: company
+      contact_name: name
+      address: address
+      city: city
+      country: country
+      postal_code: postcode
+
+  orders: truncate

@@ -2,6 +2,7 @@ import os
 import uuid
 from pynonymizer.database.mysql import MySqlProvider
 from pynonymizer.database.mssql import MsSqlProvider
+from pynonymizer.database.postgres import PostgreSqlProvider
 from pynonymizer.database.exceptions import UnknownDatabaseTypeError
 
 def get_temp_db_name(filename=None):
@@ -10,9 +11,16 @@ def get_temp_db_name(filename=None):
 
 
 def get_provider(type, *args, **kwargs):
+    provider = None
+
     if type == "mysql":
-        return MySqlProvider(*args, **kwargs)
+        provider = MySqlProvider
     if type == "mssql":
-        return MsSqlProvider(*args, **kwargs)
+        provider = MsSqlProvider
+    elif type == "postgres":
+        provider = PostgreSqlProvider
+
+    if provider:
+        return provider(*args, **kwargs)
     else:
         raise UnknownDatabaseTypeError(type)
