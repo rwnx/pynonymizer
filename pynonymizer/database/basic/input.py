@@ -1,6 +1,9 @@
 import os
 import struct
 import gzip
+"""
+Streaming input files for streamable providers
+"""
 
 
 class UnknownInputTypeError(Exception):

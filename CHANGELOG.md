@@ -19,8 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Changed mssql support to an package extra. If mssql support is required, install extra `pynonymizer[mssql]`.
 - Added errors for mssql ODBC installation issues, missing extras.
 - Added support for linux paths in MSSQL backup file moves/restore.
-- Added PostgreSQL support: use use `--db-type/-t postgres`
-- Fixed typo in mssql config validation. 
+- Added support for postgres (subprocess-based psql/pg_dump): use `--db-type/-t postgres`
+- Fixed typo in mssql dependency error (local server required). 
 
 ## [1.5.0] 2019-07-13
 - Added Support for different strategyfile formats: `.json`/`.yaml`/`.yml`

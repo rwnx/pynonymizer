@@ -3,6 +3,26 @@ import pytest
 from contextlib import contextmanager
 
 
+class AnyObject:
+    def __eq__(self, actual):
+        return True
+
+    def __ne__(self, other):
+        return False
+
+
+class SuperdictOf:
+    def __init__(self, required_dict):
+        self.required_dict = required_dict
+
+    def __eq__(self, actual):
+        return self.required_dict.items() <= actual.items()
+
+    def __ne__(self, actual):
+        return not(self.required_dict.items() <= actual.items())
+
+
+
 class ComparableRegex:
     """Assert that a given string meets some expectations."""
 

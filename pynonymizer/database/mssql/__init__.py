@@ -26,6 +26,10 @@ class MsSqlProvider(DatabaseProvider):
     # import here for fast-failiness
     import pyodbc
     logger = get_logger(__name__)
+
+    # stats value for restore/backup command: Report progress every X percent
+    # A lower value means MORE resultssets / more frequent updates from the backup command.
+    # Values lower than 5 often yield unreliable results on smaller backups
     __STATS = 5
 
     def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
