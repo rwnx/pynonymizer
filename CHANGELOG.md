@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Fixed a MariaDB bug where multiple string colums would cause a row length error
 
 ## [1.6.1] 2019-08-02
 - Fixed a bug where static code relying on pyodbc would cause a ModuleNotFoundError
