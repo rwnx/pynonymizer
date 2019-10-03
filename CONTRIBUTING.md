@@ -2,6 +2,13 @@
 
 We love contributions!
 
+## Process Outline
+1. (Optional) Create an issue and discuss your proposal. 
+1. Complete your changes, and submit a Merge Request for review.
+1. A maintainer will merge your changes.
+
+For more detailed guidance, see the headings below.
+
 ## Issue Tracker
 Discuss the change using the issue tracker - create an issue for a bug, feature request or discussion.
 
