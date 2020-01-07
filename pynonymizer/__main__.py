@@ -47,6 +47,10 @@ def create_parser():
                         default=os.getenv("PYNONYMIZER_DB_HOST") or os.getenv("DB_HOST"),
                         help="Database hostname or IP address. [$PYNONYMIZER_DB_HOST]")
 
+    parser.add_argument("--db-port", "-P",
+                        default=os.getenv("PYNONYMIZER_DB_PORT"),
+                        help="Database port. Defaults to provider default. [$PYNONYMIZER_DB_PORT]")
+
     parser.add_argument("--db-name", "-n",
                         default=os.getenv("PYNONYMIZER_DB_NAME") or os.getenv("DB_NAME"),
                         help="Name of database to restore and anonymize in. If not provided, a unique name will be generated from the strategy name. This will be dropped at the end of the run. [$PYNONYMIZER_DB_NAME]")
@@ -116,6 +120,7 @@ def main(rawArgs=None):
             output_path=output,
             db_type=args.db_type,
             db_host=args.db_host,
+            db_port=args.db_port,
             db_name=args.db_name,
             db_user=args.db_user,
             db_password=args.db_password,

@@ -7,17 +7,18 @@ Seperate everything that touches actual query exec into its own module
 """
 
 class PSqlDumpRunner:
-    def __init__(self, db_host, db_user, db_pass, db_name):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port=5432):
         self.db_host = db_host
         self.db_user = db_user
         self.db_pass = db_pass
         self.db_name = db_name
+        self.db_port = db_port
 
         if not (shutil.which("pg_dump")):
             raise DependencyError( "pg_dump", "The 'pg_dump' client must be present in the $PATH")
 
     def __get_base_params(self):
-        return ["pg_dump", "--host", self.db_host, "--username", self.db_user]
+        return ["pg_dump", "--host", self.db_host, "--port", self.db_port, "--username", self.db_user]
 
     def __get_env(self):
         new_env = os.environ.copy()
@@ -33,17 +34,18 @@ class PSqlDumpRunner:
 
 
 class PSqlCmdRunner:
-    def __init__(self, db_host, db_user, db_pass, db_name):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port=5432):
         self.db_host = db_host
         self.db_user = db_user
         self.db_pass = db_pass
         self.db_name = db_name
+        self.db_port = db_port
 
         if not (shutil.which("psql")):
             raise DependencyError("psql", "The 'psql' client must be present in the $PATH")
 
     def __get_base_params(self):
-        return ["psql", "--host", self.db_host, "--username", self.db_user]
+        return ["psql", "--host", self.db_host, "--port", self.db_port, "--username", self.db_user]
 
     def __get_env(self):
         new_env = os.environ.copy()

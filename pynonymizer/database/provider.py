@@ -4,11 +4,12 @@ SEED_TABLE_NAME = "_pynonymizer_seed_fake_data"
 
 class DatabaseProvider(ABC):
     @abstractmethod
-    def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None):
         self.db_host = db_host
         self.db_user = db_user
         self.db_pass = db_pass
         self.db_name = db_name
+        self.db_port = db_port
 
         if seed_rows is None:
             seed_rows = 150
