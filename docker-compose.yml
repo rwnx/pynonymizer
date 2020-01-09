@@ -1,0 +1,12 @@
+# run the test env in docker to support environments without all the pythons
+version: "3.7"
+services:
+    test:
+        build:
+            context: .
+            dockerfile: ./dev/tox_docker/Dockerfile
+            args:
+                SKIP_TOX: "true"
+        volumes:
+            - .:/app
+        command: tox

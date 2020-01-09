@@ -15,8 +15,8 @@ def test_init_runners_correctly(execution):
     Test the provider inits dependencies with the correct database information
     """
     MySqlProvider("1.2.3.4", "root", "password", "db_name")
-    execution.MySqlCmdRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
-    execution.MySqlDumpRunner.assert_called_once_with("1.2.3.4", "root", "password", "db_name")
+    execution.MySqlCmdRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port=3306)
+    execution.MySqlDumpRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port=3306)
 
 
 @patch("pynonymizer.database.mysql.execution", autospec=True)
