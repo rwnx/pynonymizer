@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.7.0] 2020-01-10
 - Added option `--db-port`/`-P`/`$PYNONYMIZER_DB_PORT` to specify your database provider's connection port.
 - Added option `--verbose` to increase the verbosity of the logging feature. Currently, this is used to log more info 
   from a database error, but more areas will be included in future.
