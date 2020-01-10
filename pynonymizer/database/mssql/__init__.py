@@ -39,10 +39,13 @@ class MsSqlProvider(DatabaseProvider):
                                              "location requirements. You must omit db_host from your configuration "
                                              "and run pynonymizer on the same server as the database.")
 
-        db_host = "(local)"
+        # TODO: The odbc port syntax doesn't seem to work with (local),1433 or port=1433
+        # TODO: This needs attention, but as it's backwards compatible, we're going to disallow it here.
+        if db_port is not None:
+            raise DependencyError("db_port", "MsSqlProvider does not support custom ports. You must omit db_port "
+                                             "from your configuration to continue.")
 
-        if db_port == None:
-            db_port = 1433
+        db_host = "(local)"
 
         super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
         self.__conn = None
@@ -54,7 +57,10 @@ class MsSqlProvider(DatabaseProvider):
         """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
-                f"DRIVER={{SQL Server}};SERVER={self.db_host},{self.db_port};UID={self.db_user};PWD={self.db_pass}",
+                driver="{SQL Server Native Client 11.0}",
+                server=self.db_host,
+                uid=self.db_user,
+                pwd=self.db_pass,
                 autocommit=True
             )
 
@@ -65,7 +71,11 @@ class MsSqlProvider(DatabaseProvider):
         """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
-                f"DRIVER={{SQL Server}};DATABASE={self.db_name};SERVER={self.db_host},{self.db_port};UID={self.db_user};PWD={self.db_pass}",
+                driver="{SQL Server Native Client 11.0}",
+                database=self.db_name,
+                server=self.db_host,
+                uid=self.db_user,
+                pwd=self.db_pass,
                 autocommit=True
             )
 

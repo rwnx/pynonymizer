@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 - Added option `--db-port`/`-P`/`$PYNONYMIZER_DB_PORT` to specify your database provider's connection port.
+- Added option `--verbose` to increase the verbosity of the logging feature. Currently, this is used to log more info 
+  from a database error, but more areas will be included in future.
 
 ## [1.6.2] 2019-09-17
 - Fixed a mysql provider issue: in MariaDB, multiple string columns in a strategy could cause a row length error when constructing the seed table.

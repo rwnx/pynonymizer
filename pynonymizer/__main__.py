@@ -91,6 +91,10 @@ def create_parser():
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
+    parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMISER_VERBOSE"),
+                        help="Increases the verbosity of the logging feature to help troubleshooting issues"
+                        )
+
     return parser
 
 
@@ -147,6 +151,8 @@ def main(rawArgs=None):
             raise error
     except DatabaseConnectionError as error:
         logger.error("Failed to connect to database.")
+        if args.verbose:
+            logger.error(error)
         sys.exit(1)
     except ArgumentValidationError as error:
         logger.error("Missing values for required arguments: \n" + "\n".join(error.validation_messages) +
