@@ -67,6 +67,8 @@ def mock_getenv_new(name):
         return "ANONYMIZE_DB DUMP_DB"
     elif name == "PYNONYMIZER_STOP_AT":
         return "ANONYMIZE_DB"
+    elif name == "PYNONYMIZER_VERBOSE":
+        return "VERBOSE"
 
 
 def mock_getenv_old_new_combined(name):
@@ -150,7 +152,8 @@ def test_all_args_precedence():
         "--fake-locale", "ARG_FAKE_LOCALE",
         "--start-at", "START",
         "--skip-steps", "ANONYMIZE_DB",
-        "--stop-at", "END"
+        "--stop-at", "END",
+        "--verbose"
     ])
     assert args.input          == "input.sql"
     assert args.strategyfile   == "strategyfile.yml"
@@ -164,6 +167,7 @@ def test_all_args_precedence():
     assert args.start_at_step  == "START"
     assert args.skip_steps     == ["ANONYMIZE_DB"]
     assert args.stop_at_step   == "END"
+    assert args.verbose is True
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
@@ -192,3 +196,4 @@ def test_all_short_args_precedence():
     assert args.db_user      == "ARG_DB_USER"
     assert args.db_password  == "ARG_DB_PASSWORD"
     assert args.fake_locale  == "ARG_FAKE_LOCALE"
+    assert args.verbose is False

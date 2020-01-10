@@ -91,7 +91,7 @@ def create_parser():
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
-    parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMISER_VERBOSE"),
+    parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMISER_VERBOSE") or False,
                         help="Increases the verbosity of the logging feature, to help when troubleshooting issues. [$PYNONYMIZER_VERBOSE]"
                         )
 
