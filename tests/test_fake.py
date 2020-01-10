@@ -26,12 +26,6 @@ class FakeColumnGeneratorTests(unittest.TestCase):
         assert self.generator.get_data_type("user_agent") == FakeDataType.STRING
 
     @patch("pynonymizer.fake.Faker")
-    def test_get_value_supported(self, faker):
-        faker.return_value = Mock(spec=Faker())
-        faked_generator = FakeColumnGenerator()
-        assert faked_generator.get_value("first_name") == faker().first_name()
-
-    @patch("pynonymizer.fake.Faker")
     def test_get_value_unsupported(self, faker):
         faker.return_value = Mock(spec=Faker())
         faked_generator = FakeColumnGenerator()

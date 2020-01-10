@@ -10,27 +10,27 @@ would contain a wider range of data.
 
 From time to time, it is prudent to run a new feature or stage a test against this dataset, rather
 than one that is artificially created by developers or by testing frameworks. Anonymized databases allow us to use the structures present in production, while stripping them of any personally identifiable data that would
-consitute a breach of privacy for end-users and subsequently a breach of GDPR. 
+consitute a breach of privacy for end-users and subsequently a breach of GDPR.
 
 With Anonymized databases, copies can be processed regularly, and distributed easily, leaving your developers and testers with a rich source of information on the volume and general makeup of the system in production. It can
-be used to run better staging environments, integration tests, and even simulate database migrations. 
+be used to run better staging environments, integration tests, and even simulate database migrations.
 
 below is an excerpt from an anonymized database:
 
-| id |salutation | firstname | surname | email | dob | 
-| - | - | - | - | - | - | 
-| 1 | Dr. | Bernard | Gough | tnelson@powell.com | 2000-07-03 | 
-| 2 | Mr. | Molly | Bennett | clarkeharriet@price-fry.com | 2014-05-19 | 
-| 3 | Mrs. | Chelsea | Reid | adamsamber@clayton.com | 1974-09-08 | 
-| 4 | Dr. | Grace | Armstrong | tracy36@wilson-matthews.com | 1963-12-15 | 
-| 5 | Dr. | Stanley | James | christine15@stewart.net | 1976-09-16 | 
-| 6 | Dr. | Mark | Walsh | dgardner@ward.biz | 2004-08-28 | 
-| 7 | Mrs. | Josephine | Chambers | hperry@allen.com | 1916-04-04 | 
-| 8 | Dr. | Stephen | Thomas | thompsonheather@smith-stevens.com | 1995-04-17 | 
-| 9 | Ms. | Damian | Thompson | yjones@cox.biz | 2016-10-02 | 
-| 10 | Miss | Geraldine | Harris | porteralice@francis-patel.com | 1910-09-28 | 
-| 11 | Ms. | Gemma | Jones | mandylewis@patel-thomas.net | 1990-06-03 | 
-| 12 | Dr. | Glenn | Carr | garnervalerie@farrell-parsons.biz | 1998-04-19 | 
+| id |salutation | firstname | surname | email | dob |
+| - | - | - | - | - | - |
+| 1 | Dr. | Bernard | Gough | tnelson@powell.com | 2000-07-03 |
+| 2 | Mr. | Molly | Bennett | clarkeharriet@price-fry.com | 2014-05-19 |
+| 3 | Mrs. | Chelsea | Reid | adamsamber@clayton.com | 1974-09-08 |
+| 4 | Dr. | Grace | Armstrong | tracy36@wilson-matthews.com | 1963-12-15 |
+| 5 | Dr. | Stanley | James | christine15@stewart.net | 1976-09-16 |
+| 6 | Dr. | Mark | Walsh | dgardner@ward.biz | 2004-08-28 |
+| 7 | Mrs. | Josephine | Chambers | hperry@allen.com | 1916-04-04 |
+| 8 | Dr. | Stephen | Thomas | thompsonheather@smith-stevens.com | 1995-04-17 |
+| 9 | Ms. | Damian | Thompson | yjones@cox.biz | 2016-10-02 |
+| 10 | Miss | Geraldine | Harris | porteralice@francis-patel.com | 1910-09-28 |
+| 11 | Ms. | Gemma | Jones | mandylewis@patel-thomas.net | 1990-06-03 |
+| 12 | Dr. | Glenn | Carr | garnervalerie@farrell-parsons.biz | 1998-04-19 |
 
 
 ## How does it work?
@@ -106,6 +106,9 @@ optional arguments:
   --db-host DB_HOST, -d DB_HOST
                         Database hostname or IP address.
                         [$PYNONYMIZER_DB_HOST]
+  --db-port DB_PORT, -P DB_PORT
+                        Database port. Defaults to provider default.
+                        [$PYNONYMIZER_DB_PORT]
   --db-name DB_NAME, -n DB_NAME
                         Name of database to restore and anonymize in. If not
                         provided, a unique name will be generated from the
@@ -136,6 +139,10 @@ optional arguments:
                         [MSSQL] Use compression when backing up the database.
                         [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
   -v, --version         show program's version number and exit
+  --verbose             Increases the verbosity of the logging feature, to
+                        help when troubleshooting issues.
+                        [$PYNONYMIZER_VERBOSE]
+
 ```
 
 ## License

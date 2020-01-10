@@ -30,7 +30,7 @@ class MsSqlProvider(DatabaseProvider):
     # Values lower than 5 often yield unreliable results on smaller backups
     __STATS = 5
 
-    def __init__(self, db_host, db_user, db_pass, db_name, seed_rows=None, backup_compression=False):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, backup_compression=False):
         # import here for fast-failiness
         import pyodbc
 
@@ -39,8 +39,15 @@ class MsSqlProvider(DatabaseProvider):
                                              "location requirements. You must omit db_host from your configuration "
                                              "and run pynonymizer on the same server as the database.")
 
+        # TODO: The odbc port syntax doesn't seem to work with (local),1433 or port=1433
+        # TODO: This needs attention, but as it's backwards compatible, we're going to disallow it here.
+        if db_port is not None:
+            raise DependencyError("db_port", "MsSqlProvider does not support custom ports. You must omit db_port "
+                                             "from your configuration to continue.")
+
         db_host = "(local)"
-        super().__init__(db_host, db_user, db_pass, db_name, seed_rows)
+
+        super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
         self.__conn = None
         self.__db_conn = None
         self.__backup_compression = backup_compression
@@ -50,7 +57,11 @@ class MsSqlProvider(DatabaseProvider):
         """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
-                f"DRIVER={{SQL Server}};SERVER={self.db_host};UID={self.db_user};PWD={self.db_pass}", autocommit=True
+                driver="{SQL Server Native Client 11.0}",
+                server=self.db_host,
+                uid=self.db_user,
+                pwd=self.db_pass,
+                autocommit=True
             )
 
         return self.__conn
@@ -60,7 +71,11 @@ class MsSqlProvider(DatabaseProvider):
         """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
-                f"DRIVER={{SQL Server}};DATABASE={self.db_name};SERVER={self.db_host};UID={self.db_user};PWD={self.db_pass}",
+                driver="{SQL Server Native Client 11.0}",
+                database=self.db_name,
+                server=self.db_host,
+                uid=self.db_user,
+                pwd=self.db_pass,
                 autocommit=True
             )
 
@@ -90,10 +105,10 @@ class MsSqlProvider(DatabaseProvider):
         :return: Default data directory e.g. "C:\\DATA"
         """
         datafile = self.__execute("""
-        SELECT physical_name   
-        FROM sys.master_files mf   
-        INNER JOIN sys.[databases] d   
-        ON mf.[database_id] = d.[database_id]   
+        SELECT physical_name
+        FROM sys.master_files mf
+        INNER JOIN sys.[databases] d
+        ON mf.[database_id] = d.[database_id]
         WHERE d.[name] = 'model' AND type = 0
         """).fetchone()[0]
 
@@ -106,10 +121,10 @@ class MsSqlProvider(DatabaseProvider):
         :return:
         """
         logfile = self.__execute("""
-        SELECT physical_name   
-        FROM sys.master_files mf   
-        INNER JOIN sys.[databases] d   
-        ON mf.[database_id] = d.[database_id]   
+        SELECT physical_name
+        FROM sys.master_files mf
+        INNER JOIN sys.[databases] d
+        ON mf.[database_id] = d.[database_id]
         WHERE d.[name] = 'model' AND type = 1
         """).fetchone()[0]
 

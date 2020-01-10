@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added option `--db-port`/`-P`/`$PYNONYMIZER_DB_PORT` to specify your database provider's connection port.
+- Added option `--verbose` to increase the verbosity of the logging feature. Currently, this is used to log more info 
+  from a database error, but more areas will be included in future.
 
 ## [1.6.2] 2019-09-17
 - Fixed a mysql provider issue: in MariaDB, multiple string columns in a strategy could cause a row length error when constructing the seed table.
@@ -28,7 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added errors for mssql ODBC installation issues, missing extras.
 - Added support for linux paths in MSSQL backup file moves/restore.
 - Added support for postgres (subprocess-based psql/pg_dump): use `--db-type/-t postgres`
-- Fixed typo in mssql dependency error (local server required). 
+- Fixed typo in mssql dependency error (local server required).
 
 ## [1.5.0] 2019-07-13
 - Added Support for different strategyfile formats: `.json`/`.yaml`/`.yml`
@@ -45,13 +48,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.4.1] 2019-06-29
  - Fixed an issue where import syntax was preventing certain modules from being loaded in python 3.6
- 
+
 ## [1.4.0] 2019-06-23
-- Added **all** faker providers to the `fake_update` type. 
-- Added `fake_args` kwargs key to the `fake_update` type. You can now make use of parameterized providers in faker! 
+- Added **all** faker providers to the `fake_update` type.
+- Added `fake_args` kwargs key to the `fake_update` type. You can now make use of parameterized providers in faker!
 - Added "verbose-style" strategy format to complement original shorthand autodetection.
 - Added `where` option for where-clause support on all update_column strategies. Columns with a matching where option are grouped together for execution.
-- Added Stock strategies for sylius and wordpress 4.4 in the main repository. 
+- Added Stock strategies for sylius and wordpress 4.4 in the main repository.
 - Added column strategy: `literal` for setting literal values e.g. `RAND()`, `'A String'`
 - Changed parsing for mapping column strategy keys to classes: Parser no longer ignored unused keys
 
@@ -70,9 +73,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.2.0] 2019-06-14
  - Added new environment variables, optionals for all arguments. See the help `pynonymizer -h` for more information
  - Changed Internal structure to assist with better testing.
- - Deprecated positional arguments. These will no longer appear in helptext and are not required. You can now use all-environmental, all-optional or a mix of both. 
+ - Deprecated positional arguments. These will no longer appear in helptext and are not required. You can now use all-environmental, all-optional or a mix of both.
  Going forward, The preferred solution is `--optional-vars` or environment variables.
- - Deprecated old environment variables in favour of new prefix `PYNONIMIZER_`. 
+ - Deprecated old environment variables in favour of new prefix `PYNONIMIZER_`.
  These will continue to work but will be removed in a future release.
     - `DB_TYPE -> PYNONYMIZER_DB_TYPE`
     - `DB_HOST -> PYNONYMIZER_DB_HOST`
