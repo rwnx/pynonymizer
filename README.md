@@ -139,6 +139,10 @@ optional arguments:
                         [MSSQL] Use compression when backing up the database.
                         [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
   -v, --version         show program's version number and exit
+  --verbose             Increases the verbosity of the logging feature, to
+                        help when troubleshooting issues.
+                        [$PYNONYMIZER_VERBOSE]
+
 ```
 
 ## License
