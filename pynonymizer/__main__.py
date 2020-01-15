@@ -95,6 +95,10 @@ def create_parser():
                         help="Increases the verbosity of the logging feature, to help when troubleshooting issues. [$PYNONYMIZER_VERBOSE]"
                         )
 
+    parser.add_argument("--dry-run",
+                        default=os.getenv("PYNONYMIZER_DRY_RUN") or False, action="store_true",
+                        help="Instruct pynonymizer to skip all process steps. Useful for testing safely.  [$PYNONYMIZER_DRY_RUN]")
+
     return parser
 
 
@@ -133,7 +137,9 @@ def main(rawArgs=None):
             skip_steps=args.skip_steps,
             stop_at_step=args.stop_at_step,
             seed_rows=args.seed_rows,
-            mssql_backup_compression=args.mssql_backup_compression
+            mssql_backup_compression=args.mssql_backup_compression,
+            dry_run=args.dry_run,
+            verbose=args.verbose
         )
     except ModuleNotFoundError as error:
         if error.name == "pyodbc" and args.db_type == "mssql":

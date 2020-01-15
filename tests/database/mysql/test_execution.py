@@ -27,17 +27,17 @@ class DumperTests(unittest.TestCase):
         open_result = dump_runner.open_dumper()
 
         # dumper should open a process for the current db dump, piping stdout for processing
-        popen.assert_called_with(["mysqldump", "--host", "1.2.3.4", "--port", 3306, "--user", "db_user", "-pdb_password", "db_name"], stdout=subprocess.PIPE)
+        popen.assert_called_with(["mysqldump", "--host", "1.2.3.4", "--port", "3306", "--user", "db_user", "-pdb_password", "db_name"], stdout=subprocess.PIPE)
 
         # dumper should return the stdout of that process
         assert open_result == popen.return_value.stdout
 
     def test_open_dumper(self, check_output, popen):
-        dump_runner = MySqlDumpRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port=3307)
+        dump_runner = MySqlDumpRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3307")
         open_result = dump_runner.open_dumper()
 
         # dumper should open a process for the current db dump, piping stdout for processing
-        popen.assert_called_with(["mysqldump", "--host", "1.2.3.4",  "--port", 3307, "--user", "db_user", "-pdb_password", "db_name"], stdout=subprocess.PIPE)
+        popen.assert_called_with(["mysqldump", "--host", "1.2.3.4",  "--port", "3307", "--user", "db_user", "-pdb_password", "db_name"], stdout=subprocess.PIPE)
 
         # dumper should return the stdout of that process
         assert open_result == popen.return_value.stdout
@@ -52,7 +52,7 @@ class CmdTests(unittest.TestCase):
         open_result = cmd_runner.open_batch_processor()
 
         # dumper should open a process for the current db dump, piping stdout for processing
-        popen.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", 3306, "-u", "db_user", "-pdb_password", "db_name"], stdin=subprocess.PIPE)
+        popen.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", "3306", "-u", "db_user", "-pdb_password", "db_name"], stdin=subprocess.PIPE)
 
         # dumper should return the stdin of that process
         assert open_result == popen.return_value.stdin
@@ -64,17 +64,17 @@ class CmdTests(unittest.TestCase):
         cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
         execute_result = cmd_runner.execute("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", 3306, "-u", "db_user", "-pdb_password", "--execute",
+        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--execute",
                                          "SELECT `column` from `table`;"])
 
     def test_execute_list(self, check_output, popen):
         cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
         execute_result = cmd_runner.execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
 
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", 3306, "-u", "db_user", "-pdb_password", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--execute",
                                          "SELECT `column` from `table`;"])
 
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", 3306, "-u", "db_user", "-pdb_password", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--execute",
                                          "SELECT `column2` from `table2`;"])
 
     def test_db_execute(self, check_output, popen):
@@ -84,15 +84,15 @@ class CmdTests(unittest.TestCase):
         cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
         execute_result = cmd_runner.db_execute("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", 3306, "-u", "db_user", "-pdb_password", "db_name", "--execute", "SELECT `column` from `table`;"])
+        check_output.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", "3306", "-u", "db_user", "-pdb_password", "db_name", "--execute", "SELECT `column` from `table`;"])
 
     def test_db_execute_list(self, check_output, popen):
         cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
         execute_result = cmd_runner.db_execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
 
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", 3306,"-u", "db_user", "-pdb_password", "db_name", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306","-u", "db_user", "-pdb_password", "db_name", "--execute",
                                       "SELECT `column` from `table`;"])
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4","-P", 3306, "-u", "db_user", "-pdb_password", "db_name", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4","-P", "3306", "-u", "db_user", "-pdb_password", "db_name", "--execute",
                                       "SELECT `column2` from `table2`;"])
 
     def test_get_single_result(self, check_output, popen):
@@ -102,7 +102,7 @@ class CmdTests(unittest.TestCase):
         cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
         single_result = cmd_runner.get_single_result("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", 3306,"-u", "db_user", "-pdb_password", "-sN", "db_name", "--execute", "SELECT `column` from `table`;"])
+        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", "3306","-u", "db_user", "-pdb_password", "-sN", "db_name", "--execute", "SELECT `column` from `table`;"])
         assert single_result == check_output.return_value.decode.return_value
 
     def test_connection_ok(self, check_output, popen):

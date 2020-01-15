@@ -142,6 +142,9 @@ optional arguments:
   --verbose             Increases the verbosity of the logging feature, to
                         help when troubleshooting issues.
                         [$PYNONYMIZER_VERBOSE]
+  --dry-run             Instruct pynonymizer to skip all process steps. Useful
+                        for testing safely. [$PYNONYMIZER_DRY_RUN]
+
 
 ```
 
