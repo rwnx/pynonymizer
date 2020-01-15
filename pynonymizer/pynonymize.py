@@ -14,7 +14,7 @@ logger = get_default_logger()
 def pynonymize(
         input_path=None, strategyfile_path=None, output_path=None, db_user=None, db_password=None, db_type=None,
         db_host=None, db_name=None, db_port=None, fake_locale=None, start_at_step=None, stop_at_step=None, skip_steps=None,
-        seed_rows=None,
+        seed_rows=None, dry_run=False, verbose=False,
 
         **kwargs
     ):
@@ -42,7 +42,7 @@ def pynonymize(
     if seed_rows is None:
         seed_rows = 150
 
-    actions = StepActionMap(start_at_step, stop_at_step, skip_steps)
+    actions = StepActionMap(start_at_step, stop_at_step, skip_steps, dry_run=dry_run)
 
     # Validate mandatory args (depends on step actions)
     validations = []
@@ -106,7 +106,7 @@ def pynonymize(
     if not db_provider.test_connection():
         raise DatabaseConnectionError()
 
-    # main process
+    # main process - no destructive/non-retryable actions should happen before this line ---
     logger.info(actions.summary(ProcessSteps.CREATE_DB))
     if not actions.skipped(ProcessSteps.CREATE_DB):
         db_provider.create_database()

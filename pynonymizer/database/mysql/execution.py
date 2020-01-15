@@ -6,7 +6,7 @@ Seperate everything that touches actual query exec into its own module
 """
 
 class MySqlDumpRunner:
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port=3306):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port="3306"):
         self.db_host = db_host
         self.db_user = db_user
         self.db_pass = db_pass
@@ -24,7 +24,7 @@ class MySqlDumpRunner:
 
 
 class MySqlCmdRunner:
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port=3306):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port="3306"):
         self.db_host = db_host
         self.db_user = db_user
         self.db_pass = db_pass
