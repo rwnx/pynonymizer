@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Fixed a bug in the Postgres provider that would cause all rows to be updated with the same 'random' value.
 
 ## [1.7.0] 2020-01-10
 - Added option `--db-port`/`-P`/`$PYNONYMIZER_DB_PORT` to specify your database provider's connection port.
