@@ -15,8 +15,8 @@ def test_init_runners_correctly(execution):
     Test the provider inits dependencies with the correct database information
     """
     PostgreSqlProvider("1.2.3.4", "root", "password", "db_name")
-    execution.PSqlCmdRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port=5432)
-    execution.PSqlDumpRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port=5432)
+    execution.PSqlCmdRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port="5432")
+    execution.PSqlDumpRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port="5432")
 
 
 @patch("pynonymizer.database.postgres.execution", autospec=True)
@@ -153,7 +153,7 @@ def test_anonymize_database(query_factory, execution, simple_strategy, simple_st
     manager = Mock()
     manager.attach_mock(execution, "execution")
 
-    provider = PostgreSqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = PostgreSqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=200)
 
     provider.anonymize_database(simple_strategy)
 
@@ -163,7 +163,7 @@ def test_anonymize_database(query_factory, execution, simple_strategy, simple_st
     query_factory.get_create_seed_table.assert_called_once_with(*seed_table_qualifier_map)
 
     # seed table should be called with the qual map 150 times
-    query_factory.get_insert_seed_row.assert_has_calls( ([call(*seed_table_qualifier_map)] * 150) )
+    query_factory.get_insert_seed_row.assert_has_calls( ([call(*seed_table_qualifier_map)] * 200) )
 
     query_factory.get_truncate_table.assert_called_once_with(simple_strategy_trunc)
     query_factory.get_update_table.assert_called_once_with("_pynonymizer_seed_fake_data", simple_strategy_update)

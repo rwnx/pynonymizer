@@ -39,7 +39,9 @@ class MainArgTests(unittest.TestCase):
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
             stop_at_step="TEST_STOP_AT_STEP",
             seed_rows=None,
-            mssql_backup_compression=False
+            mssql_backup_compression=False,
+            dry_run=True,
+            verbose=True
         )
     def test_dotenv_called(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
@@ -83,7 +85,9 @@ class MainArgTests(unittest.TestCase):
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
             stop_at_step="TEST_STOP_AT_STEP",
             seed_rows=None,
-            mssql_backup_compression=False
+            mssql_backup_compression=False,
+            dry_run=True,
+            verbose=True
         )
 
     def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
@@ -112,7 +116,9 @@ class MainArgTests(unittest.TestCase):
             skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
             stop_at_step="TEST_STOP_AT_STEP",
             seed_rows=None,
-            mssql_backup_compression=False
+            mssql_backup_compression=False,
+            dry_run=True,
+            verbose=True
         )
 
 

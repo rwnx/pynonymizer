@@ -53,16 +53,22 @@ class StepSkippedReason(SkipReason):
         formatted_skips = ", ".join(["[{}]".format(step.name) for step in self.skipped_steps])
         return "Skipping ({})".format(formatted_skips)
 
+class DryRunReason(SkipReason):
+    def __str__(self):
+        return "Skipping (DRY RUN)"
 
 class StepAction:
     """
     A container that represents the action for a step (run, or skip) and the reason(s) why
     """
 
-    def __init__(self, process_step, start_at_step, stop_at_step, skip_steps):
+    def __init__(self, process_step, start_at_step, stop_at_step, skip_steps, dry_run=False):
         self.process_step = process_step
 
         skip_reasons = []
+        if dry_run:
+            skip_reasons.append(DryRunReason())
+
         if start_at_step.value > process_step.value:
             skip_reasons.append(StepBeforeStartReason(start_at_step))
 
@@ -91,12 +97,12 @@ class StepAction:
 
 
 class StepActionMap:
-    def __init__(self, start_at_step=ProcessSteps.START, stop_at_step=ProcessSteps.END, skip_steps=None):
+    def __init__(self, start_at_step=ProcessSteps.START, stop_at_step=ProcessSteps.END, skip_steps=None, dry_run=False):
         action_map = {}
         if skip_steps is None:
             skip_steps = []
         for step in ProcessSteps:
-            action_map[step] = StepAction(step, start_at_step, stop_at_step, skip_steps)
+            action_map[step] = StepAction(step, start_at_step, stop_at_step, skip_steps, dry_run=dry_run)
 
         self.__action_map = action_map
 

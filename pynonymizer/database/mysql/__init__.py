@@ -23,7 +23,7 @@ class MySqlProvider(DatabaseProvider):
         if db_host is None:
             db_host = "127.0.0.1"
         if db_port is None:
-            db_port = 3306
+            db_port = "3306"
 
         super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
         self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name, db_port)
