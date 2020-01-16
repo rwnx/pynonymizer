@@ -20,10 +20,10 @@ class PostgreSqlProvider(DatabaseProvider):
 
     def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None):
         if db_port is None:
-            db_port = 5432
+            db_port = "5432"
         if db_host is None:
             db_host = "127.0.0.1"
-        super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port)
+        super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
         self.__runner = execution.PSqlCmdRunner(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port)
         self.__dumper = execution.PSqlDumpRunner(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port)
 

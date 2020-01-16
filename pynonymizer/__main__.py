@@ -81,7 +81,7 @@ def create_parser():
                         help="Choose a step to stop at (inclusive). [$PYNONYMIZER_STOP_AT]")
 
     parser.add_argument("--seed-rows",
-                        default=os.getenv("PYNONYMIZER_SEED_ROWS"),
+                        default=os.getenv("PYNONYMIZER_SEED_ROWS"), type=int,
                         help="Specify a number of rows to populate the fake data table used during anonymization.  [$PYNONYMIZER_SEED_ROWS]")
 
     parser.add_argument("--mssql-backup-compression",
