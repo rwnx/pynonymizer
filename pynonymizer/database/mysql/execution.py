@@ -52,25 +52,29 @@ class MySqlCmdRunner:
         if not isinstance(statements, list):
             statements = [statements]
 
+        outputs = []
+
         for statement in statements:
             try:
-                subprocess.check_output(self.__get_base_params() + ["--execute", statement])
+                outputs.append( subprocess.check_output(self.__get_base_params() + ["--execute", statement]) )
             except subprocess.CalledProcessError as error:
                 self.__mask_subprocess_error(error)
 
-        return True
+        return outputs
 
     def db_execute(self, statements):
         if not isinstance(statements, list):
             statements = [statements]
 
+        outputs = [];
+
         for statement in statements:
             try:
-                subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement])
+                outputs.append( subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement]) )
             except subprocess.CalledProcessError as error:
                 self.__mask_subprocess_error(error)
 
-        return True
+        return outputs
 
     def get_single_result(self, statement):
         try:
