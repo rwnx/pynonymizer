@@ -16,7 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
-- Added `--dry-run` option to run all the non-destructive fail-fast options without fear of actual process execution.
+
+## [1.8.0] 2020-01-17
+- Added `--dry-run` / `$PYNONYMIZER_DRY_RUN` option to run all the non-destructive fail-fast options without fear of actual process execution.
 - Fixed a bug in mysql provider where using the default unspecified port would cause an error.
 - Fixed a bug in postgres provider where seed_rows was being ignored.
 - Fixed a bug in the Postgres provider that would cause all rows to be updated with the same 'random' value.
@@ -24,7 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.7.0] 2020-01-10
 - Added option `--db-port`/`-P`/`$PYNONYMIZER_DB_PORT` to specify your database provider's connection port.
-- Added option `--verbose` to increase the verbosity of the logging feature. Currently, this is used to log more info 
+- Added option `--verbose` to increase the verbosity of the logging feature. Currently, this is used to log more info
   from a database error, but more areas will be included in future.
 
 ## [1.6.2] 2019-09-17
