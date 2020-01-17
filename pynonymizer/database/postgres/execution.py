@@ -57,22 +57,26 @@ class PSqlCmdRunner:
         if not isinstance(statements, list):
             statements = [statements]
 
-        for statement in statements:
-            subprocess.check_output(self.__get_base_params() + ["--command", statement], env=self.__get_env())
+        outputs = []
 
-        return True
+        for statement in statements:
+            outputs.append( subprocess.check_output(self.__get_base_params() + ["--command", statement], env=self.__get_env()) )
+
+        return outputs
 
     def db_execute(self, statements):
         if not isinstance(statements, list):
             statements = [statements]
 
+        outputs = []
+        
         for statement in statements:
-            subprocess.check_output(
+            outputs.append(subprocess.check_output(
                 self.__get_base_params() + ["--dbname", self.db_name,  "--command", statement],
                 env=self.__get_env()
-            )
+            ))
 
-        return True
+        return outputs
 
     def get_single_result(self, statement):
         return subprocess.check_output(
