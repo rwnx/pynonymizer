@@ -198,7 +198,7 @@ To get you started, here's a list of some useful generators.
 * `catch_phrase`
 * `job`
 * `city`
-* `street_addr`
+* `street_address`
 * `postcode`
 * `uri`
 * `ipv4_private`
