@@ -233,11 +233,12 @@ class MsSqlProvider(DatabaseProvider):
     def anonymize_database(self, database_strategy):
         qualifier_map = database_strategy.fake_update_qualifier_map
 
-        self.logger.info("creating seed table with %d columns", len(qualifier_map))
-        self.__create_seed_table(qualifier_map)
-
-        self.logger.info("Inserting seed data")
-        self.__seed(qualifier_map)
+        if len(qualifier_map) > 0:
+            self.logger.info("creating seed table with %d columns", len(qualifier_map))
+            self.__create_seed_table(qualifier_map)
+            
+            self.logger.info("Inserting seed data")
+            self.__seed(qualifier_map)
 
         self.__run_scripts(database_strategy.before_scripts, "before")
 

@@ -18,3 +18,8 @@ __pycache__
 dist/
 .coverage
 htmlcov/
+
+# This is a setup.py package, so you should be using the setup.py to install/link
+# However you can use pipenv as a venv manager, so we should ignore these files
+Pipfile
+Pipfile.lock
