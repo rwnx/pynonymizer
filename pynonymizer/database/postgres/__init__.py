@@ -76,12 +76,13 @@ class PostgreSqlProvider(DatabaseProvider):
         """
         qualifier_map = database_strategy.fake_update_qualifier_map
 
-        self.logger.info("creating seed table with %d columns", len(qualifier_map))
-        create_seed_table_sql = query_factory.get_create_seed_table(SEED_TABLE_NAME, qualifier_map)
-        self.__runner.db_execute(create_seed_table_sql)
+        if len(qualifier_map) > 0:
+            self.logger.info("creating seed table with %d columns", len(qualifier_map))
+            create_seed_table_sql = query_factory.get_create_seed_table(SEED_TABLE_NAME, qualifier_map)
+            self.__runner.db_execute(create_seed_table_sql)
 
-        self.logger.info("Inserting seed data")
-        self.__seed(qualifier_map)
+            self.logger.info("Inserting seed data")
+            self.__seed(qualifier_map)
 
         self.__run_scripts(database_strategy.before_scripts, "before")
 

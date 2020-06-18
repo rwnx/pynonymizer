@@ -52,9 +52,6 @@ def get_truncate_table(table_name):
 
 
 def get_create_seed_table(table_name, qualifier_map):
-    if len(qualifier_map) < 1:
-        raise ValueError("Cannot create a seed table with no columns")
-
     create_columns = [f"`{qualifier}` {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
 
     return "CREATE TABLE `{}` ({});".format(table_name, ",".join(create_columns) )
