@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.9.0] 2020-06-25
 - Fixed a bug where using no fake_update columns would cause an error
 - Changed Documentation for `fake_update` strategies to remove an erroneous example type.
 
