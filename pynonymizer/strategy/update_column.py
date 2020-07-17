@@ -73,7 +73,7 @@ class FakeUpdateColumnStrategy(UpdateColumnStrategy):
         args_hash = hashlib.md5(bytes(sorted_args, "utf8")).hexdigest()
         
         # keep the whole thing below 64chars for maximum database compatibility
-        return (self.fake_type + (("_" + args_hash) if args_hash else ""))[:64]
+        return (self.fake_type + (("_" + args_hash) if sorted_args else ""))[:64]
 
 
     @property
