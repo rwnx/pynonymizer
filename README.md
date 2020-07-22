@@ -84,7 +84,7 @@ usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
                    [--start-at STEP] [--skip-steps STEP [STEP ...]]
                    [--stop-at STEP] [--seed-rows SEED_ROWS]
-                   [--mssql-backup-compression] [-v]
+                   [--mssql-backup-compression] [--mysql-dump-opts MYSQL_DUMP_OPTS] [-v]
 
 A tool for writing better anonymization strategies for your production
 databases.
@@ -138,6 +138,9 @@ optional arguments:
   --mssql-backup-compression
                         [MSSQL] Use compression when backing up the database.
                         [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
+  --mysql-dump-opts MYSQL_DUMP_OPTS
+                        [MYSQL] pass additional arguments to the mysqldump process (advanced use only!).
+                        [$PYNONYMIZER_MYSQL_DUMP_OPTS]
   -v, --version         show program's version number and exit
   --verbose             Increases the verbosity of the logging feature, to
                         help when troubleshooting issues.
