@@ -72,11 +72,10 @@ class MainArgTests(unittest.TestCase):
 
         create_parser.assert_called()
         parser_mock.parse_args.assert_called()
-        args = pynonymize.call_args.kwargs
 
-        assert args["input_path"] == "LEGACY_INPUT"
-        assert args["strategyfile_path"] == "LEGACY_STRATEGYFILE"
-        assert args["output_path"] =="LEGACY_OUTPUT"
+        assert pynonymize.call_args.kwargs["input_path"]        == "LEGACY_INPUT"
+        assert pynonymize.call_args.kwargs["strategyfile_path"] == "LEGACY_STRATEGYFILE"
+        assert pynonymize.call_args.kwargs["output_path"]       == "LEGACY_OUTPUT"
 
 
     def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
