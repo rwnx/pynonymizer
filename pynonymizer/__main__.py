@@ -89,6 +89,10 @@ def create_parser():
                         default=bool(os.getenv("PYNONYMIZER_MSSQL_BACKUP_COMPRESSION")),
                         help="[MSSQL] Use compression when backing up the database.  [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]")
 
+    parser.add_argument("--mysql-dump-opts",
+                    default=os.getenv("PYNONYMIZER_MYSQL_DUMP_OPTS"),
+                    help="[MYSQL] pass additional arguments to the mysqldump process (advanced use only!).  [$PYNONYMIZER_MYSQL_DUMP_OPTS]")
+
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
     parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMISER_VERBOSE") or False,
@@ -138,6 +142,7 @@ def main(rawArgs=None):
             stop_at_step=args.stop_at_step,
             seed_rows=args.seed_rows,
             mssql_backup_compression=args.mssql_backup_compression,
+            mysql_dump_opts=args.mysql_dump_opts,
             dry_run=args.dry_run,
             verbose=args.verbose
         )

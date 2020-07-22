@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added `--mysql-dump-opts`/ `$PYNONYMIZER_MYSQL_DUMP_OPTS` to allow custom command overrides to the mysqldump process.
 
 ## [1.9.0] 2020-06-25
 - Fixed a bug where using no fake_update columns would cause an error

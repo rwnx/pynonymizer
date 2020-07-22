@@ -19,15 +19,17 @@ class MySqlProvider(DatabaseProvider):
     __DUMPSIZE_ESTIMATE_INFLATION = 1.15
     logger = log.get_logger(__name__)
 
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, dump_opts=None):
         if db_host is None:
             db_host = "127.0.0.1"
         if db_port is None:
             db_port = "3306"
+        if dump_opts is None:
+            dump_opts = ""
 
         super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
         self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name, db_port)
-        self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name, db_port)
+        self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name, db_port, additional_opts=dump_opts)
 
     def __seed(self, qualifier_map):
         """
@@ -82,7 +84,7 @@ class MySqlProvider(DatabaseProvider):
             self.logger.info("creating seed table with %d columns", len(qualifier_map))
             create_seed_table_sql = query_factory.get_create_seed_table(SEED_TABLE_NAME, qualifier_map)
             self.__runner.db_execute(create_seed_table_sql)
-            
+
             self.logger.info("Inserting seed data")
             self.__seed(qualifier_map)
 
