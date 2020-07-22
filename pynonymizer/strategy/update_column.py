@@ -1,6 +1,7 @@
 from enum import Enum
 from pynonymizer.fake import  UnsupportedFakeTypeError
 from abc import ABC, abstractmethod
+import hashlib
 
 class UpdateColumnStrategyTypes(Enum):
     EMPTY = "EMPTY"
@@ -68,8 +69,12 @@ class FakeUpdateColumnStrategy(UpdateColumnStrategy):
         e.g. file_path_depth_1
         :return:
         """
-        sorted_items = "_".join( [f"{arg}_{value}" for arg, value in sorted(self.fake_args.items(), key=lambda item: item[0])] )
-        return self.fake_type + (("_" + sorted_items) if sorted_items else "")
+        sorted_args = "_".join( [f"{arg}_{value}" for arg, value in sorted(self.fake_args.items(), key=lambda item: item[0])] )
+        args_hash = hashlib.md5(bytes(sorted_args, "utf8")).hexdigest()
+        
+        # keep the whole thing below 64chars for maximum database compatibility
+        return (self.fake_type + (("_" + args_hash) if sorted_args else ""))[:64]
+
 
     @property
     def value(self):
