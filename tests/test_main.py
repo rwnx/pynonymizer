@@ -5,6 +5,7 @@ from pynonymizer.__main__ import main
 from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize
 from types import SimpleNamespace
 
+
 def test_pynonymize_missing_db_credentials():
     with pytest.raises(ArgumentValidationError):
         pynonymize(
@@ -40,6 +41,7 @@ class MainArgTests(unittest.TestCase):
             stop_at_step="TEST_STOP_AT_STEP",
             seed_rows=None,
             mssql_backup_compression=False,
+            mysql_dump_opts="--compatible=mysql4 --max_allowed_packet=1024M",
             dry_run=True,
             verbose=True
         )
@@ -70,25 +72,13 @@ class MainArgTests(unittest.TestCase):
 
         create_parser.assert_called()
         parser_mock.parse_args.assert_called()
-        pynonymize.assert_called_once_with(
-            input_path="LEGACY_INPUT",
-            strategyfile_path="LEGACY_STRATEGYFILE",
-            output_path="LEGACY_OUTPUT",
-            db_type="TEST_TYPE",
-            db_host="TEST_HOST",
-            db_port="TEST_PORT",
-            db_name="TEST_NAME",
-            db_user="TEST_USER",
-            db_password="TEST_PASSWORD",
-            fake_locale="TEST_LOCALE",
-            start_at_step="TEST_START_AT_STEP",
-            skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
-            stop_at_step="TEST_STOP_AT_STEP",
-            seed_rows=None,
-            mssql_backup_compression=False,
-            dry_run=True,
-            verbose=True
-        )
+
+        call_kwargs = pynonymize.call_args[1]
+
+        assert call_kwargs["input_path"] == "LEGACY_INPUT"
+        assert call_kwargs["strategyfile_path"] == "LEGACY_STRATEGYFILE"
+        assert call_kwargs["output_path"]       == "LEGACY_OUTPUT"
+
 
     def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
@@ -117,6 +107,7 @@ class MainArgTests(unittest.TestCase):
             stop_at_step="TEST_STOP_AT_STEP",
             seed_rows=None,
             mssql_backup_compression=False,
+            mysql_dump_opts="--compatible=mysql4 --max_allowed_packet=1024M",
             dry_run=True,
             verbose=True
         )
