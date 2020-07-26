@@ -27,14 +27,22 @@ class FakeColumnGeneratorTests(unittest.TestCase):
 
     @patch("pynonymizer.fake.Faker")
     def test_get_value_unsupported(self, faker):
-        faker.return_value = Mock(spec=Faker())
+        class FakeMock:
+            def ean(unmatched_args):
+                pass
+
+        faker.return_value = FakeMock()
         faked_generator = FakeColumnGenerator()
         with pytest.raises(UnsupportedFakeTypeError):
             faked_generator.get_value("NOT A VALID METHOD")
 
     @patch("pynonymizer.fake.Faker")
     def test_get_value_unsupported_args(self, faker):
-        faker.return_value = Mock(spec=Faker())
+        class FakeMock:
+            def ean(unmatched_args):
+                pass
+
+        faker.return_value = FakeMock()
         faked_generator = FakeColumnGenerator()
         with pytest.raises(UnsupportedFakeTypeError):
             faked_generator.get_value("ean", {"not_valid_length": 13})

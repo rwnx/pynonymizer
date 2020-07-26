@@ -1,4 +1,4 @@
-image: themattrix/tox:latest
+image: python:3.7-buster
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -7,34 +7,55 @@ variables:
 
 # Pip's cache doesn't store the python packages
 # https://pip.pypa.io/en/stable/reference/pip_install/#caching
-#
-# If you want to also cache the installed packages, you have to install
-# them in a virtualenv and cache it as well.
 cache:
   paths:
     - .cache/pip
-    - venv/
 
 stages:
   - test
   - build
   - deploy
 
-test:
+test:36:
+  image: python:3.6-buster
   stage: test
   artifacts:
     paths:
       - htmlcov/
   before_script:
-    - python -V # Print out python version for debugging
     - apt-get update
     - apt-get install -y unixodbc-dev
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
-    - pip install tox
+    - pip install . .[mssql] pytest
   script:
-    - tox
+    - pytest
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+
+test:37:
+  image: python:3.7-buster
+  stage: test
+  artifacts:
+    paths:
+      - htmlcov/
+  before_script:
+    - apt-get update
+    - apt-get install -y unixodbc-dev
+    - pip install . .[mssql] pytest
+  script:
+    - pytest
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+
+test:38:
+  image: python:3.8-buster
+  stage: test
+  artifacts:
+    paths:
+      - htmlcov/
+  before_script:
+    - apt-get update
+    - apt-get install -y unixodbc-dev
+    - pip install . .[mssql] pytest
+  script:
+    - pytest
   coverage: '/TOTAL.*\s+(\d+%)$/'
 
 build:
@@ -43,12 +64,8 @@ build:
     paths:
       - dist/
   before_script:
-    - python -V # Print out python version for debugging
     - apt-get update
     - apt-get install -y unixodbc-dev
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
     - pip install wheel
   script:
     - python setup.py sdist bdist_wheel
@@ -58,12 +75,6 @@ deploy:staging:
   dependencies:
     - build
   before_script:
-    - python -V # Print out python version for debugging
-    - apt-get update
-    - apt-get install -y unixodbc-dev
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
     - pip install twine
   variables:
     TWINE_USERNAME: $TEST_PYPI_USERNAME
@@ -78,12 +89,6 @@ deploy:pypi:
   dependencies:
     - build
   before_script:
-    - python -V # Print out python version for debugging
-    - apt-get update
-    - apt-get install -y unixodbc-dev
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
     - pip install twine
   variables:
     TWINE_USERNAME: $LIVE_PYPI_USERNAME
