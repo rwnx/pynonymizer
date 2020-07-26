@@ -12,6 +12,7 @@ __pycache__
 .eggs
 *.sql
 *.sql.gz
+!tests_integration/*.sql.gz
 *.pyc
 
 .tox

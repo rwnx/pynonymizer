@@ -1,0 +1,15 @@
+scripts:
+  before: 
+    - SELECT * FROM actor LIMIT 1;
+  after: 
+    - SELECT * FROM actor LIMIT 1;
+    
+tables:
+  film:
+    columns:
+      description: bs
+      title: unique_login
+  actor:
+    columns:
+      first_name: first_name
+      last_name: last_name
