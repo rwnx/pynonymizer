@@ -190,7 +190,6 @@ class MainProcessTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT",  db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=999)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_called()
         provider.anonymize_database.assert_called()
@@ -215,7 +214,6 @@ class MainProcessTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_called()
         provider.anonymize_database.assert_called()
@@ -240,7 +238,6 @@ class MainProcessTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_not_called()
         provider.restore_database.assert_called()
         provider.anonymize_database.assert_not_called()
@@ -266,7 +263,6 @@ class MainProcessTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_not_called()
         provider.restore_database.assert_not_called()
         provider.anonymize_database.assert_called()
@@ -318,7 +314,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_not_called()
         provider.anonymize_database.assert_called()
@@ -347,7 +342,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_not_called()
         provider.restore_database.assert_not_called()
         provider.anonymize_database.assert_called()
@@ -375,7 +369,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_not_called()
         provider.anonymize_database.assert_not_called()
@@ -402,7 +395,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_called()
         provider.anonymize_database.assert_not_called()
@@ -429,7 +421,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_not_called()
         provider.restore_database.assert_not_called()
         provider.anonymize_database.assert_not_called()
@@ -456,7 +447,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_called()
         provider.anonymize_database.assert_not_called()
@@ -485,7 +475,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_called()
         provider.anonymize_database.assert_called()
@@ -512,7 +501,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_not_called()
         provider.restore_database.assert_not_called()
         provider.anonymize_database.assert_not_called()
@@ -541,7 +529,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
 
         provider = get_provider.return_value
-        provider.test_connection.assert_called()
         provider.create_database.assert_called()
         provider.restore_database.assert_called()
         provider.anonymize_database.assert_called()

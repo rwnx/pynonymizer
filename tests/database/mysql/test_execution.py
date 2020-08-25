@@ -104,18 +104,3 @@ class CmdTests(unittest.TestCase):
 
         check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", "3306","-u", "db_user", "-pdb_password", "-sN", "db_name", "--execute", "SELECT `column` from `table`;"])
         assert single_result == check_output.return_value.decode.return_value
-
-    def test_connection_ok(self, check_output, popen):
-        """
-        When subprocess returns no errors, test should return true
-        """
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
-        assert cmd_runner.test() is True
-
-    def test_connection_bad(self, check_output, popen):
-        """
-        When subprocess throws calledProcessError, test should return false
-        """
-        check_output.side_effect = subprocess.CalledProcessError(1, "fakecmd")
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
-        assert cmd_runner.test() is False
