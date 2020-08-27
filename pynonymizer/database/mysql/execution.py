@@ -86,15 +86,3 @@ class MySqlCmdRunner:
 
     def open_batch_processor(self):
         return subprocess.Popen(self.__get_base_params() + [self.db_name], stdin=subprocess.PIPE).stdin
-
-    def test(self):
-        """
-        Prove a connection is viable - gives callers a fast-fail check for "did the client give me bad credentials?"
-        Internally, execute some kind of easy NOOP that always works.
-        :return True on success, False on Failure
-        """
-        try:
-            self.execute("SELECT @@VERSION;")
-            return True
-        except subprocess.CalledProcessError:
-            return False

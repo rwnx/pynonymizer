@@ -17,10 +17,6 @@ class DatabaseProvider(ABC):
         self.seed_rows = int(seed_rows)
 
     @abstractmethod
-    def test_connection(self):
-        pass
-
-    @abstractmethod
     def create_database(self):
         pass
 

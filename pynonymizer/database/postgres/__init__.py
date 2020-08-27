@@ -57,9 +57,6 @@ class PostgreSqlProvider(DatabaseProvider):
             self.logger.info(f"Running f{title} script #{i} \"{script[:50]}\"")
             self.logger.info(self.__runner.db_execute(script))
 
-    def test_connection(self):
-        return self.__runner.test()
-
     def create_database(self):
         """Create the working database"""
         self.__runner.execute(query_factory.get_create_database(self.db_name))

@@ -112,18 +112,3 @@ class CmdTests(unittest.TestCase):
                                         env=SuperdictOf({"PGPASSWORD": "db_password"}),
                                         )
         assert single_result == check_output.return_value.decode.return_value
-
-    def test_connection_ok(self, check_output, popen):
-        """
-        When subprocess returns no errors, test should return true
-        """
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
-        assert cmd_runner.test() is True
-
-    def test_connection_bad(self, check_output, popen):
-        """
-        When subprocess throws calledProcessError, test should return false
-        """
-        check_output.side_effect = subprocess.CalledProcessError(1, "fakecmd")
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
-        assert cmd_runner.test() is False
