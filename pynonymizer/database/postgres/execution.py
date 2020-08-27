@@ -91,15 +91,3 @@ class PSqlCmdRunner:
             env=self.__get_env(),
             stdin=subprocess.PIPE
         ).stdin
-
-    def test(self):
-        """
-        Prove a connection is viable - gives callers a fast-fail check for "did the client give me bad credentials?"
-        Internally, execute some kind of easy NOOP that always works.
-        :return True on success, False on Failure
-        """
-        try:
-            self.execute("SELECT VERSION();")
-            return True
-        except subprocess.CalledProcessError:
-            return False

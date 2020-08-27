@@ -43,14 +43,6 @@ def test_drop_database(query_factory, execution):
 
 @patch("pynonymizer.database.postgres.execution", autospec=True)
 @patch("pynonymizer.database.postgres.query_factory", autospec=True)
-def test_connection(query_factory, execution):
-    # test_connection should return the cmd runner's test output (bool)
-    provider = PostgreSqlProvider("1.2.3.4", "root", "password", "db_name")
-    assert provider.test_connection() == execution.PSqlCmdRunner.return_value.test.return_value
-
-
-@patch("pynonymizer.database.postgres.execution", autospec=True)
-@patch("pynonymizer.database.postgres.query_factory", autospec=True)
 @patch("pynonymizer.database.postgres.resolve_input")
 def test_restore_database(resolve_input, query_factory, execution):
     provider = PostgreSqlProvider("1.2.3.4", "root", "password", "db_name")

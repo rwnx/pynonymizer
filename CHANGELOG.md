@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Changed mysql provider to include an arbitrary delay after anonymize_db, to prevent
   interference with transactional dump `mysqldump` calls. 
+- Removed the database connection pre-test as its use suggests conditions about the database
+  that are not present in all circumstances with all providers. Pynonymizer will no longer test a connection as part of a dry-run. 
 
 ## [1.10.1] 2020-07-22
 - Fixed a confusing note in the README.md that was introduced accidentally

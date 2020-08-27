@@ -40,15 +40,6 @@ def test_drop_database(query_factory, execution):
     query_factory.get_drop_database.assert_called_once_with("db_name")
     execution.MySqlCmdRunner.return_value.execute.assert_called_once_with(query_factory.get_drop_database.return_value)
 
-
-@patch("pynonymizer.database.mysql.execution", autospec=True)
-@patch("pynonymizer.database.mysql.query_factory", autospec=True)
-def test_connection(query_factory, execution):
-    # test_connection should return the cmd runner's test output (bool)
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
-    assert provider.test_connection() == execution.MySqlCmdRunner.return_value.test.return_value
-
-
 @patch("pynonymizer.database.mysql.execution", autospec=True)
 @patch("pynonymizer.database.mysql.query_factory", autospec=True)
 @patch("pynonymizer.database.mysql.resolve_input")

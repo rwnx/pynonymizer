@@ -214,14 +214,6 @@ class MsSqlProvider(DatabaseProvider):
         else:
             raise UnsupportedColumnStrategyError(column_strategy)
 
-    def test_connection(self):
-        import pyodbc
-        try:
-            self.__execute("SELECT @@VERSION;").fetchall()
-            return True
-        except pyodbc.Error:
-            return False
-
     def create_database(self):
         self.logger.warning("MSSQL: create_database ignored, database will be created when restore_db is run")
 

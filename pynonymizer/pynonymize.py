@@ -103,9 +103,6 @@ def pynonymize(
         **db_kwargs
     )
 
-    if not db_provider.test_connection():
-        raise DatabaseConnectionError()
-
     # main process - no destructive/non-retryable actions should happen before this line ---
     logger.info(actions.summary(ProcessSteps.CREATE_DB))
     if not actions.skipped(ProcessSteps.CREATE_DB):
