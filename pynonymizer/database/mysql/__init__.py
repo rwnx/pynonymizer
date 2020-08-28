@@ -1,5 +1,6 @@
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from tqdm import tqdm
+from time import sleep
 from pynonymizer import log
 from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
@@ -116,6 +117,11 @@ class MySqlProvider(DatabaseProvider):
 
         self.logger.info("dropping seed table")
         self.__runner.db_execute(query_factory.get_drop_seed_table(SEED_TABLE_NAME))
+
+        # Wait an arbitrary amount of time here to prevent this step from interacting with 
+        # transactional dump operations
+        self.logger.debug("Waiting for trailing operations to complete...")
+        sleep(0.2)
 
     def restore_database(self, input_path):
         """
