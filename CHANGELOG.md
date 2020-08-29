@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.11.0] 2020-08-29
 - Changed mysql provider to include an arbitrary delay after anonymize_db, to prevent
   interference with transactional dump `mysqldump` calls. 
 - Removed the database connection pre-test as its use suggests conditions about the database
