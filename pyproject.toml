@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "pynonymizer"
+version = "1.11.1"
+description = "An anonymization tool for production databases"
+authors = ["Jerome Twell <jtwell1@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/jerometwell/pynonymizer"
+repository = "https://github.com/jerometwell/pynonymizer"
+keywords = ["anonymization", "gdpr", "database", "mysql"]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'License :: OSI Approved :: MIT License',
+    'Topic :: Database',
+    'Intended Audience :: Developers',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8'
+]
+include = [
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+PyYAML = "^5.3.1"
+tqdm = "^4.49.0"
+Faker = "^4.1.3"
+python-dotenv = "^0.14.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
