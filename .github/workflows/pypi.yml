@@ -1,0 +1,63 @@
+name: PyPI
+
+on:
+  push:
+
+jobs:
+  test-py36:
+    runs-on: ubuntu-latest
+    container: python:3.6-buster
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: |
+        apt-get update
+        apt-get install -y unixodbc-dev
+        pip install . .[mssql] pytest
+    - name: Run Unit Tests
+      run: pytest tests/
+
+  integration-mysql: 
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
+          service mysql start
+          mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password';"
+          pip install . pytest
+      - run: pytest tests/integration
+
+  package: 
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install package tools
+      run: pip install twine
+    - run: python setup.py sdist bdist_wheel
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist
+
+  upload: 
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: 
+      - test-py36
+      - integration-mysql
+      - package
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        path: dist
+    - name: Install package tools
+      run: pip install twine
+    - run: twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+      env:
+        TWINE_USERNAME: ${{secrets.pypi_username}}
+        TWINE_PASSWORD: ${{secrets.pypi_password}}
