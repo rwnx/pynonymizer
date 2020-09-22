@@ -44,6 +44,9 @@ jobs:
   integration-mysql: 
     runs-on: ubuntu-latest
     container: python:3.8-buster
+    env:
+      PYNONYMIZER_DB_USER: root
+      PYNONYMIZER_DB_PASSWORD: password
     steps:
       - uses: actions/checkout@v2
       - name: Setup

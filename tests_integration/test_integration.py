@@ -8,7 +8,6 @@ test_dir = os.path.dirname(os.path.realpath(__file__))
 ONE_MB = 1024 * 1024
 
 @pytest.mark.integration
-@pytest.mark.skipif(not user or not password, reason="requires connection details for integration test")
 def test_basic():
     """
         Perform an actual run against the local database using the modified sakila DB
