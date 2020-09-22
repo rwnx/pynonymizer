@@ -16,6 +16,30 @@ jobs:
         pip install . .[mssql] pytest
     - name: Run Unit Tests
       run: pytest tests/
+  test-py37:
+    runs-on: ubuntu-latest
+    container: python:3.7-buster
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: |
+        apt-get update
+        apt-get install -y unixodbc-dev
+        pip install . .[mssql] pytest
+    - name: Run Unit Tests
+      run: pytest tests/
+  test-py38:
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Dependencies
+      run: |
+        apt-get update
+        apt-get install -y unixodbc-dev
+        pip install . .[mssql] pytest
+    - name: Run Unit Tests
+      run: pytest tests/
 
   integration-mysql: 
     runs-on: ubuntu-latest
@@ -34,6 +58,11 @@ jobs:
   package: 
     runs-on: ubuntu-latest
     container: python:3.8-buster
+    needs: 
+      - test-py36
+      - test-py37
+      - test-py38
+      - integration-mysql
     steps:
     - uses: actions/checkout@v2
     - name: Install package tools
@@ -46,8 +75,6 @@ jobs:
   upload: 
     if: startsWith(github.ref, 'refs/tags/v')
     needs: 
-      - test-py36
-      - integration-mysql
       - package
     runs-on: ubuntu-latest
     container: python:3.8-buster
