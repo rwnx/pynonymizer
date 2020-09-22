@@ -29,7 +29,7 @@ jobs:
           service mysql start
           mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password';"
           pip install . pytest
-      - run: pytest tests/integration
+      - run: pytest tests_integration
 
   package: 
     runs-on: ubuntu-latest
