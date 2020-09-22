@@ -1,8 +1,13 @@
 # pynonymizer
 
+[![Downloads](https://pepy.tech/badge/pynonymizer)](https://pepy.tech/project/pynonymizer)
+![License](https://img.shields.io/pypi/l/pynonymizer)
+
 pynonymizer is a universal tool for translating sensitive production database dumps into anonymized copies.
 
 This can help you support GDPR/Data Protection in your organization without compromizing on quality testing data.
+
+* [pynonymizer on PyPI](https://pypi.org/project/pynonymizer/)
 
 ### Why are anonymized databases important?
 The primary source of information on how your database is used is in _your production database_. In most situations, the production dataset is usually significantly larger than any development copy, and
