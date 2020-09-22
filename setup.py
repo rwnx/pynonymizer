@@ -19,6 +19,9 @@ setuptools.setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX',
         'Topic :: Database',
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3.6',
