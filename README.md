@@ -44,6 +44,10 @@ There are a wide variety of data types available which should suit the column in
 
 For a full list of data generation strategies, see the docs on [strategyfiles](https://github.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md)
 
+### Examples
+
+You can see strategyfile examples for existing database, such as wordpress or adventureworks sample database, in the the [examples folder](https://github.com/jerometwell/pynonymizer/blob/master/examples).
+
 ### Process outline
 
 1. Restore from dumpfile to temporary database.
