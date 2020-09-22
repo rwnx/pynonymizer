@@ -2,6 +2,8 @@ name: PyPI
 
 on:
   push:
+  schedule:
+    - cron: "0 2 * * 0"
 
 jobs:
   test-py36:
