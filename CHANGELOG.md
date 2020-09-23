@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+# [1.11.2] 2020-09-23
 - Changed package metadata to improve PyPI presence.
 
 ## [1.11.1] 2020-08-29
