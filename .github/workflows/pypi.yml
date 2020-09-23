@@ -89,7 +89,7 @@ jobs:
         path: dist
     - name: Install package tools
       run: pip install twine
-    - run: twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+    - run: twine upload dist/*
       env:
-        TWINE_USERNAME: ${{secrets.pypi_username}}
-        TWINE_PASSWORD: ${{secrets.pypi_password}}
+        TWINE_USERNAME: ${{secrets.PYPI_USERNAME}}
+        TWINE_PASSWORD: ${{secrets.PYPI_PASSWORD}}
