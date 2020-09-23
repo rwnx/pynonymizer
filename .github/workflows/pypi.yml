@@ -75,6 +75,7 @@ jobs:
     - run: python setup.py sdist bdist_wheel
     - uses: actions/upload-artifact@v2
       with:
+        name: dist
         path: dist
 
   upload: 
@@ -86,6 +87,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v2
       with:
+        name: dist
         path: dist
     - name: Install package tools
       run: pip install twine
