@@ -1,39 +1,10 @@
 # Contributing
 
-We love contributions!
-
-## Process Outline
-1. (Optional) Create an issue and discuss your proposal. 
-1. Complete your changes, and submit a Merge Request for review.
-1. A maintainer will merge your changes.
-
-For more detailed guidance, see the headings below.
-
-## Issue Tracker
-Discuss the change using the issue tracker - create an issue for a bug, feature request or discussion.
-
-Ideally, there should be some discussion before a change, so get into the habit of creating the issue first.
-Try to provide as much useful or relevant information as possible so as to improve the project for everyone.
-
-### Labels
-We use the [robinpowered](https://robinpowered.com/blog/best-practice-system-for-organizing-and-tagging-github-issues/) label style guide where possible.
-There are a set of labels you can use which should cover most situations. What's important is the colours remain fairly consistent.
-
-If you don't see the label you think you need, open an issue!
-
-## Merge Requests
-
-Create a merge request based on the issue, targeting the default branch. You can use the "Create merge request" button in Gitlab,
-this will make a Work in Progress (`WIP`) branch in the form:
-```
-000-name-of-issue
-```
-
-Complete your work, adding tests for your changes.
-
-Add a comment to the changelog (in the `[Unreleased]` section) to give a human-friendly description to the work you've done.
-
-When you've completed your work, and it's ready to be merged, unmark your request as `WIP`.
+1. Fork it (https://github.com/jerometwell/pynonymizer/fork)
+2. Create your feature branch (git checkout -b my-new-feature)
+3. Commit your changes (git commit -am 'Add some feature')
+4. Push to the branch (git push origin my-new-feature)
+5. Create a new Pull Request
 
 At this point you're waiting on the maintainers. They might suggest an improvement or provide feedback.
 
@@ -43,3 +14,10 @@ Some things that will increase the chance that your merge request is accepted:
 
 * Write tests.
 * Write good [commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+
+
+## Issues
+
+Ideally, there should be some discussion before a change, so get into the habit of creating the issue first.
+Try to provide as much useful or relevant information as possible so as to improve the project for everyone.
+
