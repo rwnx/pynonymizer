@@ -62,7 +62,7 @@ If this workflow doesnt work for you, see [process control](https://github.com/j
 
 ### mysql
 * `mysql`/`mysqldump` Must be in $PATH
-* backup file in plain .sql/sql.gz (schema and data)
+* backup file in plain .sql/sql.gz (schema and data) / streamed sql from `stdin`
 * Local or remote mysql >= 5.5
 
 ### mssql
@@ -73,7 +73,7 @@ If this workflow doesnt work for you, see [process control](https://github.com/j
 
 ### postgres
 * `psql`/`pg_dump` Must be in $PATH
-* backup file in plain .sql/sql.gz (schema and data)
+* backup file in plain .sql/sql.gz (schema and data) / streamed sql from `stdin`
 * Local or remote postgres server
 
 # Getting Started
@@ -84,11 +84,13 @@ If this workflow doesnt work for you, see [process control](https://github.com/j
 ```
 usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--output OUTPUT] [--db-type DB_TYPE] [--db-host DB_HOST]
-                   [--db-name DB_NAME] [--db-user DB_USER]
+                   [--db-port DB_PORT] [--db-name DB_NAME] [--db-user DB_USER]
                    [--db-password DB_PASSWORD] [--fake-locale FAKE_LOCALE]
                    [--start-at STEP] [--skip-steps STEP [STEP ...]]
                    [--stop-at STEP] [--seed-rows SEED_ROWS]
-                   [--mssql-backup-compression] [--mysql-dump-opts MYSQL_DUMP_OPTS] [-v]
+                   [--mssql-backup-compression]
+                   [--mysql-dump-opts MYSQL_DUMP_OPTS] [-v] [--verbose]
+                   [--dry-run]
 
 A tool for writing better anonymization strategies for your production
 databases.
@@ -96,13 +98,14 @@ databases.
 optional arguments:
   -h, --help            show this help message and exit
   --input INPUT, -i INPUT
-                        The source dumpfile to read from. [$PYNONYMIZER_INPUT]
+                        The source dump filepath to read from. Use `-` for
+                        stdin. [$PYNONYMIZER_INPUT]
   --strategy STRATEGYFILE, -s STRATEGYFILE
                         A strategyfile to use during anonymization.
                         [$PYNONYMIZER_STRATEGY]
   --output OUTPUT, -o OUTPUT
-                        The destination to write the dumped output to.
-                        [$PYNONYMIZER_OUTPUT]
+                        The destination filepath to write the dumped output
+                        to. Use `-` for stdout. [$PYNONYMIZER_OUTPUT]
   --db-type DB_TYPE, -t DB_TYPE
                         Type of database to interact with. More databases will
                         be supported in future versions. default: mysql
@@ -143,7 +146,8 @@ optional arguments:
                         [MSSQL] Use compression when backing up the database.
                         [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
   --mysql-dump-opts MYSQL_DUMP_OPTS
-                        [MYSQL] pass additional arguments to the mysqldump process (advanced use only!).
+                        [MYSQL] pass additional arguments to the mysqldump
+                        process (advanced use only!).
                         [$PYNONYMIZER_MYSQL_DUMP_OPTS]
   -v, --version         show program's version number and exit
   --verbose             Increases the verbosity of the logging feature, to
@@ -151,6 +155,5 @@ optional arguments:
                         [$PYNONYMIZER_VERBOSE]
   --dry-run             Instruct pynonymizer to skip all process steps. Useful
                         for testing safely. [$PYNONYMIZER_DRY_RUN]
-
 
 ```
