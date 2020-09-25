@@ -1,4 +1,5 @@
-from pynonymizer.database.basic.output import UnknownOutputTypeError, resolve_output, RawOutput, GzipOutput
+from pynonymizer.database.basic.output import UnknownOutputTypeError, resolve_output, RawOutput, GzipOutput, StdOutOutput
+from unittest.mock import mock_open, patch
 import pytest
 
 test_path_examples = [
@@ -25,3 +26,12 @@ def test_resolve_gzip(path_example):
 def test_resolve_unknown():
     with pytest.raises(UnknownOutputTypeError):
         resolve_output("unknown_file.bbs")
+
+def test_resolve_stdout():
+    isinstance(resolve_output("-"), StdOutOutput)
+
+def test_stdout_open():
+    with patch("sys.stdout") as mock_stdout:
+        std = StdOutOutput()
+
+        assert std.open() is mock_stdout.buffer

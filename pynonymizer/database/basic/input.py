@@ -1,6 +1,7 @@
 import os
 import struct
 import gzip
+import sys
 """
 Streaming input files for streamable providers
 """
@@ -41,8 +42,18 @@ class RawInput:
     def open(self):
         return open(self.filename, "rb")
 
+class StdInInput:
+    def get_size(self):
+        return None
+
+    def open(self):
+        return sys.stdin.buffer
+
 
 def resolve_input(filename):
+    if filename == "-":
+        return StdInInput()
+
     name, ext = os.path.splitext(filename)
 
     if ext == ".sql":

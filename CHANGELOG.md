@@ -16,8 +16,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added ability to pipe output to/from pynonymizer from stdout, using `-` in place of the input/output arguments. This functionality is available for mssql and postgres providers.
 
-# [1.11.2] 2020-09-23
+  This means you can now use pynonymizer as part of a pipeline with other tools, e.g. 
+  ```
+  mysqldump [...] | pynonymizer -i - -o - | aws s3 cp - s3://bucket/aws-test.tar.gz 
+  ```
+- Changed default logging output to stderr. This is to facilitate stdin/out being used for data.
+- Removed production logging feature in favour of stderr/out logging. Logging to files will no longer by considered pynonymizer's concern.
+
+## [1.11.2] 2020-09-23
 - Changed package metadata to improve PyPI presence.
 
 ## [1.11.1] 2020-08-29

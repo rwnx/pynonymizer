@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 def get_default_logger():
     """
@@ -36,17 +37,9 @@ def init_logging():
     default_console_formatter = logging.Formatter('%(message)s')
 
     # Add default warn handler to console
-    console_handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(default_console_formatter)
     default_logger.addHandler(console_handler)
-
-    # Add default file handler when running in production
-    if os.getenv("env_type") == "production":
-        file_handler = logging.FileHandler('pynonymizer.log')
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(default_file_formatter)
-        default_logger.addHandler(file_handler)
-
 
 init_logging()

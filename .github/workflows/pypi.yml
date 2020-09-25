@@ -59,6 +59,13 @@ jobs:
           mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password';"
           pip install . pytest
       - run: pytest tests_integration
+      - uses: actions/upload-artifact@v2
+        with:
+          name: integration_output
+          path: |
+            tests_integration/stdout.sql
+            tests_integration/basic.sql
+
 
   package: 
     runs-on: ubuntu-latest

@@ -1,5 +1,6 @@
 import gzip
 import os
+import sys
 """
 Streaming output files for streamable providers
 """
@@ -25,8 +26,14 @@ class RawOutput:
     def open(self):
         return open(self.filename, "wb")
 
+class StdOutOutput:
+    def open(self):
+        return sys.stdout.buffer
 
 def resolve_output(filename):
+    if filename == "-":
+        return StdOutOutput()
+
     name, ext = os.path.splitext(filename)
 
     if ext == ".sql":

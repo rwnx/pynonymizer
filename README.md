@@ -1,15 +1,10 @@
-# pynonymizer
-
-[![Downloads](https://pepy.tech/badge/pynonymizer)](https://pepy.tech/project/pynonymizer)
-![License](https://img.shields.io/pypi/l/pynonymizer)
+# `pynonymizer` [![pynonymizer on PyPI](https://img.shields.io/pypi/v/pynonymizer)](https://pypi.org/project/pynonymizer/) [![Downloads](https://pepy.tech/badge/pynonymizer)](https://pepy.tech/project/pynonymizer) ![License](https://img.shields.io/pypi/l/pynonymizer)
 
 pynonymizer is a universal tool for translating sensitive production database dumps into anonymized copies.
 
 This can help you support GDPR/Data Protection in your organization without compromizing on quality testing data.
 
-* [pynonymizer on PyPI](https://pypi.org/project/pynonymizer/)
-
-### Why are anonymized databases important?
+## Why are anonymized databases important?
 The primary source of information on how your database is used is in _your production database_. In most situations, the production dataset is usually significantly larger than any development copy, and
 would contain a wider range of data.
 
@@ -24,18 +19,18 @@ below is an excerpt from an anonymized database:
 
 | id |salutation | firstname | surname | email | dob |
 | - | - | - | - | - | - |
-| 1 | Dr. | Bernard | Gough | tnelson@powell.com | 2000-07-03 |
-| 2 | Mr. | Molly | Bennett | clarkeharriet@price-fry.com | 2014-05-19 |
-| 3 | Mrs. | Chelsea | Reid | adamsamber@clayton.com | 1974-09-08 |
-| 4 | Dr. | Grace | Armstrong | tracy36@wilson-matthews.com | 1963-12-15 |
-| 5 | Dr. | Stanley | James | christine15@stewart.net | 1976-09-16 |
-| 6 | Dr. | Mark | Walsh | dgardner@ward.biz | 2004-08-28 |
-| 7 | Mrs. | Josephine | Chambers | hperry@allen.com | 1916-04-04 |
-| 8 | Dr. | Stephen | Thomas | thompsonheather@smith-stevens.com | 1995-04-17 |
-| 9 | Ms. | Damian | Thompson | yjones@cox.biz | 2016-10-02 |
-| 10 | Miss | Geraldine | Harris | porteralice@francis-patel.com | 1910-09-28 |
-| 11 | Ms. | Gemma | Jones | mandylewis@patel-thomas.net | 1990-06-03 |
-| 12 | Dr. | Glenn | Carr | garnervalerie@farrell-parsons.biz | 1998-04-19 |
+| 1 | Dr. | Bernard | Gough | `tnelson@powell.com` | 2000-07-03 |
+| 2 | Mr. | Molly | Bennett | `clarkeharriet@price-fry.com` | 2014-05-19 |
+| 3 | Mrs. | Chelsea | Reid | `adamsamber@clayton.com` | 1974-09-08 |
+| 4 | Dr. | Grace | Armstrong | `tracy36@wilson-matthews.com` | 1963-12-15 |
+| 5 | Dr. | Stanley | James | `christine15@stewart.net` | 1976-09-16 |
+| 6 | Dr. | Mark | Walsh | `dgardner@ward.biz` | 2004-08-28 |
+| 7 | Mrs. | Josephine | Chambers | `hperry@allen.com` | 1916-04-04 |
+| 8 | Dr. | Stephen | Thomas | `thompsonheather@smith-stevens.com` | 1995-04-17 |
+| 9 | Ms. | Damian | Thompson | `yjones@cox.biz` | 2016-10-02 |
+| 10 | Miss | Geraldine | Harris | `porteralice@francis-patel.com` | 1910-09-28 |
+| 11 | Ms. | Gemma | Jones | `mandylewis@patel-thomas.net` | 1990-06-03 |
+| 12 | Dr. | Glenn | Carr | `garnervalerie@farrell-parsons.biz` | 1998-04-19 |
 
 
 ## How does it work?
