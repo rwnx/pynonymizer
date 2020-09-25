@@ -16,12 +16,12 @@ def test_basic():
     output = subprocess.check_output([
         "pynonymizer",
         "-i", "sakila.sql.gz",
-        "-o", "output.sql",
+        "-o", "basic.sql",
         "-s", "sakila.yml"
         ],
         cwd=test_dir
     )
-    output_path = os.path.join(test_dir, "./output.sql")
+    output_path = os.path.join(test_dir, "./basic.sql")
 
     # some very rough output checks
     assert os.path.exists(output_path)
