@@ -28,7 +28,7 @@ def create_parser():
 
     input_positional.add_argument("--input", "-i",
                         default=os.getenv("PYNONYMIZER_INPUT"),
-                        help="The source dumpfile to read from. [$PYNONYMIZER_INPUT]")
+                        help="The source dump filepath to read from. Use `-` for stdin. [$PYNONYMIZER_INPUT]")
 
     strategy_positional.add_argument("--strategy", "-s",
                         dest="strategyfile",
@@ -37,7 +37,7 @@ def create_parser():
 
     output_positional.add_argument("--output", "-o",
                         default=os.getenv("PYNONYMIZER_OUTPUT"),
-                        help="The destination to write the dumped output to. [$PYNONYMIZER_OUTPUT]")
+                        help="The destination filepath to write the dumped output to. Use `-` for stdout. [$PYNONYMIZER_OUTPUT]")
 
     parser.add_argument("--db-type", "-t",
                         default=os.getenv("PYNONYMIZER_DB_TYPE") or os.getenv("DB_TYPE"),
