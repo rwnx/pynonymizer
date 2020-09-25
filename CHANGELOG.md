@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   ```
   mysqldump [...] | pynonymizer -i - -o - | aws s3 cp - s3://bucket/aws-test.tar.gz 
   ```
-
+- Removed production logging feature in favour of stderr/out logging. logging to files will no longer by considered pynonymizer's concern.
 
 ## [1.11.2] 2020-09-23
 - Changed package metadata to improve PyPI presence.

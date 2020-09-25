@@ -42,12 +42,4 @@ def init_logging():
     console_handler.setFormatter(default_console_formatter)
     default_logger.addHandler(console_handler)
 
-    # Add default file handler when running in production
-    if os.getenv("env_type") == "production":
-        file_handler = logging.FileHandler('pynonymizer.log')
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(default_file_formatter)
-        default_logger.addHandler(file_handler)
-
-
 init_logging()
