@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.12.0] 2020-09-25
 - Added ability to pipe output to/from pynonymizer from stdout, using `-` in place of the input/output arguments. This functionality is available for mssql and postgres providers.
 
   This means you can now use pynonymizer as part of a pipeline with other tools, e.g. 
