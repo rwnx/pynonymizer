@@ -1,7 +1,7 @@
 import pytest
 from unittest import TestCase
 from unittest.mock import mock_open, patch
-from pynonymizer.database.basic.input import GzipInput, RawInput, UnknownInputTypeError, resolve_input
+from pynonymizer.database.basic.input import GzipInput, RawInput, UnknownInputTypeError, resolve_input, StdInInput
 
 
 def test_gzip_open():
@@ -29,6 +29,11 @@ def test_raw_open():
 
         assert open_result == mock_file.return_value
 
+def test_stdin_open():
+    with patch("sys.stdin", mock_open(read_data=b"data2")) as mock_file:
+        std = StdInInput()
+
+        assert std.open() == mock_file.return_value
 
 @patch("os.path.getsize", autospec=True)
 def test_raw_get_size(getsize):
@@ -40,6 +45,9 @@ def test_raw_get_size(getsize):
     size_result = raw.get_size()
     assert size_result == getsize.return_value
 
+
+def test_resolve_stdin():
+    assert isinstance(resolve_input("-"), StdInInput)
 
 class ResolveFromFilepathTest(TestCase):
     test_path_examples = [
