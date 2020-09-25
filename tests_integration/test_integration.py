@@ -26,3 +26,18 @@ def test_basic():
     assert os.path.exists(output_path)
     assert os.path.getsize(output_path) > 3 * ONE_MB
 
+@pytest.mark.integration
+def test_basic_stdin_stdout():
+    """
+        Perform an actual run against the local database using the modified sakila DB
+        perform some basic checks against the output file
+    """
+    strat_path = os.path.join(test_dir, "sakila.yml")
+
+    p = subprocess.check_output(f"gunzip -c sakila.sql.gz | pynonymizer -i - -o - -s \"{strat_path}\" > stdout.sql", shell=True )
+
+    output_path = "stdout.sql"
+    # some very rough output checks
+    assert os.path.exists(output_path)
+    assert os.path.getsize(output_path) > 3 * ONE_MB
+
