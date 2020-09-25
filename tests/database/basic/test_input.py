@@ -30,10 +30,10 @@ def test_raw_open():
         assert open_result == mock_file.return_value
 
 def test_stdin_open():
-    with patch("sys.stdin", mock_open(read_data=b"data2")) as mock_file:
+    with patch("sys.stdin") as mock_file:
         std = StdInInput()
 
-        assert std.open() == mock_file.return_value
+        assert std.open() == mock_file
 
 @patch("os.path.getsize", autospec=True)
 def test_raw_get_size(getsize):
