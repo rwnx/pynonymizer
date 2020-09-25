@@ -31,7 +31,7 @@ def test_resolve_stdout():
     isinstance(resolve_output("-"), StdOutOutput)
 
 def test_stdout_open():
-    with patch("sys.stdout") as mock_file:
+    with patch("sys.stdout.buffer") as mock_file:
         std = StdOutOutput()
 
         assert std.open() == mock_file

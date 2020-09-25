@@ -28,7 +28,7 @@ class RawOutput:
 
 class StdOutOutput:
     def open(self):
-        return sys.stdout
+        return sys.stdout.buffer
 
 def resolve_output(filename):
     if filename == "-":

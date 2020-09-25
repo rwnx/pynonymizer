@@ -30,7 +30,7 @@ def test_raw_open():
         assert open_result == mock_file.return_value
 
 def test_stdin_open():
-    with patch("sys.stdin") as mock_file:
+    with patch("sys.stdin.buffer") as mock_file:
         std = StdInInput()
 
         assert std.open() == mock_file

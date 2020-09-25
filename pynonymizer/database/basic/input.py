@@ -47,7 +47,7 @@ class StdInInput:
         return None
 
     def open(self):
-        return sys.stdin
+        return sys.stdin.buffer
 
 
 def resolve_input(filename):
