@@ -15,10 +15,11 @@ def test_basic():
     """
     output = subprocess.check_output([
         "pynonymizer",
-        "-i", os.path.join(test_dir, "sakila.sql.gz"),
-        "-o", os.path.join(test_dir, "output.sql"),
-        "-s", os.path.join(test_dir, "sakila.yml")
-        ]
+        "-i", "sakila.sql.gz",
+        "-o", "output.sql",
+        "-s", "sakila.yml"
+        ],
+        cwd=test_dir
     )
     output_path = os.path.join(test_dir, "./output.sql")
 
@@ -28,15 +29,9 @@ def test_basic():
 
 @pytest.mark.integration
 def test_basic_stdin_stdout():
-    """
-        Perform an actual run against the local database using the modified sakila DB
-        perform some basic checks against the output file
-    """
-    strat_path = os.path.join(test_dir, "sakila.yml")
+    p = subprocess.check_output(f"gunzip -c sakila.sql.gz | pynonymizer -i - -o - -s sakila.yml > stdout.sql", shell=True, cwd=test_dir )
 
-    p = subprocess.check_output(f"gunzip -c sakila.sql.gz | pynonymizer -i - -o - -s \"{strat_path}\" > stdout.sql", shell=True )
-
-    output_path = "stdout.sql"
+    output_path = os.path.join(test_dir, "./stdout.sql")
     # some very rough output checks
     assert os.path.exists(output_path)
     assert os.path.getsize(output_path) > 3 * ONE_MB
