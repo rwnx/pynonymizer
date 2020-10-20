@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock
 
 from pynonymizer.strategy.database import DatabaseStrategy
-from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy
+from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy, DeleteTableStrategy
 from pynonymizer.strategy.update_column import UniqueEmailUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, FakeUpdateColumnStrategy, EmptyUpdateColumnStrategy
 from pynonymizer.fake import FakeDataType
 
@@ -26,6 +26,9 @@ def simple_strategy_update(simple_strategy_update_fake_column):
             EmptyUpdateColumnStrategy("column4")
         ])
 
+@pytest.fixture
+def simple_strategy_delete():
+    return DeleteTableStrategy("delete_table")
 
 @pytest.fixture
 def simple_strategy_trunc():
@@ -37,9 +40,10 @@ def simple_strategy_schema_trunc():
 
 
 @pytest.fixture
-def simple_strategy(simple_strategy_trunc, simple_strategy_update):
+def simple_strategy(simple_strategy_trunc, simple_strategy_update, simple_strategy_delete):
     return DatabaseStrategy([
         simple_strategy_trunc,
-        simple_strategy_update
+        simple_strategy_update,
+        simple_strategy_delete
     ])
 

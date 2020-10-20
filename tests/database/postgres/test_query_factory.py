@@ -26,6 +26,10 @@ and the sql returned should be very stable.
 def test_get_truncate_table(simple_strategy_trunc):
     assert query_factory.get_truncate_table(simple_strategy_trunc) == "TRUNCATE TABLE truncate_table CASCADE;"
 
+# deletes are identical to truncates because postgres has cascading truncs
+def test_get_delete_table(simple_strategy_delete):
+    assert query_factory.get_delete_table(simple_strategy_delete) == "TRUNCATE TABLE delete_table CASCADE;"
+
 
 def test_get_schema_truncate_table(simple_strategy_schema_trunc):
     assert query_factory.get_truncate_table(simple_strategy_schema_trunc) == "TRUNCATE TABLE schema.truncate_schema_table CASCADE;"

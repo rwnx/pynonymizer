@@ -1,6 +1,6 @@
 from pynonymizer.strategy.exceptions import UnknownColumnStrategyError, UnknownTableStrategyError, ConfigSyntaxError
 from pynonymizer.log import get_logger
-from pynonymizer.strategy.table import UpdateColumnsTableStrategy, TruncateTableStrategy, TableStrategyTypes
+from pynonymizer.strategy.table import UpdateColumnsTableStrategy, TruncateTableStrategy, DeleteTableStrategy, TableStrategyTypes
 from pynonymizer.strategy.update_column import (
     UpdateColumnStrategyTypes,
     EmptyUpdateColumnStrategy,
@@ -32,6 +32,11 @@ class StrategyParser:
             elif table_config == "truncate":
                 return {
                     "type": TableStrategyTypes.TRUNCATE.value,
+                }
+            
+            elif table_config == "delete":
+                return {
+                    "type": TableStrategyTypes.DELETE.value,
                 }
 
             else:
@@ -130,6 +135,8 @@ class StrategyParser:
         try:
             if table_strategy == TableStrategyTypes.TRUNCATE:
                 return TruncateTableStrategy(**table_config)
+            elif table_strategy == TableStrategyTypes.DELETE:
+                return DeleteTableStrategy(**table_config)
             elif table_strategy == TableStrategyTypes.UPDATE_COLUMNS:
                 # update columns supports dict and list columns, so this has to be normalized again during parsing.
                 normalized_columns = StrategyParser.__normalize_update_columns_list(table_config.pop("columns"))

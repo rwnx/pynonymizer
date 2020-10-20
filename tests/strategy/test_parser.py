@@ -22,6 +22,7 @@ def simple_config():
                     "name": "empty",
                 }
             },
+            "secrets" : "delete",
 
             "transactions": "truncate"
         }
@@ -62,19 +63,33 @@ def test_valid_parse_no_mutate(simple_config, strategy_parser):
 
     assert simple_config == old_valid_config
 
-
-def test_valid_parse(simple_config, strategy_parser):
+def test_simple_parse_creates_databasestrategy(simple_config, strategy_parser):
     strategy = strategy_parser.parse_config(simple_config)
+    
     assert isinstance(strategy, database.DatabaseStrategy)
 
-    accounts_strategy = strategy.table_strategies[0]
-    transactions_strategy = strategy.table_strategies[1]
+def test_simple_parse_update_columns(simple_config, strategy_parser):
+    strategy = strategy_parser.parse_config(simple_config)
 
-    assert accounts_strategy.table_name == "accounts"
-    assert transactions_strategy.table_name == "transactions"
+    table = strategy.table_strategies[0]
+    assert table.table_name == "accounts"
+    assert table.strategy_type == TableStrategyTypes.UPDATE_COLUMNS
 
-    assert accounts_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS
-    assert transactions_strategy.strategy_type == TableStrategyTypes.TRUNCATE
+
+def test_simple_parse_truncate(simple_config, strategy_parser):
+    strategy = strategy_parser.parse_config(simple_config)
+
+    table = strategy.table_strategies[2]
+    assert table.table_name == "transactions"
+    assert table.strategy_type == TableStrategyTypes.TRUNCATE
+
+def test_simple_parse_delete(simple_config, strategy_parser):
+    strategy = strategy_parser.parse_config(simple_config)
+
+    table = strategy.table_strategies[1]
+    assert table.table_name == "secrets"
+    assert table.strategy_type == TableStrategyTypes.DELETE
+
 
     # need a better matching technique than checking list indicies.
     """

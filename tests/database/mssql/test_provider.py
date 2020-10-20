@@ -103,6 +103,7 @@ def test_anonymize(connect, provider, simple_strategy, simple_strategy_fake_gene
     ix_insert_seed_first = execute_calls.index(call('INSERT INTO [_pynonymizer_seed_fake_data]([user_name]) VALUES ( ?);', ['TEST_VALUE']))
     ix_insert_seed_last = list_rindex(execute_calls, call('INSERT INTO [_pynonymizer_seed_fake_data]([user_name]) VALUES ( ?);', ['TEST_VALUE']) )
     ix_trunc_table = execute_calls.index(call('TRUNCATE TABLE [truncate_table];'))
+    ix_delete_table = execute_calls.index(call('DELETE FROM [delete_table];'))
     ix_update_table_1 = execute_calls.index(call("UPDATE [update_table_where_3] SET [column1] = ( SELECT CONCAT(NEWID(), '@', NEWID(), '.com') ),[column2] = ( SELECT NEWID() ) WHERE BANANAS < 5;"))
     ix_update_table_2 = execute_calls.index(call('UPDATE [update_table_where_3] SET [column3] = ( SELECT TOP 1 [user_name] FROM [_pynonymizer_seed_fake_data] ORDER BY NEWID()) WHERE BANANAS < 3;'))
     ix_update_table_3 = execute_calls.index(call("UPDATE [update_table_where_3] SET [column4] = ('');"))
@@ -113,6 +114,7 @@ def test_anonymize(connect, provider, simple_strategy, simple_strategy_fake_gene
 
     # last insert of seed data before update anonymize starts
     assert ix_insert_seed_last < ix_trunc_table
+    assert ix_insert_seed_last < ix_delete_table
     assert ix_insert_seed_last < ix_update_table_1
     assert ix_insert_seed_last < ix_update_table_2
     assert ix_insert_seed_last < ix_update_table_3

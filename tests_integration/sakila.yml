@@ -13,3 +13,4 @@ tables:
     columns:
       first_name: first_name
       last_name: last_name
+  film_text: delete

@@ -56,6 +56,11 @@ def _get_qualified_table_name(schema, table):
 def get_truncate_table(table_strategy):
     return f"TRUNCATE TABLE {_get_qualified_table_name(table_strategy.schema, table_strategy.table_name)} CASCADE;"
 
+# postgres truncates can cascade and are faster than unqualified deletes
+# https://www.postgresql.org/docs/9.1/sql-truncate.html
+def get_delete_table(table_strategy):
+    return f"TRUNCATE TABLE {_get_qualified_table_name(table_strategy.schema, table_strategy.table_name)} CASCADE;"
+
 
 def get_create_seed_table(table_name, qualifier_map):
     if len(qualifier_map) < 1:

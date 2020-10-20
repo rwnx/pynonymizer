@@ -23,9 +23,12 @@ tables:
         where: username != 'admin'
   transactions: truncate
   other_important_table: truncate
+  secrets: delete
 scripts:
   before:
     - DELETE FROM config where name = 'secret';
+  after: 
+    - select * from config;
 ```
 
 # Philosophy
@@ -71,9 +74,11 @@ tables:
 Each table has an individual strategy.
 * `truncate`
 * `update_columns`
+* `delete`
 
 ### Table Strategy: `truncate`
-Wipe the entire table, preferably using a truncate statement.
+Wipe the entire table, preferably using a `TRUNCATE` statement, which normally does not respect table constraints.
+
 ```yaml
 table_name: 
   type: truncate
@@ -82,6 +87,18 @@ table_name:
 table_name: truncate
 
 ```
+
+### Table Strategy: `delete`
+Wipe the entire table, preferably using a `DELETE` statement, which normally _does_ respect table constraints. 
+```yaml
+table_name: 
+  type: delete
+    
+# Compact Syntax:
+table_name: delete
+
+```
+
 ### Table Strategy: `update_columns`
 Overwrite columns in the table with specific or randomized values. 
  

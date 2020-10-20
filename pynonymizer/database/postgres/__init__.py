@@ -92,6 +92,10 @@ class PostgreSqlProvider(DatabaseProvider):
                     progressbar.set_description("Truncating {}".format(table_strategy.qualified_name))
                     self.__runner.db_execute(query_factory.get_truncate_table(table_strategy))
 
+                elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
+                    progressbar.set_description("Deleting {}".format(table_strategy.qualified_name))
+                    self.__runner.db_execute(query_factory.get_delete_table(table_strategy))
+
                 elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
                     progressbar.set_description("Anonymizing {}".format(table_strategy.qualified_name))
                     statements = query_factory.get_update_table(SEED_TABLE_NAME, table_strategy)

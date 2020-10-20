@@ -246,6 +246,10 @@ class MsSqlProvider(DatabaseProvider):
                     progressbar.set_description("Truncating {}".format(table_name))
                     self.__db_execute("TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name))
 
+                elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
+                    progressbar.set_description("Deleting {}".format(table_name))
+                    self.__db_execute("DELETE FROM {}[{}];".format(schema_prefix, table_name))
+
                 elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
                     progressbar.set_description("Anonymizing {}".format(table_name))
                     where_grouping = table_strategy.group_by_where()
