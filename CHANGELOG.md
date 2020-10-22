@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.13.0] 2020-10-22
 - Added new table strategy `DELETE`, which should delete _with_ checks (e.g. foreign keys) on most providers. 
 
 ## [1.12.0] 2020-09-25
