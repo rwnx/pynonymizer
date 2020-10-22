@@ -102,6 +102,10 @@ class MySqlProvider(DatabaseProvider):
                 if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
                     progressbar.set_description("Truncating {}".format(table_strategy.table_name))
                     self.__runner.db_execute(query_factory.get_truncate_table(table_strategy.table_name))
+                
+                elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
+                    progressbar.set_description("Deleting {}".format(table_strategy.table_name))
+                    self.__runner.db_execute(query_factory.get_delete_table(table_strategy.table_name))
 
                 elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
                     progressbar.set_description("Anonymizing {}".format(table_strategy.table_name))

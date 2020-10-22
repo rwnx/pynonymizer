@@ -29,6 +29,8 @@ def test_get_truncate_table():
     assert query_factory.get_truncate_table("test") == "SET FOREIGN_KEY_CHECKS=0; " \
            "TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;"
 
+def test_get_delete_table():
+    assert query_factory.get_delete_table("test") == "DELETE FROM `test`;"
 
 def test_get_drop_seed_table():
     assert query_factory.get_drop_seed_table("seed_table") == "DROP TABLE IF EXISTS `seed_table`;"

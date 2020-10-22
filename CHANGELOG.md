@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added new table strategy `DELETE`, which should delete _with_ checks (e.g. foreign keys) on most providers. 
 
 ## [1.12.0] 2020-09-25
 - Added ability to pipe output to/from pynonymizer from stdout, using `-` in place of the input/output arguments. This functionality is available for mysql and postgres providers.

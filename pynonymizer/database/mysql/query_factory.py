@@ -50,6 +50,9 @@ def _escape_sql_value(value):
 def get_truncate_table(table_name):
     return f"SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `{table_name}`; SET FOREIGN_KEY_CHECKS=1;"
 
+def get_delete_table(table_name):
+    return f"DELETE FROM `{table_name}`;"
+
 
 def get_create_seed_table(table_name, qualifier_map):
     if len(qualifier_map) < 1:

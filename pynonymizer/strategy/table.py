@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 class TableStrategyTypes(Enum):
     TRUNCATE = "TRUNCATE"
     UPDATE_COLUMNS = "UPDATE_COLUMNS"
+    DELETE = "DELETE"
 
     @staticmethod
     def from_value(string):
@@ -23,6 +24,8 @@ class TableStrategy(ABC):
     def qualified_name(self):
         return f"{self.schema}.{self.table_name}" if self.schema else self.table_name
 
+class DeleteTableStrategy(TableStrategy):
+    strategy_type = TableStrategyTypes.DELETE
 
 class TruncateTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.TRUNCATE

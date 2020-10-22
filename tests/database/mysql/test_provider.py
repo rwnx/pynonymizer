@@ -157,6 +157,7 @@ def test_anonymize_database(query_factory, execution, simple_strategy, simple_st
     query_factory.get_insert_seed_row.assert_has_calls( ([call(*seed_table_qualifier_map)] * 150) )
 
     query_factory.get_truncate_table.assert_called_once_with("truncate_table")
+    query_factory.get_delete_table.assert_called_once_with("delete_table")
     query_factory.get_update_table.assert_called_once_with("_pynonymizer_seed_fake_data", simple_strategy_update)
     query_factory.get_drop_seed_table.assert_called_once_with("_pynonymizer_seed_fake_data")
 
@@ -166,9 +167,11 @@ def test_anonymize_database(query_factory, execution, simple_strategy, simple_st
     ix_insert_seed_last =  list_rindex(manager.mock_calls, call.execution.MySqlCmdRunner().db_execute(query_factory.get_insert_seed_row()))
     ix_trunc_table = manager.mock_calls.index(call.execution.MySqlCmdRunner().db_execute(query_factory.get_truncate_table()))
     ix_update_table = manager.mock_calls.index(call.execution.MySqlCmdRunner().db_execute(query_factory.get_update_table()))
+    ix_delete_table = manager.mock_calls.index(call.execution.MySqlCmdRunner().db_execute(query_factory.get_delete_table()))
     ix_drop_seed = manager.mock_calls.index(call.execution.MySqlCmdRunner().db_execute(query_factory.get_drop_seed_table()))
 
     assert ix_create_seed < ix_insert_seed_first
     assert ix_insert_seed_last < ix_trunc_table
     assert ix_insert_seed_last < ix_update_table
+    assert ix_insert_seed_last < ix_delete_table
     assert ix_update_table < ix_drop_seed

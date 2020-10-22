@@ -141,7 +141,7 @@ def test_after_script_run(query_factory,execution):
 
 @patch("pynonymizer.database.postgres.execution")
 @patch("pynonymizer.database.postgres.query_factory")
-def test_anonymize_database(query_factory, execution, simple_strategy, simple_strategy_update_fake_column, simple_strategy_update, simple_strategy_trunc):
+def test_anonymize_database(query_factory, execution, simple_strategy, simple_strategy_update_fake_column, simple_strategy_update, simple_strategy_trunc, simple_strategy_delete):
     manager = Mock()
     manager.attach_mock(execution, "execution")
 
@@ -158,6 +158,7 @@ def test_anonymize_database(query_factory, execution, simple_strategy, simple_st
     query_factory.get_insert_seed_row.assert_has_calls( ([call(*seed_table_qualifier_map)] * 200) )
 
     query_factory.get_truncate_table.assert_called_once_with(simple_strategy_trunc)
+    query_factory.get_delete_table.assert_called_once_with(simple_strategy_delete)
     query_factory.get_update_table.assert_called_once_with("_pynonymizer_seed_fake_data", simple_strategy_update)
     query_factory.get_drop_seed_table.assert_called_once_with("_pynonymizer_seed_fake_data")
 
