@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 
+- Fixed PostgreSQL column escaping. Keywords like `SELECT`, `FROM` or `WHERE` can now be used in strategy files.
+
 ## [1.13.0] 2020-10-22
 - Added new table strategy `DELETE`, which should delete _with_ checks (e.g. foreign keys) on most providers. 
 
