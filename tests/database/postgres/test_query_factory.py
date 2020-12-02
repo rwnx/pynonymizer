@@ -173,12 +173,12 @@ def test_get_update_table_fake_column(column_strategy_list):
 
     assert update_table_all == [
             "UPDATE anon_table AS \"updatetarget\" SET "
-            "test_column1 = ( SELECT first_name FROM seed_table WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1),"
-            "test_column2 = ( SELECT last_name FROM seed_table WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1),"
-            "test_column3 = (''),"
-            "test_column4 = ( SELECT md5(random()::text) WHERE \"updatetarget\"=\"updatetarget\" ),"
-            "test_column5 = ( SELECT CONCAT(md5(random()::text), '@', md5(random()::text), '.com') WHERE \"updatetarget\"=\"updatetarget\" ),"
-            "test_column6 = RANDOM();"
+            "\"test_column1\" = ( SELECT first_name FROM seed_table WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1),"
+            "\"test_column2\" = ( SELECT last_name FROM seed_table WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1),"
+            "\"test_column3\" = (''),"
+            "\"test_column4\" = ( SELECT md5(random()::text) WHERE \"updatetarget\"=\"updatetarget\" ),"
+            "\"test_column5\" = ( SELECT CONCAT(md5(random()::text), '@', md5(random()::text), '.com') WHERE \"updatetarget\"=\"updatetarget\" ),"
+            "\"test_column6\" = RANDOM();"
             ]
 
 
@@ -189,5 +189,5 @@ def test_get_update_table_literal(literal_strategy):
     ]))
 
     assert result_queries == [
-        "UPDATE anon_table AS \"updatetarget\" SET literal_column = RANDOM();"
+        "UPDATE anon_table AS \"updatetarget\" SET \"literal_column\" = RANDOM();"
     ]

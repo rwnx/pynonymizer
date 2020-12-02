@@ -103,7 +103,7 @@ def get_update_table(seed_table_name, update_table_strategy):
     for where, column_map in update_table_strategy.group_by_where().items():
         where_update_statements[where] = []
         for column_name, column_strategy in column_map.items():
-            where_update_statements[where].append("{} = {}".format(
+            where_update_statements[where].append("\"{}\" = {}".format(
                 column_name,
                 _get_column_subquery(seed_table_name, column_strategy))
             )
