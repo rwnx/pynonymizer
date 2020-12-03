@@ -168,13 +168,16 @@ column_name: unique_email
 ```
 
 #### Column Strategy: `literal`
-Replace a column with the value specified. 
+Replace a column with the value specified.
 
 This will not perform escaping for your language, so you must ensure that it is correct and executable by your provider.
 ```yaml
-column_name: 
+column_name:
   type: literal
   value: RAND()
+  # Optional, define the SQL type in the database.
+  # The value will not be escaped, it will be a raw SQL type so be careful.
+  sql_type: INT
 
 # Compact Syntax: Not available
 ```
@@ -190,8 +193,11 @@ column_name:
   # For example: fake.file_path(depth=1, category=None, extension=None)
   fake_args:
     depth: 1
-    
-  
+  # Optional, define the SQL type in the database.
+  # The value will not be escaped, it will be a raw SQL type so be careful.
+  sql_type: VARCHAR(255)
+
+
 # Compact Syntax: specify any supported faker method string, excluding the keywords `empty`, `unique_login`, `unique_email`
 column_name: file_path
 ```

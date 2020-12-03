@@ -180,7 +180,7 @@ class MsSqlProvider(DatabaseProvider):
             self.logger.info(results)
 
     def __create_seed_table(self, qualifier_map):
-        seed_column_lines = ["[{}] {}".format(name, _FAKE_COLUMN_TYPES[col.data_type]) for name, col in qualifier_map.items()]
+        seed_column_lines = ["[{}] {}".format(name, col.sql_type or _FAKE_COLUMN_TYPES[col.data_type]) for name, col in qualifier_map.items()]
         create_statement = "CREATE TABLE [{}]({});".format(SEED_TABLE_NAME, ",".join(seed_column_lines))
 
         self.__db_execute(create_statement)
@@ -228,7 +228,7 @@ class MsSqlProvider(DatabaseProvider):
         if len(qualifier_map) > 0:
             self.logger.info("creating seed table with %d columns", len(qualifier_map))
             self.__create_seed_table(qualifier_map)
-            
+
             self.logger.info("Inserting seed data")
             self.__seed(qualifier_map)
 
