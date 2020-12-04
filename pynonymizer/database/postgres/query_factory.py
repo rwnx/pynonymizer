@@ -16,8 +16,8 @@ _FAKE_COLUMN_TYPES = {
 _RAND_MD5 = "md5(random()::text)"
 
 
-def _get_sql_type(strategy):
-    return strategy.sql_type or _FAKE_COLUMN_TYPES[strategy.data_type]
+def _get_sql_type(data_type):
+    return _FAKE_COLUMN_TYPES[data_type]
 
 
 def _get_column_subquery(seed_table_name, column_strategy):
@@ -31,7 +31,10 @@ def _get_column_subquery(seed_table_name, column_strategy):
         # Add a dummy "updatetarget" where clause to fool the postgres optimizer into running the subquery on every row
         # instead of once for the whole query
         # See Also https://www.simononsoftware.com/problem-with-random-in-postgresql-subselect/
-        return f"( SELECT {column_strategy.qualifier} FROM {seed_table_name} WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1)"
+        column = column_strategy.qualifier
+        if column_strategy.sql_type:
+            column += "::" + column_strategy.sql_type
+        return f"( SELECT {column} FROM {seed_table_name} WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
@@ -66,7 +69,7 @@ def get_create_seed_table(table_name, qualifier_map):
     if len(qualifier_map) < 1:
         raise ValueError("Cannot create a seed table with no columns")
 
-    create_columns = [f"{qualifier} {_get_sql_type(strategy)}" for qualifier, strategy in qualifier_map.items()]
+    create_columns = [f"{qualifier} {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
 
     return "CREATE TABLE {} ({});".format(table_name, ",".join(create_columns) )
 

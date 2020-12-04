@@ -43,10 +43,9 @@ class UniqueEmailUpdateColumnStrategy(UpdateColumnStrategy):
 class LiteralUpdateColumnStrategy(UpdateColumnStrategy):
     strategy_type = UpdateColumnStrategyTypes.LITERAL
 
-    def __init__(self, column_name,  value, where=None, sql_type=None):
+    def __init__(self, column_name,  value, where=None):
         super().__init__(column_name, where)
         self.value = value
-        self.sql_type = sql_type
 
 
 class FakeUpdateColumnStrategy(UpdateColumnStrategy):

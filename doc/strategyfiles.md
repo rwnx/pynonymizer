@@ -175,9 +175,6 @@ This will not perform escaping for your language, so you must ensure that it is 
 column_name:
   type: literal
   value: RAND()
-  # Optional, define the SQL type in the database.
-  # The value will not be escaped, it will be a raw SQL type so be careful.
-  sql_type: INT
 
 # Compact Syntax: Not available
 ```
