@@ -183,7 +183,7 @@ def test_get_update_table_fake_column(column_strategy_list):
             "UPDATE `anon_table` SET "
             "`test_column1` = ( SELECT `first_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
             "`test_column2` = ( SELECT `last_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column7` = ( SELECT `user_id::UUID` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+            "`test_column7` = ( SELECT CAST(`user_id` AS UUID) FROM `seed_table` ORDER BY RAND() LIMIT 1),"
             "`test_column3` = (''),"
             "`test_column4` = ( SELECT MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())) ),"
             "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"

@@ -29,10 +29,10 @@ def _get_column_subquery(seed_table_name, column_strategy):
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
         return f"( SELECT {_RAND_MD5} )"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-        column = column_strategy.qualifier
+        column = f"`{column_strategy.qualifier}`"
         if column_strategy.sql_type:
-            column += "::" + column_strategy.sql_type
-        return f"( SELECT `{column}` FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
+            column = f"CAST({column} AS {column_strategy.sql_type})"
+        return f"( SELECT {column} FROM `{seed_table_name}` ORDER BY RAND() LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
