@@ -16,9 +16,9 @@ from pynonymizer.strategy.update_column import (
 import pynonymizer.database.mysql.query_factory as query_factory
 
 """
-These tests are brittle and based on the actual SQL generatedColumnStrategyTypes. 
+These tests are brittle and based on the actual SQL generatedColumnStrategyTypes.
 The sentiment is to test the 'meaning' of the SQL, rather than the actual formatting, so it may be prudent to replace
-these tests with some form of parsing or pattern matching. 
+these tests with some form of parsing or pattern matching.
 
 The general idea, however, is that by keeping the queryfactory separate from the provider, it will not change often,
 and the sql returned should be very stable.
@@ -61,6 +61,12 @@ def int_fake_column_generator():
         get_data_type=Mock(return_value=FakeDataType.INT),
         get_value=Mock(return_value=645)
     )
+@pytest.fixture
+def uuid_fake_column_generator():
+    return Mock(
+        get_data_type=Mock(return_value=FakeDataType.STRING),
+        get_value=Mock(return_value="d4b7d972-99c9-4c0f-83c0-4cf2c63fd6ed")
+    )
 
 
 @pytest.fixture
@@ -71,6 +77,11 @@ def fake_update_column_str_first_name(str_fake_column_generator):
 @pytest.fixture
 def fake_update_column_int_last_name(int_fake_column_generator):
     return FakeUpdateColumnStrategy("test_column2",int_fake_column_generator, "last_name")
+
+
+@pytest.fixture
+def fake_update_column_uuid_user_id(uuid_fake_column_generator):
+    return FakeUpdateColumnStrategy("test_column7", uuid_fake_column_generator, "user_id", sql_type="UUID")
 
 
 @pytest.fixture
@@ -108,10 +119,11 @@ def qualifier_column_map(fake_update_column_str_first_name,fake_update_column_in
 
 
 @pytest.fixture
-def column_strategy_list(fake_update_column_str_first_name,fake_update_column_int_last_name,empty_strategy,ulogin_strategy, uemail_strategy,literal_strategy):
+def column_strategy_list(fake_update_column_str_first_name,fake_update_column_int_last_name,fake_update_column_uuid_user_id,empty_strategy,ulogin_strategy, uemail_strategy,literal_strategy):
     return [
         fake_update_column_str_first_name,
         fake_update_column_int_last_name,
+        fake_update_column_uuid_user_id,
         empty_strategy,
         ulogin_strategy,
         uemail_strategy,
@@ -171,6 +183,7 @@ def test_get_update_table_fake_column(column_strategy_list):
             "UPDATE `anon_table` SET "
             "`test_column1` = ( SELECT `first_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
             "`test_column2` = ( SELECT `last_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+            "`test_column7` = ( SELECT CAST(`user_id` AS UUID) FROM `seed_table` ORDER BY RAND() LIMIT 1),"
             "`test_column3` = (''),"
             "`test_column4` = ( SELECT MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())) ),"
             "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"

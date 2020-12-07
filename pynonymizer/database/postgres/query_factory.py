@@ -31,7 +31,10 @@ def _get_column_subquery(seed_table_name, column_strategy):
         # Add a dummy "updatetarget" where clause to fool the postgres optimizer into running the subquery on every row
         # instead of once for the whole query
         # See Also https://www.simononsoftware.com/problem-with-random-in-postgresql-subselect/
-        return f"( SELECT {column_strategy.qualifier} FROM {seed_table_name} WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1)"
+        column = column_strategy.qualifier
+        if column_strategy.sql_type:
+            column += "::" + column_strategy.sql_type
+        return f"( SELECT {column} FROM {seed_table_name} WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:

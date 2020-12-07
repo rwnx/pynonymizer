@@ -92,3 +92,12 @@ def test_fake_update_where():
     assert fake_update_where.fake_type == "company_email"
     assert fake_update_where.where_condition == "chickens = 1"
 
+def test_fake_update_sql_type():
+    fake_column_generator = Mock()
+    fake_update_sql_type = FakeUpdateColumnStrategy(column_name="column_name",fake_column_generator=fake_column_generator, fake_type="company_email", sql_type="UUID")
+
+    assert fake_update_sql_type.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+    assert fake_update_sql_type.value == fake_column_generator.get_value("company_email")
+    assert fake_update_sql_type.data_type == fake_column_generator.get_data_type("company_email")
+    assert fake_update_sql_type.fake_type == "company_email"
+    assert fake_update_sql_type.sql_type == "UUID"

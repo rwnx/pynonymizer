@@ -51,12 +51,13 @@ class LiteralUpdateColumnStrategy(UpdateColumnStrategy):
 class FakeUpdateColumnStrategy(UpdateColumnStrategy):
     strategy_type = UpdateColumnStrategyTypes.FAKE_UPDATE
 
-    def __init__(self, column_name, fake_column_generator, fake_type, where=None, fake_args=None):
+    def __init__(self, column_name, fake_column_generator, fake_type, where=None, fake_args=None, sql_type=None):
         fake_args = {} if fake_args is None else fake_args
         super().__init__(column_name, where)
         self.fake_type = fake_type
         self.fake_args = fake_args
         self.__fake_column_generator = fake_column_generator
+        self.sql_type = sql_type
 
         if not fake_column_generator.supports(fake_type, fake_args):
             raise UnsupportedFakeTypeError(fake_type, fake_args)
@@ -71,7 +72,7 @@ class FakeUpdateColumnStrategy(UpdateColumnStrategy):
         """
         sorted_args = "_".join( [f"{arg}_{value}" for arg, value in sorted(self.fake_args.items(), key=lambda item: item[0])] )
         args_hash = hashlib.md5(bytes(sorted_args, "utf8")).hexdigest()
-        
+
         # keep the whole thing below 64chars for maximum database compatibility
         return (self.fake_type + (("_" + args_hash) if sorted_args else ""))[:64]
 

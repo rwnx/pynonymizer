@@ -208,7 +208,10 @@ class MsSqlProvider(DatabaseProvider):
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
             return f"( SELECT NEWID() )"
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-            return f"( SELECT TOP 1 [{column_strategy.qualifier}] FROM [{SEED_TABLE_NAME}] ORDER BY NEWID())"
+            column = f"[{column_strategy.qualifier}]"
+            if column_strategy.sql_type:
+                column = f"CAST({column} AS {column_strategy.sql_type})"
+            return f"( SELECT TOP 1 {column} FROM [{SEED_TABLE_NAME}] ORDER BY NEWID())"
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
             return column_strategy.value
         else:
@@ -228,7 +231,7 @@ class MsSqlProvider(DatabaseProvider):
         if len(qualifier_map) > 0:
             self.logger.info("creating seed table with %d columns", len(qualifier_map))
             self.__create_seed_table(qualifier_map)
-            
+
             self.logger.info("Inserting seed data")
             self.__seed(qualifier_map)
 
