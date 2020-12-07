@@ -64,7 +64,7 @@ def int_fake_column_generator():
 @pytest.fixture
 def uuid_fake_column_generator():
     return Mock(
-        get_data_type=Mock(return_value="UUID"),
+        get_data_type=Mock(return_value=FakeDataType.STRING),
         get_value=Mock(return_value="d4b7d972-99c9-4c0f-83c0-4cf2c63fd6ed")
     )
 
