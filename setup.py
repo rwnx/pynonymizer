@@ -33,7 +33,7 @@ setuptools.setup(
     url="https://github.com/jerometwell/pynonymizer",
     keywords="anonymization gdpr database mysql",
     license="MIT",
-    packages=setuptools.find_packages(),
+    packages=['pynonymizer'],
     install_requires=[
         "pyyaml>=5",
         "tqdm>=4",
