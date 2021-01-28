@@ -14,10 +14,12 @@ Some things that will increase the chance that your merge request is accepted:
 
 * Write tests.
 * Write good [commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
-
+* Add an entry to the `CHANGELOG.md` file, under the `[Unreleased]` section. If you're unsure why this is important, check out [RELEASING.md](RELEASING.md) for the intended release process.
+  
+  Try to describe what you've achieved from a user-facing perspective. 
 
 ## Issues
 
-Ideally, there should be some discussion before a change, so get into the habit of creating the issue first.
+In an ideal world, changes come with discussion, so for general points and structural changes an issue might be more productive.
 Try to provide as much useful or relevant information as possible so as to improve the project for everyone.
 

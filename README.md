@@ -79,6 +79,7 @@ If this workflow doesnt work for you, see [process control](https://github.com/j
 # Getting Started
 
 ## Usage
+### CLI
 1. Write a [strategyfile](https://github.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md) for your database
 1. See below:
 ```
@@ -156,4 +157,13 @@ optional arguments:
   --dry-run             Instruct pynonymizer to skip all process steps. Useful
                         for testing safely. [$PYNONYMIZER_DRY_RUN]
 
+```
+### Package
+Pynonymizer can also be invoked programmatically / from other python code. See [pynonymizer/pynonymize.py](pynonymizer/pynonymize.py)
+
+```python
+from pynonymizer.pynonymize import pynonymize
+
+# pynonymize is roughly equivalent to calling the main CLI
+pynonymize(input_path="./backup.sql", strategyfile_path="./strategy.yml" [...] )
 ```

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added more documentation to reflect usage & project features.
 - Exclude `tests/` directory from pip package.
 
 ## [1.14.0] 2020-12-07
