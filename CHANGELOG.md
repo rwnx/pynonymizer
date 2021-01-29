@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added main function `run` exposure to `pynonymizer` package.
+  Check out pynonymizer/pynonymize.py for more usage information
+  ```python
+  from pynonymizer import run
+  ```
 - Added more documentation to reflect usage & project features.
 - Exclude `tests/` directory from pip package.
 

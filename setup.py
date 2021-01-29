@@ -39,7 +39,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'pynonymizer = pynonymizer.__main__:main'
+            'pynonymizer = pynonymizer.cli:cli'
         ]
     },
     setup_requires=["pytest-runner"],
