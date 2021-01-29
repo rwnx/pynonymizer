@@ -2,8 +2,17 @@ import pytest
 from unittest.mock import Mock
 
 from pynonymizer.strategy.database import DatabaseStrategy
-from pynonymizer.strategy.table import TruncateTableStrategy, UpdateColumnsTableStrategy, DeleteTableStrategy
-from pynonymizer.strategy.update_column import UniqueEmailUpdateColumnStrategy, UniqueLoginUpdateColumnStrategy, FakeUpdateColumnStrategy, EmptyUpdateColumnStrategy
+from pynonymizer.strategy.table import (
+    TruncateTableStrategy, 
+    UpdateColumnsTableStrategy, 
+    DeleteTableStrategy
+)
+from pynonymizer.strategy.update_column import (
+    UniqueEmailUpdateColumnStrategy,
+    UniqueLoginUpdateColumnStrategy,
+    FakeUpdateColumnStrategy,
+    EmptyUpdateColumnStrategy
+)
 from pynonymizer.fake import FakeDataType
 
 

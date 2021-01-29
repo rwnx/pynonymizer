@@ -4,7 +4,7 @@ import os
 import sys
 from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize, ProcessSteps
 from pynonymizer.log import get_default_logger
-from pynonymizer.version import __version__
+from pynonymizer import __version__
 
 logger = get_default_logger()
 
