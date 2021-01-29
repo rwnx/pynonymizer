@@ -1,7 +1,7 @@
 import pytest
 import unittest
 from unittest.mock import patch, Mock, mock_open
-from pynonymizer.__main__ import main
+from pynonymizer.cli import cli
 from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize
 from types import SimpleNamespace
 
@@ -18,8 +18,8 @@ def test_pynonymize_missing_db_credentials():
 
 @patch("dotenv.find_dotenv")
 @patch("dotenv.load_dotenv")
-@patch("pynonymizer.__main__.create_parser")
-@patch("pynonymizer.__main__.pynonymize", autospec=True)
+@patch("pynonymizer.cli.create_parser")
+@patch("pynonymizer.cli.pynonymize", autospec=True)
 class MainArgTests(unittest.TestCase):
     def setUp(self):
         self.parsed_args = SimpleNamespace(
@@ -52,14 +52,14 @@ class MainArgTests(unittest.TestCase):
         parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
         create_parser.return_value = parser_mock
 
-        main([])
+        cli([])
 
         find_dotenv.assert_called()
         load_dotenv.assert_called()
 
     def test_arg_pass_legacy_override(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
-        the parsed set of args should be passed to the pynonymize main function
+        the parsed set of args should be passed to the pynonymize cli function
         legacy args should override normal ones to account for old positional behaviour
         """
         self.parsed_args.legacy_input = "LEGACY_INPUT"
@@ -68,7 +68,7 @@ class MainArgTests(unittest.TestCase):
         parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
         create_parser.return_value = parser_mock
 
-        main([])
+        cli([])
 
         create_parser.assert_called()
         parser_mock.parse_args.assert_called()
@@ -82,12 +82,12 @@ class MainArgTests(unittest.TestCase):
 
     def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
-        the parsed set of args should be passed to the pynonymize main function
+        the parsed set of args should be passed to the pynonymize cli function
         """
         parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
         create_parser.return_value = parser_mock
 
-        main([])
+        cli([])
 
         create_parser.assert_called()
         parser_mock.parse_args.assert_called()
@@ -115,27 +115,27 @@ class MainArgTests(unittest.TestCase):
 
 @patch("dotenv.find_dotenv", Mock())
 @patch("dotenv.load_dotenv", Mock())
-@patch("pynonymizer.__main__.create_parser", Mock())
-@patch("pynonymizer.__main__.pynonymize", Mock(side_effect=ArgumentValidationError(["test validation"])))
+@patch("pynonymizer.cli.create_parser", Mock())
+@patch("pynonymizer.cli.pynonymize", Mock(side_effect=ArgumentValidationError(["test validation"])))
 def test_sysexit_on_argument_invalid():
     """
-    If pynonymize throws an argument validation error, main should exit with err 2
+    If pynonymize throws an argument validation error, cli should exit with err 2
     """
     with pytest.raises(SystemExit) as e_info:
-        main(["blah"])
+        cli(["blah"])
 
     assert e_info.value.code == 2
 
 @patch("dotenv.find_dotenv", Mock())
 @patch("dotenv.load_dotenv", Mock())
-@patch("pynonymizer.__main__.create_parser", Mock())
-@patch("pynonymizer.__main__.pynonymize", Mock(side_effect=DatabaseConnectionError()))
+@patch("pynonymizer.cli.create_parser", Mock())
+@patch("pynonymizer.cli.pynonymize", Mock(side_effect=DatabaseConnectionError()))
 def test_sysexit_on_database_connection_error():
     """
-    If pynonymize throws an argument validation error, main should exit with err 1
+    If pynonymize throws an argument validation error, cli should exit with err 1
     """
     with pytest.raises(SystemExit) as e_info:
-        main(["blah"])
+        cli(["blah"])
 
     assert e_info.value.code == 1
 
@@ -171,7 +171,7 @@ class MainProcessTests(unittest.TestCase):
 
     def test_pynonymize_main_process(self, StrategyParser, FakeColumnSet, get_provider, read_config):
         """
-        a rough smoke test for the main process. This needs an integration test to back it up.
+        a rough smoke test for the cli process. This needs an integration test to back it up.
         """
         pynonymize(
             input_path="TEST_INPUT",
