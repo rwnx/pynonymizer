@@ -1,5 +1,5 @@
 from unittest.mock import patch, Mock
-from pynonymizer.__main__ import create_parser
+from pynonymizer.cli import create_parser
 import pytest
 
 

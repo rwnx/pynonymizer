@@ -18,7 +18,13 @@ def pynonymize(
 
         **kwargs
     ):
+    """
+    Runs a pynonymize process as if the CLI had been invoked.
 
+    :raises:
+        ArgumentValidationError: used when kwargs are missing or unable to be auto-resolved.
+        
+    """
     # Default and Normalize args
     if start_at_step is None:
         start_at_step = ProcessSteps.START

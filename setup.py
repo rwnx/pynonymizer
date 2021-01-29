@@ -1,7 +1,5 @@
 import setuptools
 import sys
-from pynonymizer.version import __version__
-
 
 if sys.version_info < (3, 6):
     sys.exit('pynonymizer requires Python 3.6+ to run')
@@ -12,7 +10,6 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='pynonymizer',
-    version=__version__,
     description='An anonymization tool for production databases',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -42,7 +39,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'pynonymizer = pynonymizer.__main__:main'
+            'pynonymizer = pynonymizer.cli:cli'
         ]
     },
     setup_requires=["pytest-runner"],
