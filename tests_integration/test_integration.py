@@ -8,6 +8,21 @@ test_dir = os.path.dirname(os.path.realpath(__file__))
 ONE_MB = 1024 * 1024
 
 @pytest.mark.integration
+def test_smoke_lzma():
+    output = subprocess.check_output([
+        "pynonymizer",
+        "-i", "sakila.sql.gz",
+        "-o", "basic.sql.xz",
+        "-s", "sakila.yml"
+        ],
+        cwd=test_dir
+    )
+    output_path = os.path.join(test_dir, "./basic.sql.xz")
+
+    # some very rough output checks
+    assert os.path.exists(output_path)
+
+@pytest.mark.integration
 def test_basic():
     """
         Perform an actual run against the local database using the modified sakila DB
