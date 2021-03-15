@@ -1,4 +1,4 @@
-from pynonymizer.database.basic.output import UnknownOutputTypeError, resolve_output, RawOutput, GzipOutput, StdOutOutput
+from pynonymizer.database.basic.output import UnknownOutputTypeError, resolve_output, RawOutput, GzipOutput, StdOutOutput, XzOutput
 from unittest.mock import mock_open, patch
 import pytest
 
@@ -21,6 +21,11 @@ def test_resolve_raw(path_example):
 def test_resolve_gzip(path_example):
     test_path = path_example + "test.sql.gz"
     assert isinstance(resolve_output(test_path), GzipOutput)
+
+@pytest.mark.parametrize("path_example", test_path_examples)
+def test_resolve_xz(path_example):
+    test_path = path_example + "test.sql.xz"
+    assert isinstance(resolve_output(test_path), XzOutput)
 
 
 def test_resolve_unknown():

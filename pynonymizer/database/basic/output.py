@@ -1,4 +1,5 @@
 import gzip
+import lzma
 import os
 import sys
 """
@@ -18,6 +19,12 @@ class GzipOutput:
     def open(self):
         return gzip.open(self.filename, "wb")
 
+class XzOutput:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def open(self):
+        return lzma.open(self.filename, "wb")
 
 class RawOutput:
     def __init__(self, filename):
@@ -40,5 +47,7 @@ def resolve_output(filename):
         return RawOutput(filename)
     elif ext == ".gz":
         return GzipOutput(filename)
+    elif ext == ".xz":
+        return XzOutput(filename)
     else:
         raise UnknownOutputTypeError(filename)
