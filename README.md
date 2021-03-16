@@ -62,19 +62,38 @@ If this workflow doesnt work for you, see [process control](https://github.com/j
 
 ### mysql
 * `mysql`/`mysqldump` Must be in $PATH
-* backup file in plain .sql/sql.gz (schema and data) / streamed sql from `stdin`
 * Local or remote mysql >= 5.5
+* Supported Inputs:
+  * Plain SQL over stdout
+  * Plain SQL file `.sql`
+  * GZip-compressed SQL file `.gz` 
+* Supported Outputs:
+  * Plain SQL over stdout
+  * Plain SQL file `.sql`
+  * GZip-compressed SQL file `.gz` 
+  * LZMA-compressed SQL file `.xz`
 
 ### mssql
 * Requires extra dependencies: install package `pynonymizer[mssql]`
 * MSSQL >= 2008
 * Due to backup/restore limitations, you must be running pynonymizer on the *same server* as the database engine.
-* A backup in `.bak` format
+* Supported Inputs:
+  * Local backup file
+* Supported Outputs:
+  * Local backup file
 
 ### postgres
 * `psql`/`pg_dump` Must be in $PATH
-* backup file in plain .sql/sql.gz (schema and data) / streamed sql from `stdin`
 * Local or remote postgres server
+* Supported Inputs:
+  * Plain SQL over stdout
+  * Plain SQL file `.sql`
+  * GZip-compressed SQL file `.gz` 
+* Supported Outputs:
+  * Plain SQL over stdout
+  * Plain SQL file `.sql`
+  * GZip-compressed SQL file `.gz` 
+  * LZMA-compressed SQL file `.xz`
 
 # Getting Started
 

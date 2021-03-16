@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 
+## [1.16.0] 2021-03-16
+- Added support for LZMA `*.xz` compression on file output. To use this feature, Specify an output path ending with `.xz`.
+- Minor improvements to internal test suite.
+
 ## [1.15.0] 2021-01-29
 - Added main function `run` exposure to `pynonymizer` package.
   Check out pynonymizer/pynonymize.py for more usage information
