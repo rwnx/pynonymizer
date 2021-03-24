@@ -105,6 +105,9 @@ def create_parser():
 
     return parser
 
+def _warn_deprecated_env(old_env, new_env):
+    if os.getenv(old_env):
+        logger.warn("Environmental var $%s is deprecated. Use $%s", old_env, new_env)
 
 def cli(rawArgs=None):
     """
@@ -124,6 +127,20 @@ def cli(rawArgs=None):
     input        = args.legacy_input or args.input
     strategyfile = args.legacy_strategyfile or args.strategyfile
     output = args.legacy_output or args.output
+
+    if args.legacy_input:
+        logger.warn("Positional INPUT is deprecated. Use the -i/--input option instead.")
+    if args.legacy_strategyfile:
+        logger.warn("Positional STRATEGYFILE is deprecated. Use the -s/--strategy option instead.")
+    if args.legacy_output:
+        logger.warn("Positional OUTPUT is deprecated. Use the -o/--output option instead.")
+
+    _warn_deprecated_env("DB_TYPE", "PYNONYMIZER_DB_TYPE")
+    _warn_deprecated_env("DB_HOST", "PYNONYMIZER_DB_HOST")
+    _warn_deprecated_env("DB_NAME", "PYNONYMIZER_DB_NAME")
+    _warn_deprecated_env("DB_USER", "PYNONYMIZER_DB_USER")
+    _warn_deprecated_env("DB_PASS", "PYNONYMIZER_DB_PASSWORD")
+    _warn_deprecated_env("FAKE_LOCALE", "PYNONYMIZER_FAKE_LOCALE")
 
     try:
         pynonymize(
