@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added New _additional-opts_ style parameters which allow you to control the behaviour of the underlying dump and restore tools more effectively.
+  `*-cmd-opts` will be appended to the batched restore subprocess, while `*-dump-opts` will be appended to the dump (pgdump, mysqldump) subprocess
+  These are advanced features and can seriously modify or even break the behaviour of pynonymizer. Use with caution!
+  * `--mysql-cmd-opts/$PYNONYMIZER_MYSQL_CMD_OPTS`
+  * `--postgres-cmd-opts/$PYNONYMIZER_POSTGRES_CMD_OPTS`
+  * `--postgres-dump-opts/$PYNONYMIZER_POSTGRES_DUMP_OPTS`
+- Fixed a bug where `$PYNONYMIZER_VERBOSE` was not being detected correctly.
 - Changed order of `additional_args` for Mysql dump runner, so additional options are added _after_ the existing args.
 - Added cli warnings for deprecated positional arguments and environmental variables.
 

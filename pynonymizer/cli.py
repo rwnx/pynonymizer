@@ -89,13 +89,23 @@ def create_parser():
                         default=bool(os.getenv("PYNONYMIZER_MSSQL_BACKUP_COMPRESSION")),
                         help="[MSSQL] Use compression when backing up the database.  [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]")
 
+    parser.add_argument("--mysql-cmd-opts",
+                    default=os.getenv("PYNONYMIZER_MYSQL_CMD_OPTS"),
+                    help="[MYSQL] pass additional arguments to the restore process (advanced use only!).  [$PYNONYMIZER_MYSQL_CMD_OPTS]")
     parser.add_argument("--mysql-dump-opts",
                     default=os.getenv("PYNONYMIZER_MYSQL_DUMP_OPTS"),
-                    help="[MYSQL] pass additional arguments to the mysqldump process (advanced use only!).  [$PYNONYMIZER_MYSQL_DUMP_OPTS]")
+                    help="[MYSQL] pass additional arguments to the dump process (advanced use only!).  [$PYNONYMIZER_MYSQL_DUMP_OPTS]")
+
+    parser.add_argument("--postgres-cmd-opts",
+                    default=os.getenv("PYNONYMIZER_POSTGRES_CMD_OPTS"),
+                    help="[POSTGRES] pass additional arguments to the restore process (advanced use only!).  [$PYNONYMIZER_POSTGRES_CMD_OPTS]")
+    parser.add_argument("--postgres-dump-opts",
+                    default=os.getenv("PYNONYMIZER_POSTGRES_DUMP_OPTS"),
+                    help="[POSTGRES] pass additional arguments to the dump process (advanced use only!).  [$PYNONYMIZER_POSTGRES_DUMP_OPTS]")
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
-    parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMISER_VERBOSE") or False,
+    parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMIZER_VERBOSE") or False,
                         help="Increases the verbosity of the logging feature, to help when troubleshooting issues. [$PYNONYMIZER_VERBOSE]"
                         )
 
@@ -159,7 +169,10 @@ def cli(rawArgs=None):
             stop_at_step=args.stop_at_step,
             seed_rows=args.seed_rows,
             mssql_backup_compression=args.mssql_backup_compression,
+            mysql_cmd_opts=args.mysql_cmd_opts,
             mysql_dump_opts=args.mysql_dump_opts,
+            postgres_cmd_opts=args.postgres_cmd_opts,
+            postgres_dump_opts=args.postgres_dump_opts,
             dry_run=args.dry_run,
             verbose=args.verbose
         )
