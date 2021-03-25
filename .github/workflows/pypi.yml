@@ -26,7 +26,7 @@ jobs:
 
   integration-mysql: 
     services:
-    mysql:
+      mysql:
         image: mysql
         env:
             MYSQL_ROOT_PASSWORD: password
