@@ -19,7 +19,7 @@ class MySqlDumpRunner:
             raise DependencyError( "mysqldump", "The 'mysqldump' client must be present in the $PATH")
 
     def __get_base_params(self):
-        return self.additional_opts + ["--host", self.db_host, "--port", self.db_port, "--user", self.db_user, f"-p{self.db_pass}"]
+        return ["--host", self.db_host, "--port", self.db_port, "--user", self.db_user, f"-p{self.db_pass}"] + self.additional_opts
 
     def open_dumper(self):
         return subprocess.Popen(["mysqldump"] + self.__get_base_params() + [self.db_name], stdout=subprocess.PIPE).stdout

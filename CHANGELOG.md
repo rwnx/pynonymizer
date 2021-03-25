@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Changed order of `additional_args` for Mysql dump runner, so additional options are added _after_ the existing args.
 - Added cli warnings for deprecated positional arguments and environmental variables.
 
 ## [1.16.0] 2021-03-16
