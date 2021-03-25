@@ -25,6 +25,8 @@ class MySqlProvider(DatabaseProvider):
             db_host = "127.0.0.1"
         if db_port is None:
             db_port = "3306"
+        if cmd_opts is None:
+            cmd_opts = ""
         if dump_opts is None:
             dump_opts = ""
 

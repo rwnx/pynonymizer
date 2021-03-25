@@ -23,6 +23,11 @@ class PostgreSqlProvider(DatabaseProvider):
             db_port = "5432"
         if db_host is None:
             db_host = "127.0.0.1"
+        
+        if cmd_opts is None:
+            cmd_opts = ""
+        if dump_opts is None:
+            dump_opts = ""
         super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
         self.__runner = execution.PSqlCmdRunner(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, additional_opts=cmd_opts)
         self.__dumper = execution.PSqlDumpRunner(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, additional_opts=dump_opts)
