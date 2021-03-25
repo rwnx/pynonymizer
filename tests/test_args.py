@@ -2,7 +2,6 @@ from unittest.mock import patch, Mock
 from pynonymizer.cli import create_parser
 import pytest
 
-
 def test_legacy_positional_args():
     """
     When called with the positional args, argparse should return a working namespace with the correct values set
@@ -15,21 +14,7 @@ def test_legacy_positional_args():
 
 
 def mock_getenv_old(name):
-    """
-    a mock for getenv to return the OLD environment variable set with pre-defined values
-    """
-    if name == "DB_TYPE":
-        return "OLDENV_DB_TYPE"
-    elif name == "DB_HOST":
-        return "OLDENV_DB_HOST"
-    elif name == "DB_NAME":
-        return "OLDENV_DB_NAME"
-    elif name == "DB_USER":
-        return "OLDENV_DB_USER"
-    elif name == "DB_PASS":
-        return "OLDENV_DB_PASSWORD"
-    elif name == "FAKE_LOCALE":
-        return "OLDENV_FAKE_LOCALE"
+    return f"OLDENV_{name}"
 
 
 def mock_getenv_none():
@@ -40,46 +25,15 @@ def mock_getenv_none():
 
 
 def mock_getenv_new(name):
-    """
-    a mock for getenv to return the NEW environment variable set with pre-defined values
-    """
-    if name == "PYNONYMIZER_DB_TYPE":
-        return "ENV_DB_TYPE"
-    elif name == "PYNONYMIZER_DB_HOST":
-        return "ENV_DB_HOST"
-    elif name == "PYNONYMIZER_DB_NAME":
-        return "ENV_DB_NAME"
-    elif name == "PYNONYMIZER_DB_USER":
-        return "ENV_DB_USER"
-    elif name == "PYNONYMIZER_DB_PASSWORD":
-        return "ENV_DB_PASSWORD"
-    elif name == "PYNONYMIZER_FAKE_LOCALE":
-        return "ENV_FAKE_LOCALE"
-    elif name == "PYNONYMIZER_INPUT":
-        return "ENV_INPUT"
-    elif name == "PYNONYMIZER_STRATEGY":
-        return "ENV_STRATEGY"
-    elif name == "PYNONYMIZER_OUTPUT":
-        return "ENV_OUTPUT"
-    elif name == "PYNONYMIZER_START_AT":
-        return "ANONYMIZE_DB"
-    elif name == "PYNONYMIZER_SKIP_STEPS":
-        return "ANONYMIZE_DB DUMP_DB"
-    elif name == "PYNONYMIZER_STOP_AT":
-        return "ANONYMIZE_DB"
-    elif name == "PYNONYMIZER_VERBOSE":
-        return "VERBOSE"
+    return f"ENV_{name}"
 
 
 def mock_getenv_old_new_combined(name):
-    """
-    combine the outputs from the two mocking function sets
-    """
     return mock_getenv_new(name) or mock_getenv_old(name)
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_old))
-def test_old_environmental_defaults():
+def test_when_old_env_is_passed__should_use_old_environmental_vars():
     """
     When not specified, arguments should fall back to OLD env vars (if specified)
     :return:
@@ -98,29 +52,34 @@ def test_old_environmental_defaults():
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_old_new_combined))
-def test_environmental_defaults():
+def test_when_old_and_new_env_is_specified__should_use_new_environmental_vars():
     """
     When not specified, arguments should fall back to NEW environmental defaults (PYNONYMIZER_*)
     old envs should take the lowest precedence and be ignored
     :return:
     """
     args = create_parser().parse_args([])
-    assert args.input         == "ENV_INPUT"
-    assert args.strategyfile  == "ENV_STRATEGY"
-    assert args.output        == "ENV_OUTPUT"
-    assert args.db_type       == "ENV_DB_TYPE"
-    assert args.db_name       == "ENV_DB_NAME"
-    assert args.db_host       == "ENV_DB_HOST"
-    assert args.db_user       == "ENV_DB_USER"
-    assert args.db_password   == "ENV_DB_PASSWORD"
-    assert args.fake_locale   == "ENV_FAKE_LOCALE"
-    assert args.start_at_step == "ANONYMIZE_DB"
-    assert args.skip_steps    == ["ANONYMIZE_DB", "DUMP_DB"]
-    assert args.stop_at_step  == "ANONYMIZE_DB"
+    assert args.input         == "ENV_PYNONYMIZER_INPUT"
+    assert args.strategyfile  == "ENV_PYNONYMIZER_STRATEGY"
+    assert args.output        == "ENV_PYNONYMIZER_OUTPUT"
+    assert args.db_type       == "ENV_PYNONYMIZER_DB_TYPE"
+    assert args.db_name       == "ENV_PYNONYMIZER_DB_NAME"
+    assert args.db_host       == "ENV_PYNONYMIZER_DB_HOST"
+    assert args.db_user       == "ENV_PYNONYMIZER_DB_USER"
+    assert args.db_password   == "ENV_PYNONYMIZER_DB_PASSWORD"
+    assert args.fake_locale   == "ENV_PYNONYMIZER_FAKE_LOCALE"
+    assert args.start_at_step == "ENV_PYNONYMIZER_START_AT"
+    assert args.skip_steps    == ["ENV_PYNONYMIZER_SKIP_STEPS"]
+    assert args.stop_at_step  == "ENV_PYNONYMIZER_FAKE_LOCALE"
+    assert args.mssql_backup_compression  == "ENV_PYNONYMIZER_MSSQL_BACKUP_COMPRESSION"
+    assert args.mysql_cmd_opts  == "ENV_PYNONYMIZER_MYSQL_CMD_OPTS"
+    assert args.mysql_dump_opts  == "ENV_PYNONYMIZER_MYSQL_DUMP_OPS"
+    assert args.postgres_cmd_opts  == "ENV_PYNONYMIZER_POSTGRES_CMD_OPTS"
+    assert args.postgres_dump_opts  == "ENV_PYNONYMIZER_POSTGRES_DUMP_OPTS"
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
-def test_all_legacy_new_mutex():
+def test_positions_and_options_should_be_mutally_exclusive():
     """
     legacy posisitonals and new options should result in an error if specified together
     """
@@ -135,9 +94,9 @@ def test_all_legacy_new_mutex():
 
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
-def test_all_args_precedence():
+def test_when_long_args_are_specified_and_new_env__should_use_args_first():
     """
-    All arguments should be overridden by their argv counterparts
+    All ENV should be overridden by their argv counterparts
     :return:
     """
     args = create_parser().parse_args([
@@ -153,7 +112,14 @@ def test_all_args_precedence():
         "--start-at", "START",
         "--skip-steps", "ANONYMIZE_DB",
         "--stop-at", "END",
-        "--verbose"
+        "--verbose",
+        "--mssql-backup-compression",
+        "--mysql-cmd-opts=\"ARG_MYSQL_CMD_OPTS\"",
+        "--mysql-dump-opts=\"ARG_MYSQL_DUMP_OPTS\"",
+        "--postgres-cmd-opts=\"ARG_POSTGRES_CMD_OPTS\"",
+        "--postgres-dump-opts=\"ARG_POSTGRES_DUMP_OPTS\"",
+
+
     ])
     assert args.input          == "input.sql"
     assert args.strategyfile   == "strategyfile.yml"
@@ -169,9 +135,15 @@ def test_all_args_precedence():
     assert args.stop_at_step   == "END"
     assert args.verbose is True
 
+    assert args.mssql_backup_compression is True
+    assert args.mysql_cmd_opts  == "ARG_MYSQL_CMD_OPTS"
+    assert args.mysql_dump_opts  == "ARG_MYSQL_DUMP_OPTS"
+    assert args.postgres_cmd_opts  == "ARG_POSTGRES_CMD_OPTS"
+    assert args.postgres_dump_opts  == "ARG_POSTGRES_DUMP_OPTS"
+
 
 @patch("os.getenv", Mock(side_effect=mock_getenv_new))
-def test_all_short_args_precedence():
+def test_when_short_args_are_specified_and_new_env__should_use_args_first():
     """
     All arguments should be overridden by their argv counterparts (using short options!)
     :return:
