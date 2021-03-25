@@ -59,7 +59,7 @@ class MySqlCmdRunner:
 
         for statement in statements:
             try:
-                outputs.append( subprocess.check_output(self.__get_base_params() + ["--execute", statement]) )
+                outputs.append( subprocess.check_output(self.__get_base_params() + self.additional_opts + ["--execute", statement]) )
             except subprocess.CalledProcessError as error:
                 self.__mask_subprocess_error(error)
 
@@ -73,7 +73,7 @@ class MySqlCmdRunner:
 
         for statement in statements:
             try:
-                outputs.append( subprocess.check_output(self.__get_base_params() + [self.db_name,  "--execute", statement]) )
+                outputs.append( subprocess.check_output(self.__get_base_params() + self.additional_opts + [self.db_name,  "--execute", statement]) )
             except subprocess.CalledProcessError as error:
                 self.__mask_subprocess_error(error)
 
@@ -81,7 +81,7 @@ class MySqlCmdRunner:
 
     def get_single_result(self, statement):
         try:
-            return subprocess.check_output(self.__get_base_params() + ["-sN", self.db_name, "--execute", statement]).decode()
+            return subprocess.check_output(self.__get_base_params() + ["-sN", *self.additional_opts, self.db_name, "--execute", statement]).decode()
         except subprocess.CalledProcessError as error:
             self.__mask_subprocess_error(error)
 

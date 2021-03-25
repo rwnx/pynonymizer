@@ -55,7 +55,7 @@ class CmdTests(unittest.TestCase):
         """
         execute should execute an arbitrary statement with valid args
         """
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
         execute_result = cmd_runner.execute("SELECT `column` from `table`;")
 
         check_output.assert_called_with(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--quick", "--other-option=1", "--command",
@@ -64,7 +64,7 @@ class CmdTests(unittest.TestCase):
                                         )
 
     def test_execute_list(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
         execute_result = cmd_runner.execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
 
         check_output.assert_any_call(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--quick", "--other-option=1", "--command",
@@ -81,7 +81,7 @@ class CmdTests(unittest.TestCase):
         """
         execute should execute an arbitrary statement with valid args
         """
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
         execute_result = cmd_runner.db_execute("SELECT `column` from `table`;")
 
         check_output.assert_called_with(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "--quick", "--other-option=1", "--command", "SELECT `column` from `table`;"],
@@ -89,7 +89,7 @@ class CmdTests(unittest.TestCase):
                                         )
 
     def test_db_execute_list(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
         execute_result = cmd_runner.db_execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
 
         check_output.assert_any_call(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "--quick", "--other-option=1", "--command",
@@ -105,7 +105,7 @@ class CmdTests(unittest.TestCase):
         """
         execute should execute an arbitrary statement and return the decoded, no-column result
         """
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
         single_result = cmd_runner.get_single_result("SELECT `column` from `table`;")
 
         check_output.assert_called_with(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "-tA", "--quick", "--other-option=1", "--command", "SELECT `column` from `table`;"],

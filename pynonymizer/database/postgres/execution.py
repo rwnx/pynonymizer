@@ -63,7 +63,7 @@ class PSqlCmdRunner:
         outputs = []
 
         for statement in statements:
-            outputs.append( subprocess.check_output(self.__get_base_params() + ["--command", statement], env=self.__get_env()) )
+            outputs.append( subprocess.check_output(self.__get_base_params() + self.additional_opts + ["--command", statement], env=self.__get_env()) )
 
         return outputs
 
@@ -75,7 +75,7 @@ class PSqlCmdRunner:
         
         for statement in statements:
             outputs.append(subprocess.check_output(
-                self.__get_base_params() + ["--dbname", self.db_name,  "--command", statement],
+                self.__get_base_params() + ["--dbname", self.db_name, *self.additional_opts,  "--command", statement],
                 env=self.__get_env()
             ))
 
@@ -83,7 +83,7 @@ class PSqlCmdRunner:
 
     def get_single_result(self, statement):
         return subprocess.check_output(
-            self.__get_base_params() + ["--dbname", self.db_name, "-tA", "--command", statement],
+            self.__get_base_params() + ["--dbname", self.db_name, "-tA", *self.additional_opts, "--command", statement],
             env=self.__get_env()
         ).decode()
 
