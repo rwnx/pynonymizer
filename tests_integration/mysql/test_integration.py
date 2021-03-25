@@ -7,7 +7,6 @@ password = os.getenv("PYNONYMIZER_DB_PASSWORD")
 test_dir = os.path.dirname(os.path.realpath(__file__))
 ONE_MB = 1024 * 1024
 
-@pytest.mark.integration
 def test_smoke_lzma():
     output = subprocess.check_output([
         "pynonymizer",
@@ -22,7 +21,6 @@ def test_smoke_lzma():
     # some very rough output checks
     assert os.path.exists(output_path)
 
-@pytest.mark.integration
 def test_basic():
     """
         Perform an actual run against the local database using the modified sakila DB
@@ -42,7 +40,6 @@ def test_basic():
     assert os.path.exists(output_path)
     assert os.path.getsize(output_path) > 3 * ONE_MB
 
-@pytest.mark.integration
 def test_basic_stdin_stdout():
     p = subprocess.check_output(f"gunzip -c sakila.sql.gz | pynonymizer -i - -o - -s sakila.yml > stdout.sql", shell=True, cwd=test_dir )
 
