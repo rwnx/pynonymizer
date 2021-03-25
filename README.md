@@ -100,7 +100,7 @@ If this workflow doesnt work for you, see [process control](https://github.com/j
 ## Usage
 ### CLI
 1. Write a [strategyfile](https://github.com/jerometwell/pynonymizer/blob/master/doc/strategyfiles.md) for your database
-1. See below:
+1. Start Anonymizing!
 ```
 usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--output OUTPUT] [--db-type DB_TYPE] [--db-host DB_HOST]
@@ -109,7 +109,10 @@ usage: pynonymizer [-h] [--input INPUT] [--strategy STRATEGYFILE]
                    [--start-at STEP] [--skip-steps STEP [STEP ...]]
                    [--stop-at STEP] [--seed-rows SEED_ROWS]
                    [--mssql-backup-compression]
-                   [--mysql-dump-opts MYSQL_DUMP_OPTS] [-v] [--verbose]
+                   [--mysql-cmd-opts MYSQL_CMD_OPTS]
+                   [--mysql-dump-opts MYSQL_DUMP_OPTS]
+                   [--postgres-cmd-opts POSTGRES_CMD_OPTS]
+                   [--postgres-dump-opts POSTGRES_DUMP_OPTS] [-v] [--verbose]
                    [--dry-run]
 
 A tool for writing better anonymization strategies for your production
@@ -165,10 +168,21 @@ optional arguments:
   --mssql-backup-compression
                         [MSSQL] Use compression when backing up the database.
                         [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]
-  --mysql-dump-opts MYSQL_DUMP_OPTS
-                        [MYSQL] pass additional arguments to the mysqldump
+  --mysql-cmd-opts MYSQL_CMD_OPTS
+                        [MYSQL] pass additional arguments to the restore
                         process (advanced use only!).
-                        [$PYNONYMIZER_MYSQL_DUMP_OPTS]
+                        [$PYNONYMIZER_MYSQL_CMD_OPTS]
+  --mysql-dump-opts MYSQL_DUMP_OPTS
+                        [MYSQL] pass additional arguments to the dump process
+                        (advanced use only!). [$PYNONYMIZER_MYSQL_DUMP_OPTS]
+  --postgres-cmd-opts POSTGRES_CMD_OPTS
+                        [POSTGRES] pass additional arguments to the restore
+                        process (advanced use only!).
+                        [$PYNONYMIZER_POSTGRES_CMD_OPTS]
+  --postgres-dump-opts POSTGRES_DUMP_OPTS
+                        [POSTGRES] pass additional arguments to the dump
+                        process (advanced use only!).
+                        [$PYNONYMIZER_POSTGRES_DUMP_OPTS]
   -v, --version         show program's version number and exit
   --verbose             Increases the verbosity of the logging feature, to
                         help when troubleshooting issues.
@@ -178,11 +192,10 @@ optional arguments:
 
 ```
 ### Package
-Pynonymizer can also be invoked programmatically / from other python code. See [pynonymizer/pynonymize.py](pynonymizer/pynonymize.py)
+Pynonymizer can also be invoked programmatically / from other python code. See the module entrypoint [pynonymizer](pynonymizer/__init__.py) or [pynonymizer/pynonymize.py](pynonymizer/pynonymize.py)
 
 ```python
-from pynonymizer.pynonymize import pynonymize
+import pynonymizer
 
-# pynonymize is roughly equivalent to calling the main CLI
-pynonymize(input_path="./backup.sql", strategyfile_path="./strategy.yml" [...] )
+pynonymizer.run(input_path="./backup.sql", strategyfile_path="./strategy.yml" [...] )
 ```
