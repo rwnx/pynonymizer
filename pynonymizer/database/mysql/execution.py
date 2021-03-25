@@ -26,12 +26,13 @@ class MySqlDumpRunner:
 
 
 class MySqlCmdRunner:
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port="3306"):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port="3306", additional_opts = ""):
         self.db_host = db_host
         self.db_user = db_user
         self.db_pass = db_pass
         self.db_name = db_name
         self.db_port = db_port
+        self.additional_opts = shlex.split(additional_opts)
 
         if not (shutil.which("mysql")):
             raise DependencyError("mysql", "The 'mysql' client must be present in the $PATH")
@@ -85,4 +86,4 @@ class MySqlCmdRunner:
             self.__mask_subprocess_error(error)
 
     def open_batch_processor(self):
-        return subprocess.Popen(self.__get_base_params() + [self.db_name], stdin=subprocess.PIPE).stdin
+        return subprocess.Popen(self.__get_base_params() + self.additional_opts + [self.db_name], stdin=subprocess.PIPE).stdin

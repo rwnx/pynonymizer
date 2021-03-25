@@ -20,7 +20,7 @@ class MySqlProvider(DatabaseProvider):
     __DUMPSIZE_ESTIMATE_INFLATION = 1.15
     logger = log.get_logger(__name__)
 
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, dump_opts=None):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, cmd_opts=None, dump_opts=None):
         if db_host is None:
             db_host = "127.0.0.1"
         if db_port is None:
@@ -29,7 +29,7 @@ class MySqlProvider(DatabaseProvider):
             dump_opts = ""
 
         super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
-        self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name, db_port)
+        self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name, db_port, additional_opts=cmd_opts)
         self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name, db_port, additional_opts=dump_opts)
 
     def __seed(self, qualifier_map):
