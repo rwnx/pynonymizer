@@ -43,7 +43,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup
-        run: pip install . pytest
+        run: |
+          apt-get update
+          apt-get install -y mysql-client
+          pip install . pytest
       - run: pytest tests_integration/mysql
       - uses: actions/upload-artifact@v2
         with:
