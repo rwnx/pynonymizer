@@ -45,7 +45,7 @@ jobs:
       - name: Setup
         run: |
           apt-get update
-          apt-get install -y mysql-client
+          apt-get install -y mariadb-client
           pip install . pytest
       - run: pytest tests_integration/mysql
       - uses: actions/upload-artifact@v2
