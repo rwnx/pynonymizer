@@ -26,7 +26,7 @@ jobs:
 
   integration-mysql: 
     services:
-      mysql:
+      db:
         image: mariadb
         env:
             MYSQL_ROOT_PASSWORD: password
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3.8-buster
     env:
-      PYNONYMIZER_DB_HOST: mysql
+      PYNONYMIZER_DB_HOST: db
       PYNONYMIZER_DB_USER: root
       PYNONYMIZER_DB_PASSWORD: password
     steps:
@@ -48,13 +48,32 @@ jobs:
           apt-get install -y mariadb-client
           pip install . pytest
       - run: pytest tests_integration/mysql
-      - uses: actions/upload-artifact@v2
-        with:
-          name: integration_output
-          path: |
-            tests_integration/stdout.sql
-            tests_integration/basic.sql
+            
+  integration-postgres: 
+    services:
+      db:
+        image: postgres:10.10
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432/tcp
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    env:
+      PYNONYMIZER_DB_HOST: db
+      PYNONYMIZER_DB_USER: postgres
+      PYNONYMIZER_DB_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: |
+          apt-get update
+          apt-get install -y postgres-client
+          pip install . pytest
+      - run: pytest tests_integration/postgres
 
   package: 
     runs-on: ubuntu-latest
