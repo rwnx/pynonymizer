@@ -6,7 +6,6 @@ import os
 user = os.getenv("PYNONYMIZER_DB_USER")
 password = os.getenv("PYNONYMIZER_DB_PASSWORD")
 test_dir = os.path.dirname(os.path.realpath(__file__))
-ONE_MB = 1024 * 1024
 
 
 def test_basic():
@@ -27,4 +26,3 @@ def test_basic():
 
     # some very rough output checks
     assert os.path.exists(output_path)
-    assert os.path.getsize(output_path) > 3 * ONE_MB
