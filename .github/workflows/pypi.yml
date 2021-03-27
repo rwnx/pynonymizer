@@ -10,7 +10,7 @@ jobs:
   test:
     strategy:
       matrix:
-        python: [3.6, 3.7, 3.8]
+        python: [3.6, 3.7, 3.8, 3.9]
 
     runs-on: ubuntu-latest
     container: python:${{matrix.python}}-buster
@@ -25,9 +25,19 @@ jobs:
         run: pytest tests/
 
   integration-mysql: 
+    services:
+      db:
+        image: mariadb
+        env:
+            MYSQL_ROOT_PASSWORD: password
+        ports:
+            - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    
     runs-on: ubuntu-latest
     container: python:3.8-buster
     env:
+      PYNONYMIZER_DB_HOST: db
       PYNONYMIZER_DB_USER: root
       PYNONYMIZER_DB_PASSWORD: password
     steps:
@@ -35,18 +45,35 @@ jobs:
       - name: Setup
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y mariadb-server
-          service mysql start
-          mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'password';"
+          apt-get install -y mariadb-client
           pip install . pytest
-      - run: pytest tests_integration
-      - uses: actions/upload-artifact@v2
-        with:
-          name: integration_output
-          path: |
-            tests_integration/stdout.sql
-            tests_integration/basic.sql
+      - run: pytest tests_integration/mysql
+            
+  integration-postgres: 
+    services:
+      db:
+        image: postgres:10.10
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432/tcp
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    env:
+      PYNONYMIZER_DB_HOST: db
+      PYNONYMIZER_DB_USER: postgres
+      PYNONYMIZER_DB_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: |
+          apt-get update
+          apt-get install -y postgresql-client
+          pip install . pytest
+      - run: pytest tests_integration/postgres
 
   package: 
     runs-on: ubuntu-latest
