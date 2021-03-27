@@ -81,6 +81,7 @@ jobs:
     needs: 
       - test
       - integration-mysql
+      - integration-postgres
     steps:
     - uses: actions/checkout@v2
     - name: Install package tools
