@@ -1,0 +1,11 @@
+scripts:
+  before: 
+    - SELECT * FROM customer LIMIT 1;
+  after: 
+    - SELECT * FROM customer LIMIT 1;
+    
+tables:
+  customer:
+    columns:
+      first_name: first_name
+      email: unique_email
