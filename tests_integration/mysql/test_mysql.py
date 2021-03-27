@@ -2,6 +2,7 @@ import pytest
 import subprocess
 import os
 
+# force getenv to error here for more human-readable errors
 user = os.getenv("PYNONYMIZER_DB_USER")
 password = os.getenv("PYNONYMIZER_DB_PASSWORD")
 test_dir = os.path.dirname(os.path.realpath(__file__))

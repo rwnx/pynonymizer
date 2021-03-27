@@ -1,16 +1,11 @@
 scripts:
   before: 
-    - SELECT * FROM actor LIMIT 1;
+    - SELECT * FROM customer LIMIT 1;
   after: 
-    - SELECT * FROM actor LIMIT 1;
+    - SELECT * FROM customer LIMIT 1;
     
 tables:
-  film:
-    columns:
-      description: bs
-      title: unique_login
-  actor:
+  customer:
     columns:
       first_name: first_name
-      last_name: last_name
-  film_text: delete
+      email: unique_email
