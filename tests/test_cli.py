@@ -41,7 +41,10 @@ class MainArgTests(unittest.TestCase):
             stop_at_step="TEST_STOP_AT_STEP",
             seed_rows=None,
             mssql_backup_compression=False,
-            mysql_dump_opts="--compatible=mysql4 --max_allowed_packet=1024M",
+            mysql_dump_opts="--additional",
+            mysql_cmd_opts="--additional",
+            postgres_dump_opts="--additional",
+            postgres_cmd_opts="--additional",
             dry_run=True,
             verbose=True
         )
@@ -107,7 +110,10 @@ class MainArgTests(unittest.TestCase):
             stop_at_step="TEST_STOP_AT_STEP",
             seed_rows=None,
             mssql_backup_compression=False,
-            mysql_dump_opts="--compatible=mysql4 --max_allowed_packet=1024M",
+            mysql_dump_opts="--additional",
+            mysql_cmd_opts="--additional",
+            postgres_dump_opts="--additional",
+            postgres_cmd_opts="--additional",
             dry_run=True,
             verbose=True
         )

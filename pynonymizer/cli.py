@@ -89,13 +89,23 @@ def create_parser():
                         default=bool(os.getenv("PYNONYMIZER_MSSQL_BACKUP_COMPRESSION")),
                         help="[MSSQL] Use compression when backing up the database.  [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]")
 
+    parser.add_argument("--mysql-cmd-opts",
+                    default=os.getenv("PYNONYMIZER_MYSQL_CMD_OPTS"),
+                    help="[MYSQL] pass additional arguments to the restore process (advanced use only!).  [$PYNONYMIZER_MYSQL_CMD_OPTS]")
     parser.add_argument("--mysql-dump-opts",
                     default=os.getenv("PYNONYMIZER_MYSQL_DUMP_OPTS"),
-                    help="[MYSQL] pass additional arguments to the mysqldump process (advanced use only!).  [$PYNONYMIZER_MYSQL_DUMP_OPTS]")
+                    help="[MYSQL] pass additional arguments to the dump process (advanced use only!).  [$PYNONYMIZER_MYSQL_DUMP_OPTS]")
+
+    parser.add_argument("--postgres-cmd-opts",
+                    default=os.getenv("PYNONYMIZER_POSTGRES_CMD_OPTS"),
+                    help="[POSTGRES] pass additional arguments to the restore process (advanced use only!).  [$PYNONYMIZER_POSTGRES_CMD_OPTS]")
+    parser.add_argument("--postgres-dump-opts",
+                    default=os.getenv("PYNONYMIZER_POSTGRES_DUMP_OPTS"),
+                    help="[POSTGRES] pass additional arguments to the dump process (advanced use only!).  [$PYNONYMIZER_POSTGRES_DUMP_OPTS]")
 
     parser.add_argument("-v", "--version", action="version", version=__version__)
 
-    parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMISER_VERBOSE") or False,
+    parser.add_argument("--verbose", action="store_true", default=os.getenv("PYNONYMIZER_VERBOSE") or False,
                         help="Increases the verbosity of the logging feature, to help when troubleshooting issues. [$PYNONYMIZER_VERBOSE]"
                         )
 
@@ -105,6 +115,9 @@ def create_parser():
 
     return parser
 
+def _warn_deprecated_env(old_env, new_env):
+    if os.getenv(old_env):
+        logger.warn("Environmental var $%s is deprecated. Use $%s", old_env, new_env)
 
 def cli(rawArgs=None):
     """
@@ -125,6 +138,20 @@ def cli(rawArgs=None):
     strategyfile = args.legacy_strategyfile or args.strategyfile
     output = args.legacy_output or args.output
 
+    if args.legacy_input:
+        logger.warn("Positional INPUT is deprecated. Use the -i/--input option instead.")
+    if args.legacy_strategyfile:
+        logger.warn("Positional STRATEGYFILE is deprecated. Use the -s/--strategy option instead.")
+    if args.legacy_output:
+        logger.warn("Positional OUTPUT is deprecated. Use the -o/--output option instead.")
+
+    _warn_deprecated_env("DB_TYPE", "PYNONYMIZER_DB_TYPE")
+    _warn_deprecated_env("DB_HOST", "PYNONYMIZER_DB_HOST")
+    _warn_deprecated_env("DB_NAME", "PYNONYMIZER_DB_NAME")
+    _warn_deprecated_env("DB_USER", "PYNONYMIZER_DB_USER")
+    _warn_deprecated_env("DB_PASS", "PYNONYMIZER_DB_PASSWORD")
+    _warn_deprecated_env("FAKE_LOCALE", "PYNONYMIZER_FAKE_LOCALE")
+
     try:
         pynonymize(
             input_path=input,
@@ -142,7 +169,10 @@ def cli(rawArgs=None):
             stop_at_step=args.stop_at_step,
             seed_rows=args.seed_rows,
             mssql_backup_compression=args.mssql_backup_compression,
+            mysql_cmd_opts=args.mysql_cmd_opts,
             mysql_dump_opts=args.mysql_dump_opts,
+            postgres_cmd_opts=args.postgres_cmd_opts,
+            postgres_dump_opts=args.postgres_dump_opts,
             dry_run=args.dry_run,
             verbose=args.verbose
         )

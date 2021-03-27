@@ -14,9 +14,9 @@ def test_init_runners_correctly(execution):
     """
     Test the provider inits dependencies with the correct database information
     """
-    PostgreSqlProvider("1.2.3.4", "root", "password", "db_name")
-    execution.PSqlCmdRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port="5432")
-    execution.PSqlDumpRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port="5432")
+    PostgreSqlProvider("1.2.3.4", "root", "password", "db_name", cmd_opts="--quick", dump_opts="--additional")
+    execution.PSqlCmdRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port="5432", additional_opts="--quick")
+    execution.PSqlDumpRunner.assert_called_once_with(db_host="1.2.3.4", db_user="root", db_pass="password", db_name="db_name", db_port="5432", additional_opts="--additional")
 
 
 @patch("pynonymizer.database.postgres.execution", autospec=True)

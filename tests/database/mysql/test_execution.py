@@ -22,7 +22,15 @@ class NoExecutablesInPathTests(unittest.TestCase):
 @patch("subprocess.check_output")
 @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
 class DumperTests(unittest.TestCase):
-    def test_open_dumper_defaults(self, check_output, popen):
+    def test_open_dumper__when_using_additional_opts__should_pass_split_args_to_popen(self, check_output, popen):
+        dump_runner = MySqlDumpRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --single-transaction")
+
+        open_result = dump_runner.open_dumper()
+
+        # dumper should open a process for the current db dump, piping stdout for processing
+        popen.assert_called_with(["mysqldump", "--host", "1.2.3.4", "--port", "3306", "--user", "db_user", "-pdb_password", "--quick", "--single-transaction", "db_name"], stdout=subprocess.PIPE)
+
+    def test_open_dumper__when_port_is_not_passed__should_use_defaults(self, check_output, popen):
         dump_runner = MySqlDumpRunner("1.2.3.4", "db_user", "db_password", "db_name")
         open_result = dump_runner.open_dumper()
 
@@ -32,7 +40,7 @@ class DumperTests(unittest.TestCase):
         # dumper should return the stdout of that process
         assert open_result == popen.return_value.stdout
 
-    def test_open_dumper(self, check_output, popen):
+    def test_open_dumper__when_port_is_passed__should_use_passed(self, check_output, popen):
         dump_runner = MySqlDumpRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3307")
         open_result = dump_runner.open_dumper()
 
@@ -48,11 +56,11 @@ class DumperTests(unittest.TestCase):
 @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
 class CmdTests(unittest.TestCase):
     def test_open_batch_processor(self, check_output, popen):
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3306", additional_opts="--quick --single-transaction")
         open_result = cmd_runner.open_batch_processor()
 
         # dumper should open a process for the current db dump, piping stdout for processing
-        popen.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", "3306", "-u", "db_user", "-pdb_password", "db_name"], stdin=subprocess.PIPE)
+        popen.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", "3306", "-u", "db_user", "-pdb_password", "--quick", "--single-transaction", "db_name"], stdin=subprocess.PIPE)
 
         # dumper should return the stdin of that process
         assert open_result == popen.return_value.stdin
@@ -61,46 +69,46 @@ class CmdTests(unittest.TestCase):
         """
         execute should execute an arbitrary statement with valid args
         """
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3306", additional_opts="--quick --single-transaction")
         execute_result = cmd_runner.execute("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--execute",
+        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password",  "--quick", "--single-transaction", "--execute",
                                          "SELECT `column` from `table`;"])
 
     def test_execute_list(self, check_output, popen):
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3306", additional_opts="--quick --single-transaction")
         execute_result = cmd_runner.execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
 
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--quick", "--single-transaction", "--execute",
                                          "SELECT `column` from `table`;"])
 
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306", "-u", "db_user", "-pdb_password", "--quick", "--single-transaction", "--execute",
                                          "SELECT `column2` from `table2`;"])
 
     def test_db_execute(self, check_output, popen):
         """
         execute should execute an arbitrary statement with valid args
         """
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3306", additional_opts="--quick --single-transaction")
         execute_result = cmd_runner.db_execute("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", "3306", "-u", "db_user", "-pdb_password", "db_name", "--execute", "SELECT `column` from `table`;"])
+        check_output.assert_called_with(["mysql", "-h", "1.2.3.4",  "-P", "3306", "-u", "db_user", "-pdb_password", "--quick", "--single-transaction", "db_name", "--execute", "SELECT `column` from `table`;"])
 
     def test_db_execute_list(self, check_output, popen):
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3306", additional_opts="--quick --single-transaction")
         execute_result = cmd_runner.db_execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
 
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306","-u", "db_user", "-pdb_password", "db_name", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4", "-P", "3306","-u", "db_user", "-pdb_password", "--quick", "--single-transaction", "db_name", "--execute",
                                       "SELECT `column` from `table`;"])
-        check_output.assert_any_call(["mysql", "-h", "1.2.3.4","-P", "3306", "-u", "db_user", "-pdb_password", "db_name", "--execute",
+        check_output.assert_any_call(["mysql", "-h", "1.2.3.4","-P", "3306", "-u", "db_user", "-pdb_password", "--quick", "--single-transaction", "db_name", "--execute",
                                       "SELECT `column2` from `table2`;"])
 
     def test_get_single_result(self, check_output, popen):
         """
         execute should execute an arbitrary statement and return the decoded, no-column result
         """
-        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        cmd_runner = MySqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="3306", additional_opts="--quick --single-transaction")
         single_result = cmd_runner.get_single_result("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", "3306","-u", "db_user", "-pdb_password", "-sN", "db_name", "--execute", "SELECT `column` from `table`;"])
+        check_output.assert_called_with(["mysql", "-h", "1.2.3.4", "-P", "3306","-u", "db_user", "-pdb_password", "-sN", "--quick", "--single-transaction", "db_name", "--execute", "SELECT `column` from `table`;"])
         assert single_result == check_output.return_value.decode.return_value
