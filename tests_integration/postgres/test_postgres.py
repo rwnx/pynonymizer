@@ -15,7 +15,7 @@ def test_basic():
     """
     output = subprocess.check_output([
         "pynonymizer",
-        "-i", "pagila.sql",
+        "-i", "pagila.sql.gz",
         "-o", "basic.sql",
         "-s", "pagila.yml",
         "-t", "postgres"
