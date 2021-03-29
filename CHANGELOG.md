@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.17.0] 2021-03-29
 - Added New _additional-opts_ style parameters which allow you to control the behaviour of the underlying dump and restore tools more effectively.
   `*-cmd-opts` will be appended to the batched restore subprocess, while `*-dump-opts` will be appended to the dump (pgdump, mysqldump) subprocess
   These are advanced features and can seriously modify or even break the behaviour of pynonymizer. Use with caution!
