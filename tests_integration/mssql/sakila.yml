@@ -1,0 +1,16 @@
+scripts:
+  before: 
+    - SELECT TOP 1 * FROM actor;
+  after: 
+    - SELECT TOP 1 * FROM actor;
+    
+tables:
+  film:
+    columns:
+      description: bs
+      title: unique_login
+  actor:
+    columns:
+      first_name: first_name
+      last_name: last_name
+  film_text: delete
