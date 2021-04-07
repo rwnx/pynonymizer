@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added Driver auto-selection for MSSQL. This should find the correct driver on different systems. Where multiple drivers are detected a warning will be issued, and the first driver will be selected. To override this behaviour, you can specify the driver manually using cli opt `--mssql-driver / $PYNONYMIZER_MSSQL_DRIVER`
 - Changed Integration tests to show cmd output better in CI.
 - Fixed an issue in MSSQL where anonymization would be deterministically applied to all rows the same instead of distributed.
+- Changed MSSQL connection behaviour: provider will now allow truncation using `ANSI_WARNINGS off;` when updating tables.
 
 ## [1.17.0] 2021-03-29
 - Added New _additional-opts_ style parameters which allow you to control the behaviour of the underlying dump and restore tools more effectively.

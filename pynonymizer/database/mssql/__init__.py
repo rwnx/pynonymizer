@@ -240,7 +240,7 @@ class MsSqlProvider(DatabaseProvider):
 
     def drop_database(self):
         # force connection close so we can always drop the db: sometimes timing makes a normal drop impossible.
-        self.__execute(f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE")
+        self.__execute(f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;")
         self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
@@ -280,7 +280,8 @@ class MsSqlProvider(DatabaseProvider):
                         column_assignments = ",".join(["[{}] = {}".format(name, self.__get_column_subquery(column, table_name, name)) for name, column in column_map.items()])
                         where_clause = f" WHERE {where}" if where else ""
                         progressbar.set_description("Anonymizing {}: w[{}/{}]".format(table_name, i+1, total_wheres))
-                        self.__db_execute("UPDATE {}[{}] SET {}{};".format(schema_prefix, table_name, column_assignments, where_clause))
+                        # Disable ANSI_WARNINGS to allow oversized fake data to be truncated without error
+                        self.__db_execute("SET ANSI_WARNINGS off; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS on;".format(schema_prefix, table_name, column_assignments, where_clause))
 
                 else:
                     raise UnsupportedTableStrategyError(table_strategy)

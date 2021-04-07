@@ -105,9 +105,9 @@ def test_anonymize(connect, provider, simple_strategy, simple_strategy_fake_gene
     ix_insert_seed_last = list_rindex(execute_calls, call('INSERT INTO [_pynonymizer_seed_fake_data]([user_name]) VALUES ( ?);', ['TEST_VALUE']) )
     ix_trunc_table = execute_calls.index(call('TRUNCATE TABLE [truncate_table];'))
     ix_delete_table = execute_calls.index(call('DELETE FROM [delete_table];'))
-    ix_update_table_1 = execute_calls.index(call("UPDATE [update_table_where_3] SET [column1] = ( SELECT CONCAT(NEWID(), '@', NEWID(), '.com') ),[column2] = ( SELECT NEWID() ) WHERE BANANAS < 5;"))
-    ix_update_table_2 = execute_calls.index(call('UPDATE [update_table_where_3] SET [column3] = ( SELECT TOP 1 [user_name] FROM [_pynonymizer_seed_fake_data] WHERE [update_table_where_3].[column3] LIKE \'%\' OR [update_table_where_3].[column3] IS NULL ORDER BY NEWID()) WHERE BANANAS < 3;'))
-    ix_update_table_3 = execute_calls.index(call("UPDATE [update_table_where_3] SET [column4] = ('');"))
+    ix_update_table_1 = execute_calls.index(call("SET ANSI_WARNINGS off; UPDATE [update_table_where_3] SET [column1] = ( SELECT CONCAT(NEWID(), '@', NEWID(), '.com') ),[column2] = ( SELECT NEWID() ) WHERE BANANAS < 5; SET ANSI_WARNINGS on;"))
+    ix_update_table_2 = execute_calls.index(call('SET ANSI_WARNINGS off; UPDATE [update_table_where_3] SET [column3] = ( SELECT TOP 1 [user_name] FROM [_pynonymizer_seed_fake_data] WHERE [update_table_where_3].[column3] LIKE \'%\' OR [update_table_where_3].[column3] IS NULL ORDER BY NEWID()) WHERE BANANAS < 3; SET ANSI_WARNINGS on;'))
+    ix_update_table_3 = execute_calls.index(call("SET ANSI_WARNINGS off; UPDATE [update_table_where_3] SET [column4] = (''); SET ANSI_WARNINGS on;"))
     ix_drop_seed = execute_calls.index(call('DROP TABLE IF EXISTS [_pynonymizer_seed_fake_data];'))
 
     # seed table create needs to happen before inserting data
