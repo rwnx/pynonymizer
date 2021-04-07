@@ -165,6 +165,9 @@ optional arguments:
                         Specify a number of rows to populate the fake data
                         table used during anonymization.
                         [$PYNONYMIZER_SEED_ROWS]
+  --mssql-driver MSSQL_DRIVER
+                        [MSSQL] ODBC driver to use for database connection
+                        [$PYNONYMIZER_MSSQL_DRIVER]
   --mssql-backup-compression
                         [MSSQL] Use compression when backing up the database.
                         [$PYNONYMIZER_MSSQL_BACKUP_COMPRESSION]

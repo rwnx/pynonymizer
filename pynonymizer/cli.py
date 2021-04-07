@@ -84,6 +84,11 @@ def create_parser():
                         default=os.getenv("PYNONYMIZER_SEED_ROWS"), type=int,
                         help="Specify a number of rows to populate the fake data table used during anonymization.  [$PYNONYMIZER_SEED_ROWS]")
 
+    parser.add_argument("--mssql-driver",
+                    default=(os.getenv("PYNONYMIZER_MSSQL_DRIVER")),
+                    help="[MSSQL] ODBC driver to use for database connection [$PYNONYMIZER_MSSQL_DRIVER]")
+
+
     parser.add_argument("--mssql-backup-compression",
                         action="store_true",
                         default=bool(os.getenv("PYNONYMIZER_MSSQL_BACKUP_COMPRESSION")),
@@ -117,7 +122,7 @@ def create_parser():
 
 def _warn_deprecated_env(old_env, new_env):
     if os.getenv(old_env):
-        logger.warn("Environmental var $%s is deprecated. Use $%s", old_env, new_env)
+        logger.warning("Environmental var $%s is deprecated. Use $%s", old_env, new_env)
 
 def cli(rawArgs=None):
     """
@@ -139,11 +144,11 @@ def cli(rawArgs=None):
     output = args.legacy_output or args.output
 
     if args.legacy_input:
-        logger.warn("Positional INPUT is deprecated. Use the -i/--input option instead.")
+        logger.warning("Positional INPUT is deprecated. Use the -i/--input option instead.")
     if args.legacy_strategyfile:
-        logger.warn("Positional STRATEGYFILE is deprecated. Use the -s/--strategy option instead.")
+        logger.warning("Positional STRATEGYFILE is deprecated. Use the -s/--strategy option instead.")
     if args.legacy_output:
-        logger.warn("Positional OUTPUT is deprecated. Use the -o/--output option instead.")
+        logger.warning("Positional OUTPUT is deprecated. Use the -o/--output option instead.")
 
     _warn_deprecated_env("DB_TYPE", "PYNONYMIZER_DB_TYPE")
     _warn_deprecated_env("DB_HOST", "PYNONYMIZER_DB_HOST")
@@ -168,6 +173,7 @@ def cli(rawArgs=None):
             skip_steps=args.skip_steps,
             stop_at_step=args.stop_at_step,
             seed_rows=args.seed_rows,
+            mssql_driver=args.mssql_driver,
             mssql_backup_compression=args.mssql_backup_compression,
             mysql_cmd_opts=args.mysql_cmd_opts,
             mysql_dump_opts=args.mysql_dump_opts,
