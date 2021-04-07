@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Fixed a typo in mssql, mysql and postgres when running strategy before/after scripts.
 
 ## [1.17.0] 2021-03-29
 - Added New _additional-opts_ style parameters which allow you to control the behaviour of the underlying dump and restore tools more effectively.
