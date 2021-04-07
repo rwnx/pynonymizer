@@ -8,7 +8,14 @@ tables:
   film:
     columns:
       description: bs
-      title: unique_login
+      # title is a varchar(256) field so this should truncate
+      title: 
+        type: fake_update
+        fake_type: pystr
+        fake_args: 
+          min_chars: 256
+          max_chars: 500
+
   actor:
     columns:
       first_name: first_name
