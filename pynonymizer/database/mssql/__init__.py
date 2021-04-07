@@ -170,7 +170,7 @@ class MsSqlProvider(DatabaseProvider):
     def __run_scripts(self, script_list, title=""):
         import pyodbc
         for i, script in enumerate(script_list):
-            self.logger.info(f"Running f{title} script #{i} \"{script[:50]}\"")
+            self.logger.info(f"Running {title} script #{i} \"{script[:50]}\"")
             cursor = self.__db_execute(script)
             results = None
             try:
