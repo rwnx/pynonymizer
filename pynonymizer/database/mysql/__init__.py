@@ -29,7 +29,17 @@ class MySqlProvider(DatabaseProvider):
         if dump_opts is None:
             dump_opts = ""
 
-        super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
+        self.db_host = db_host
+        self.db_user = db_user
+        self.db_pass = db_pass
+        self.db_name = db_name
+        self.db_port = db_port
+
+        if seed_rows is None:
+            seed_rows = 150
+
+        self.seed_rows = int(seed_rows)
+
         self.__runner = execution.MySqlCmdRunner(db_host, db_user, db_pass, db_name, db_port, additional_opts=cmd_opts)
         self.__dumper = execution.MySqlDumpRunner(db_host, db_user, db_pass, db_name, db_port, additional_opts=dump_opts)
 

@@ -18,6 +18,8 @@ _FAKE_COLUMN_TYPES = {
     FakeDataType.INT: "INT"
 }
 
+_LOCAL_SERVER = "127.0.0.1"
+_DEFAULT_PORT = "1433"
 
 class MsSqlProvider(DatabaseProvider):
     """
@@ -35,40 +37,42 @@ class MsSqlProvider(DatabaseProvider):
         # import here for fast-failiness
         import pyodbc
 
-        if db_host is not None:
-            raise DependencyError("db_host", "MsSqlProvider does not support remote servers due to backup file "
-                                             "location requirements. You must omit db_host from your configuration "
-                                             "and run pynonymizer on the same server as the database.")
+        db_host = db_host or _LOCAL_SERVER
+        db_port = db_port or _DEFAULT_PORT
+        driver = driver or self.__detect_driver()
 
-        # TODO: The odbc port syntax doesn't seem to work with (local),1433 or port=1433
-        # TODO: This needs attention, but as it's backwards compatible, we're going to disallow it here.
-        if db_port is not None:
-            raise DependencyError("db_port", "MsSqlProvider does not support custom ports. You must omit db_port "
-                                             "from your configuration to continue.")
+        self.db_host = db_host
+        self.db_user = db_user
+        self.db_pass = db_pass
+        self.db_name = db_name
+        self.db_port = db_port
 
-        if driver is None:
-            self.__driver = self.__detect_driver()
-        else:
-            self.__driver = driver
-            
-        db_host = "(local)"
+        if seed_rows is None:
+            seed_rows = 150
 
-        super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
+        self.seed_rows = int(seed_rows)
+
         self.__conn = None
         self.__db_conn = None
         self.__backup_compression = backup_compression
+        self.__driver = driver
 
     def __detect_driver(self):
         import pyodbc
         ms_drivers = [i for i in pyodbc.drivers() if "sql server" in i.lower()]
         if len(ms_drivers) < 1:
-            raise Exception("Failed to detect any ODBC drivers on this system.")
+            raise DependencyError("Failed to detect any ODBC drivers on this system.")
 
         if len(ms_drivers) > 1:
             self.logger.warning("multiple drivers detected for mssql: %s", ms_drivers)
 
         return ms_drivers[0]
 
+    def __require_local_server(self):
+        if self.db_host != _LOCAL_SERVER:
+            raise DependencyError("db_host", "This operation does not support remote servers due to backup file "
+                                                "location requirements. You must omit db_host from your configuration "
+                                                "and run pynonymizer on the same server as the database.")
 
     def __connection(self):
         import pyodbc
@@ -76,7 +80,7 @@ class MsSqlProvider(DatabaseProvider):
         if self.__conn is None:
             self.__conn = pyodbc.connect(
                 driver=f"{{{self.__driver}}}",
-                server=self.db_host,
+                server=f"{self.db_host},{self.db_port}",
                 uid=self.db_user,
                 pwd=self.db_pass,
                 autocommit=True
@@ -91,7 +95,7 @@ class MsSqlProvider(DatabaseProvider):
             self.__db_conn = pyodbc.connect(
                 driver=f"{{{self.__driver}}}",
                 database=self.db_name,
-                server=self.db_host,
+                server=f"{self.db_host},{self.db_port}",
                 uid=self.db_user,
                 pwd=self.db_pass,
                 autocommit=True
@@ -295,6 +299,8 @@ class MsSqlProvider(DatabaseProvider):
         self.__drop_seed_table()
 
     def restore_database(self, input_path):
+        self.__require_local_server()
+
         move_files = self.__get_file_moves(input_path)
 
         self.logger.info("Found %d files in %s", len(move_files), input_path )
@@ -310,6 +316,8 @@ class MsSqlProvider(DatabaseProvider):
         self.__async_operation_progress("Restoring Database", restore_cursor)
 
     def dump_database(self, output_path):
+        self.__require_local_server()
+
         with_options = []
         if self.__backup_compression:
             with_options.append("COMPRESSION")
