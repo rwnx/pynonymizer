@@ -1,9 +1,9 @@
 from faker import Faker
-from pynonymizer.log import get_logger
+import logging
 import inspect
 from enum import Enum
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class FakeDataType(Enum):

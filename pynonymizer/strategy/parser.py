@@ -1,5 +1,4 @@
 from pynonymizer.strategy.exceptions import UnknownColumnStrategyError, UnknownTableStrategyError, ConfigSyntaxError
-from pynonymizer.log import get_logger
 from pynonymizer.strategy.table import UpdateColumnsTableStrategy, TruncateTableStrategy, DeleteTableStrategy, TableStrategyTypes
 from pynonymizer.strategy.update_column import (
     UpdateColumnStrategyTypes,
@@ -11,8 +10,9 @@ from pynonymizer.strategy.update_column import (
 )
 from pynonymizer.strategy.database import DatabaseStrategy
 from copy import deepcopy
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class StrategyParser:
