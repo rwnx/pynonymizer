@@ -99,7 +99,6 @@ def test_anonymize(connect, provider, simple_strategy, simple_strategy_fake_gene
 
     execute_calls = connect().execute.mock_calls
 
-    print(execute_calls)
     ix_create_seed = execute_calls.index(call('CREATE TABLE [_pynonymizer_seed_fake_data]([user_name] VARCHAR(MAX));'))
     ix_insert_seed_first = execute_calls.index(call('INSERT INTO [_pynonymizer_seed_fake_data]([user_name]) VALUES ( ?);', ['TEST_VALUE']))
     ix_insert_seed_last = list_rindex(execute_calls, call('INSERT INTO [_pynonymizer_seed_fake_data]([user_name]) VALUES ( ?);', ['TEST_VALUE']) )

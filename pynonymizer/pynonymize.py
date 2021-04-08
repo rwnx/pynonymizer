@@ -1,5 +1,5 @@
 import yaml
-from pynonymizer.log import get_default_logger
+import logging
 from pynonymizer.database import get_temp_db_name, get_provider
 from pynonymizer.fake import FakeColumnGenerator
 from pynonymizer.strategy.parser import StrategyParser
@@ -8,7 +8,7 @@ from pynonymizer.exceptions import ArgumentValidationError, DatabaseConnectionEr
 from pynonymizer.process_steps import StepActionMap, ProcessSteps
 
 
-logger = get_default_logger()
+logger = logging.getLogger(__name__)
 
 
 def pynonymize(

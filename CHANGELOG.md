@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed an issue in MSSQL where anonymization would be deterministically applied to all rows the same instead of distributed.
 - Changed MSSQL connection behaviour: provider will now allow truncation using `ANSI_WARNINGS off;` when updating tables.
 - Fixed a typo in mssql, mysql and postgres when running strategy before/after scripts.
+- Changed verbose-mode behaviour to include more information via debug logs during CLI runs.
 
 ## [1.17.0] 2021-03-29
 - Added New _additional-opts_ style parameters which allow you to control the behaviour of the underlying dump and restore tools more effectively.

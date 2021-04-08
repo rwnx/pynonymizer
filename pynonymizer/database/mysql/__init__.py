@@ -1,8 +1,7 @@
-from pynonymizer.database.provider import SEED_TABLE_NAME
 from tqdm import tqdm
 from time import sleep
-from pynonymizer import log
-from pynonymizer.database.provider import DatabaseProvider
+import logging
+from pynonymizer.database.provider import DatabaseProvider, SEED_TABLE_NAME
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.mysql import execution, query_factory
 from pynonymizer.database.basic.input import resolve_input
@@ -18,7 +17,7 @@ class MySqlProvider(DatabaseProvider):
     """
     __CHUNK_SIZE = 8192
     __DUMPSIZE_ESTIMATE_INFLATION = 1.15
-    logger = log.get_logger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, cmd_opts=None, dump_opts=None):
         if db_host is None:

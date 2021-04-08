@@ -2,11 +2,9 @@ import argparse
 import dotenv
 import os
 import sys
+import logging
 from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize, ProcessSteps
-from pynonymizer.log import get_default_logger
 from pynonymizer import __version__
-
-logger = get_default_logger()
 
 
 def create_parser():
@@ -130,6 +128,15 @@ def cli(rawArgs=None):
     :param args:
     :return:
     """
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    logger.handlers.clear()
+    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter('%(message)s'))
+    logger.addHandler(console_handler)
+
     # find the dotenv from the current working dir rather than the execution location
     dotenv_file = dotenv.find_dotenv(usecwd=True)
     dotenv.load_dotenv(dotenv_path=dotenv_file)
@@ -156,7 +163,10 @@ def cli(rawArgs=None):
     _warn_deprecated_env("DB_USER", "PYNONYMIZER_DB_USER")
     _warn_deprecated_env("DB_PASS", "PYNONYMIZER_DB_PASSWORD")
     _warn_deprecated_env("FAKE_LOCALE", "PYNONYMIZER_FAKE_LOCALE")
-
+    
+    if args.verbose:
+        console_handler.setLevel(logging.DEBUG)
+        
     try:
         pynonymize(
             input_path=input,

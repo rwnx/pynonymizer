@@ -6,9 +6,10 @@ from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, Unsu
 from pynonymizer.fake import FakeDataType
 
 import math
+import logging
 from tqdm import tqdm
 from pathlib import PureWindowsPath, PurePosixPath
-from pynonymizer.log import get_logger
+
 
 _FAKE_COLUMN_TYPES = {
     FakeDataType.STRING: "VARCHAR(MAX)",
@@ -23,7 +24,7 @@ class MsSqlProvider(DatabaseProvider):
     A pyodbc-based MSSQL provider.
     """
 
-    logger = get_logger(__name__)
+    logger = logging.getLogger(__name__)
 
     # stats value for restore/backup command: Report progress every X percent
     # A lower value means MORE resultssets / more frequent updates from the backup command.

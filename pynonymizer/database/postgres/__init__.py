@@ -1,6 +1,6 @@
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from tqdm import tqdm
-from pynonymizer import log
+import logging
 from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.postgres import execution, query_factory
@@ -16,7 +16,7 @@ class PostgreSqlProvider(DatabaseProvider):
     Unfortunately, this implementation provides limited feedback when things go wrong.
     """
     __CHUNK_SIZE = 8192
-    logger = log.get_logger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, cmd_opts=None, dump_opts=None):
         if db_port is None:
