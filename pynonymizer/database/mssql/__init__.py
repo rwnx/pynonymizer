@@ -30,7 +30,7 @@ class MsSqlProvider(DatabaseProvider):
     # Values lower than 5 often yield unreliable results on smaller backups
     __STATS = 5
 
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, backup_compression=False):
+    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, backup_compression=False, driver=None):
         # import here for fast-failiness
         import pyodbc
 
@@ -45,6 +45,11 @@ class MsSqlProvider(DatabaseProvider):
             raise DependencyError("db_port", "MsSqlProvider does not support custom ports. You must omit db_port "
                                              "from your configuration to continue.")
 
+        if driver is None:
+            self.__driver = self.__detect_driver()
+        else:
+            self.__driver = driver
+            
         db_host = "(local)"
 
         super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
@@ -52,12 +57,24 @@ class MsSqlProvider(DatabaseProvider):
         self.__db_conn = None
         self.__backup_compression = backup_compression
 
+    def __detect_driver(self):
+        import pyodbc
+        ms_drivers = [i for i in pyodbc.drivers() if "sql server" in i.lower()]
+        if len(ms_drivers) < 1:
+            raise Exception("Failed to detect any ODBC drivers on this system.")
+
+        if len(ms_drivers) > 1:
+            self.logger.warning("multiple drivers detected for mssql: %s", ms_drivers)
+
+        return ms_drivers[0]
+
+
     def __connection(self):
         import pyodbc
         """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
-                driver="{SQL Server Native Client 11.0}",
+                driver=f"{{{self.__driver}}}",
                 server=self.db_host,
                 uid=self.db_user,
                 pwd=self.db_pass,
@@ -71,7 +88,7 @@ class MsSqlProvider(DatabaseProvider):
         """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
-                driver="{SQL Server Native Client 11.0}",
+                driver=f"{{{self.__driver}}}",
                 database=self.db_name,
                 server=self.db_host,
                 uid=self.db_user,
@@ -200,7 +217,7 @@ class MsSqlProvider(DatabaseProvider):
         for i in tqdm(range(0, self.seed_rows), desc="Inserting seed data", unit="rows"):
             self.__insert_seed_row(qualifier_map)
 
-    def __get_column_subquery(self, column_strategy):
+    def __get_column_subquery(self, column_strategy, table_name, column_name):
         if column_strategy.strategy_type == UpdateColumnStrategyTypes.EMPTY:
             return "('')"
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
@@ -211,7 +228,8 @@ class MsSqlProvider(DatabaseProvider):
             column = f"[{column_strategy.qualifier}]"
             if column_strategy.sql_type:
                 column = f"CAST({column} AS {column_strategy.sql_type})"
-            return f"( SELECT TOP 1 {column} FROM [{SEED_TABLE_NAME}] ORDER BY NEWID())"
+            # Add WHERE LIKE % OR NULL to make subquery correlated with outer table, therefore uncachable
+            return f"( SELECT TOP 1 {column} FROM [{SEED_TABLE_NAME}] WHERE [{table_name}].[{column_name}] LIKE '%' OR [{table_name}].[{column_name}] IS NULL ORDER BY NEWID())"
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
             return column_strategy.value
         else:
@@ -222,7 +240,7 @@ class MsSqlProvider(DatabaseProvider):
 
     def drop_database(self):
         # force connection close so we can always drop the db: sometimes timing makes a normal drop impossible.
-        self.__execute(f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE")
+        self.__execute(f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;")
         self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
@@ -259,10 +277,11 @@ class MsSqlProvider(DatabaseProvider):
                     total_wheres = len(where_grouping)
 
                     for i, (where, column_map) in enumerate(where_grouping.items()):
-                        column_assignments = ",".join(["[{}] = {}".format(name, self.__get_column_subquery(column)) for name, column in column_map.items()])
+                        column_assignments = ",".join(["[{}] = {}".format(name, self.__get_column_subquery(column, table_name, name)) for name, column in column_map.items()])
                         where_clause = f" WHERE {where}" if where else ""
                         progressbar.set_description("Anonymizing {}: w[{}/{}]".format(table_name, i+1, total_wheres))
-                        self.__db_execute("UPDATE {}[{}] SET {}{};".format(schema_prefix, table_name, column_assignments, where_clause))
+                        # Disable ANSI_WARNINGS to allow oversized fake data to be truncated without error
+                        self.__db_execute("SET ANSI_WARNINGS off; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS on;".format(schema_prefix, table_name, column_assignments, where_clause))
 
                 else:
                     raise UnsupportedTableStrategyError(table_strategy)
