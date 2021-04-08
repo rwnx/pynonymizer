@@ -61,7 +61,7 @@ class MySqlProvider(DatabaseProvider):
 
     def __run_scripts(self, script_list, title=""):
         for i, script in enumerate(script_list):
-            self.logger.info(f"Running f{title} script #{i} \"{script[:50]}\"")
+            self.logger.info(f"Running {title} script #{i} \"{script[:50]}\"")
             self.logger.info(self.__runner.db_execute(script))
 
     def create_database(self):
