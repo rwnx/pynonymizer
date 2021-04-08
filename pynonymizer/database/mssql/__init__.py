@@ -57,7 +57,7 @@ class MsSqlProvider(DatabaseProvider):
         import pyodbc
         ms_drivers = [i for i in pyodbc.drivers() if "sql server" in i.lower()]
         if len(ms_drivers) < 1:
-            raise Exception("Failed to detect any ODBC drivers on this system.")
+            raise DependencyError("Failed to detect any ODBC drivers on this system.")
 
         if len(ms_drivers) > 1:
             self.logger.warning("multiple drivers detected for mssql: %s", ms_drivers)

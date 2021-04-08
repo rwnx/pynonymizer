@@ -76,7 +76,10 @@ If this workflow doesnt work for you, see [process control](https://github.com/j
 ### mssql
 * Requires extra dependencies: install package `pynonymizer[mssql]`
 * MSSQL >= 2008
-* Due to backup/restore limitations, you must be running pynonymizer on the *same server* as the database engine.
+* For `RESTORE_DB`/`DUMP_DB` operations, the database server *must* be running
+  locally with pynonymizer. This is because MSSQL `RESTORE` and `BACKUP` instructions
+  are received by the database, so piping a local backup to a remote server is not possible.
+* The anonymize process can be performed on remote servers, but you are responsible for creating/managing the target database.
 * Supported Inputs:
   * Local backup file
 * Supported Outputs:

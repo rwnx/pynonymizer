@@ -42,9 +42,16 @@ def mock_backup_side_effect(statement, *args, **kwargs):
     return Mock()
 
 
-def test_raise_on_remote_server():
+def test_raise_on_remote_server_backup():
+    provider = MsSqlProvider("192.168.2.1", "username", "password", "dbname", driver="driver")
     with pytest.raises(DependencyError):
-        MsSqlProvider("192.168.2.1", "username", "password", "dbname")
+        provider.dump_database("./output.bak")
+
+def test_raise_on_remote_server_restore():
+    provider = MsSqlProvider("192.168.2.1", "username", "password", "dbname", driver="driver")
+    with pytest.raises(DependencyError):
+        provider.restore_database("./local.bak")
+        
 
 @patch("pyodbc.connect")
 def test_create_database_noop(connect, provider):
