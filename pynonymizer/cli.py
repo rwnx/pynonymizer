@@ -163,10 +163,10 @@ def cli(rawArgs=None):
     _warn_deprecated_env("DB_USER", "PYNONYMIZER_DB_USER")
     _warn_deprecated_env("DB_PASS", "PYNONYMIZER_DB_PASSWORD")
     _warn_deprecated_env("FAKE_LOCALE", "PYNONYMIZER_FAKE_LOCALE")
-
+    
     if args.verbose:
         console_handler.setLevel(logging.DEBUG)
-    
+        
     try:
         pynonymize(
             input_path=input,
