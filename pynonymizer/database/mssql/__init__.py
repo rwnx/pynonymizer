@@ -47,7 +47,17 @@ class MsSqlProvider(DatabaseProvider):
         db_port = db_port or _DEFAULT_PORT
         driver = driver or self.__detect_driver()
 
-        super().__init__(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, seed_rows=seed_rows)
+        self.db_host = db_host
+        self.db_user = db_user
+        self.db_pass = db_pass
+        self.db_name = db_name
+        self.db_port = db_port
+
+        if seed_rows is None:
+            seed_rows = 150
+
+        self.seed_rows = int(seed_rows)
+        
         self.__conn = None
         self.__db_conn = None
         self.__backup_compression = backup_compression
