@@ -6,6 +6,12 @@ from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionEr
 from types import SimpleNamespace
 
 
+def mock_getenv_old(name):
+    if name.startswith("PYNONYMIZER_"):
+        return None
+    return f"OLDENV_{name}"
+
+
 def test_pynonymize_missing_db_credentials():
     with pytest.raises(ArgumentValidationError):
         pynonymize(
@@ -49,6 +55,37 @@ class MainArgTests(unittest.TestCase):
             dry_run=True,
             verbose=True
         )
+    @patch("os.getenv", Mock(side_effect=mock_getenv_old))
+    def test_when_old_env_should_call_pynonymizer(self, pynonymize, create_parser, load_dotenv, find_dotenv):
+        parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
+        create_parser.return_value = parser_mock
+
+        cli([])
+        pynonymize.assert_called_once_with(
+            input_path="TEST_INPUT",
+            strategyfile_path="TEST_STRATEGYFILE",
+            output_path="TEST_OUTPUT",
+            db_type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_name="TEST_NAME",
+            db_user="TEST_USER",
+            db_password="TEST_PASSWORD",
+            fake_locale="TEST_LOCALE",
+            start_at_step="TEST_START_AT_STEP",
+            skip_steps=["TEST_SKIP_1", "TEST_SKIP_2"],
+            stop_at_step="TEST_STOP_AT_STEP",
+            seed_rows=None,
+            mssql_driver=None,
+            mssql_backup_compression=False,
+            mysql_dump_opts="--additional",
+            mysql_cmd_opts="--additional",
+            postgres_dump_opts="--additional",
+            postgres_cmd_opts="--additional",
+            dry_run=True,
+            verbose=True
+        )
+
     def test_dotenv_called(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
         dotenv should be called
