@@ -119,6 +119,7 @@ def create_parser():
     return parser
 
 def _warn_deprecated_env(old_env, new_env):
+    logger = logging.getLogger()
     if os.getenv(old_env):
         logger.warning("Environmental var $%s is deprecated. Use $%s", old_env, new_env)
 
