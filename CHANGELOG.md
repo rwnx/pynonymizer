@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 
+## [1.18.1] 2021-04-12
+- Fixed a fatal error when deprecated environment vars were used (See 1.2.0 notes for a full list).
+
 ## [1.18.0] 2021-04-11
 - Added Integration tests for MSSQL
 - Added Driver auto-selection for MSSQL. This should find the correct driver on different systems. Where multiple drivers are detected a warning will be issued, and the first driver will be selected. To override this behaviour, you can specify the driver manually using cli opt `--mssql-driver / $PYNONYMIZER_MSSQL_DRIVER`
