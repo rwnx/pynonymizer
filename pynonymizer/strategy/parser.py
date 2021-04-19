@@ -63,6 +63,11 @@ class StrategyParser:
                 return {
                     "type": UpdateColumnStrategyTypes.UNIQUE_LOGIN.value
                 }
+            elif column_config.startswith("(") and column_config.endswith(")"):
+                return {
+                    "type": UpdateColumnStrategyTypes.LITERAL.value,
+                    "value": column_config
+                }
 
             else:
                 # Can't match it to anything special, must be a fake_update type. move the value to the fake_type field

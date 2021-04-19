@@ -20,6 +20,7 @@ def simple_config():
                     "username": "unique_login",
                     "email": "unique_email",
                     "name": "empty",
+                    "raw": "(NOW())"
                 }
             },
             "secrets" : "delete",
@@ -91,14 +92,18 @@ def test_simple_parse_delete(simple_config, strategy_parser):
     assert table.strategy_type == TableStrategyTypes.DELETE
 
 
-    # need a better matching technique than checking list indicies.
-    """
-    assert accounts_strategy.column_strategies[0].strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+def test_simple_parse_columns(simple_config, strategy_parser):
+    strategy = strategy_parser.parse_config(simple_config)
 
-    assert accounts_strategy.column_strategies[1].strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN
-    assert accounts_strategy.column_strategies[2].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
-    assert accounts_strategy.column_strategies[3].strategy_type == UpdateColumnStrategyTypes.EMPTY
-    """
+    table = strategy.table_strategies[0]
+
+    # this is pretty rigid - it will also test strat order as well. not ideal!
+    assert table.column_strategies[0].strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE
+    assert table.column_strategies[1].strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN
+    assert table.column_strategies[2].strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL
+    assert table.column_strategies[3].strategy_type == UpdateColumnStrategyTypes.EMPTY
+    assert table.column_strategies[4].strategy_type == UpdateColumnStrategyTypes.LITERAL
+    assert table.column_strategies[4].value == "(NOW())"
 
 
 
