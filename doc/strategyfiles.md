@@ -16,6 +16,7 @@ tables:
       password: empty
       current_sign_in_ip: ipv4_public
       last_sign_in_ip: ipv4_public
+      created_at: ( NOW() )
       username: user_name
       email:
         type: fake_update
@@ -176,7 +177,8 @@ column_name:
   type: literal
   value: RAND()
 
-# Compact Syntax: Not available
+# Compact Syntax: add parentheses around your value
+column_name: ( RAND() )
 ```
 
 ##### Column Strategy: `fake_update`
