@@ -170,7 +170,7 @@ optional arguments:
   --start-at STEP       Choose a step to begin the process
                         (inclusive). [$PYNONYMIZER_START_AT]
   --only-step STEP      Choose one step to perform.
-                        [$PYNONYMIZER_ONLY]
+                        [$PYNONYMIZER_ONLY_STEP]
   --skip-steps STEP [STEP ...]
                         Choose one or more steps to skip.
                         [$PYNONYMIZER_SKIP_STEPS]
