@@ -41,6 +41,28 @@ def mock_backup_side_effect(statement, *args, **kwargs):
 
     return Mock()
 
+@patch("pyodbc.connect")
+@patch("pyodbc.drivers", return_value=['SQL Server', 'SQL Server Native Client 11.0', 'SQL Server Native Client RDA 11.0', 'ODBC Driver 17 for SQL Server', 'ODBC Driver 13 for SQL Server', 'Microsoft Access Driver (*.mdb, *.accdb)', 'Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)', 'Microsoft Access Text Driver (*.txt, *.csv)'])
+def test_detect_drivers__when_many_drivers__should_connect_with_highest_numbered(drivers, connect):
+    provider = MsSqlProvider("192.168.2.1", "username", "password", "dbname")
+    provider.drop_database()
+
+    connect.assert_any_call(
+        driver="{ODBC Driver 17 for SQL Server}",
+        server="192.168.2.1,1433",
+        uid="username",
+        pwd="password",
+        autocommit=True
+    )
+
+    
+
+
+
+@patch("pyodbc.drivers", return_value=[])
+def test_detect_drivers__when_no_drivers__raises_dependencyerror(drivers):
+    with pytest.raises(DependencyError):
+        MsSqlProvider("192.168.2.1", "username", "password", "dbname")
 
 def test_raise_on_remote_server_backup():
     provider = MsSqlProvider("192.168.2.1", "username", "password", "dbname", driver="driver")
