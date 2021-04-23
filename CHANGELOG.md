@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added a new compact syntax for column strategy `literal`. Surrounding your value in parentheses `()` will select the literal strategy. 
 - Improvements to mssql driver auto-selection process, to attempt to select a more recent driver by default.
 - Fixed a bug where on a system with no ODBC drivers, an incorrect error would be thrown.
+- Added new cli option `--only-step` to select a step to run. Useful for running anonymization routines without having to use start-at and stop-at simultaneously. e.g. `--only-step ANONYMIZE_DB`. 
 
 ## [1.18.1] 2021-04-12
 - Fixed a fatal error when deprecated environment vars were used (See 1.2.0 notes for a full list).

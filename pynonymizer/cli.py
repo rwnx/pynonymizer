@@ -69,9 +69,9 @@ def create_parser():
                         default=os.getenv("PYNONYMIZER_START_AT"), dest="start_at_step", choices=ProcessSteps.names(), metavar="STEP",
                         help="Choose a step to begin the process (inclusive). [$PYNONYMIZER_START_AT]")
 
-    parser.add_argument("--only",
+    parser.add_argument("--only-step",
                         required=False, choices=ProcessSteps.names(), metavar="STEP",
-                        default=os.getenv("PYNONYMIZER_ONLY"), dest="only_step",
+                        default=os.getenv("PYNONYMIZER_ONLY_STEP"), dest="only_step",
                         help="Choose one step to perform. [$PYNONYMIZER_ONLY]")
                     
     parser.add_argument("--skip-steps",
