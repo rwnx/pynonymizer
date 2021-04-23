@@ -69,6 +69,11 @@ def create_parser():
                         default=os.getenv("PYNONYMIZER_START_AT"), dest="start_at_step", choices=ProcessSteps.names(), metavar="STEP",
                         help="Choose a step to begin the process (inclusive). [$PYNONYMIZER_START_AT]")
 
+    parser.add_argument("--only-step",
+                        required=False, choices=ProcessSteps.names(), metavar="STEP",
+                        default=os.getenv("PYNONYMIZER_ONLY_STEP"), dest="only_step",
+                        help="Choose one step to perform. [$PYNONYMIZER_ONLY_STEP]")
+                    
     parser.add_argument("--skip-steps",
                         nargs="+", required=False, choices=ProcessSteps.names(), metavar="STEP",
                         default=(lambda: os.getenv("PYNONYMIZER_SKIP_STEPS").split() if os.getenv("PYNONYMIZER_SKIP_STEPS") else [])(), dest="skip_steps",
@@ -181,6 +186,7 @@ def cli(rawArgs=None):
             db_password=args.db_password,
             fake_locale=args.fake_locale,
             start_at_step=args.start_at_step,
+            only_step=args.only_step,
             skip_steps=args.skip_steps,
             stop_at_step=args.stop_at_step,
             seed_rows=args.seed_rows,

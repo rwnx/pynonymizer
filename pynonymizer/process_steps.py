@@ -97,8 +97,12 @@ class StepAction:
 
 
 class StepActionMap:
-    def __init__(self, start_at_step=ProcessSteps.START, stop_at_step=ProcessSteps.END, skip_steps=None, dry_run=False):
+    def __init__(self, start_at_step=ProcessSteps.START, stop_at_step=ProcessSteps.END, skip_steps=None, dry_run=False, only_step=None):
         action_map = {}
+        if only_step:
+            start_at_step = only_step
+            stop_at_step = only_step
+            
         if skip_steps is None:
             skip_steps = []
         for step in ProcessSteps:

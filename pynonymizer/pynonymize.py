@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def pynonymize(
         input_path=None, strategyfile_path=None, output_path=None, db_user=None, db_password=None, db_type=None,
-        db_host=None, db_name=None, db_port=None, fake_locale=None, start_at_step=None, stop_at_step=None, skip_steps=None,
+        db_host=None, db_name=None, db_port=None, fake_locale=None, only_step=None, start_at_step=None, stop_at_step=None, skip_steps=None,
         seed_rows=None, dry_run=False, verbose=False,
 
         **kwargs
@@ -26,6 +26,9 @@ def pynonymize(
         
     """
     # Default and Normalize args
+    if only_step is not None:
+        only_step = ProcessSteps.from_value(only_step)
+
     if start_at_step is None:
         start_at_step = ProcessSteps.START
     else:
@@ -48,7 +51,13 @@ def pynonymize(
     if seed_rows is None:
         seed_rows = 150
 
-    actions = StepActionMap(start_at_step, stop_at_step, skip_steps, dry_run=dry_run)
+    actions = StepActionMap(
+        start_at_step=start_at_step,
+        stop_at_step=stop_at_step,
+        skip_steps=skip_steps,
+        dry_run=dry_run,
+        only_step=only_step
+    )
 
     # Validate mandatory args (depends on step actions)
     validations = []
