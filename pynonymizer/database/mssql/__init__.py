@@ -9,6 +9,7 @@ import math
 import logging
 from tqdm import tqdm
 from pathlib import PureWindowsPath, PurePosixPath
+import re
 
 
 _FAKE_COLUMN_TYPES = {
@@ -20,6 +21,12 @@ _FAKE_COLUMN_TYPES = {
 
 _LOCAL_SERVER = "127.0.0.1"
 _DEFAULT_PORT = "1433"
+
+def _extract_driver_version(driver):
+    try:
+        return int( re.findall("\d+", driver)[0] )
+    except IndexError:
+        return 0
 
 class MsSqlProvider(DatabaseProvider):
     """
@@ -59,14 +66,16 @@ class MsSqlProvider(DatabaseProvider):
 
     def __detect_driver(self):
         import pyodbc
+        
         ms_drivers = [i for i in pyodbc.drivers() if "sql server" in i.lower()]
         if len(ms_drivers) < 1:
             raise DependencyError("Failed to detect any ODBC drivers on this system.")
 
         if len(ms_drivers) > 1:
-            self.logger.warning("multiple drivers detected for mssql: %s", ms_drivers)
+            self.logger.debug("multiple drivers detected for mssql: %s", ms_drivers)
 
-        return ms_drivers[0]
+        # Sort by the highest number (like, ODBC driver 14 for SQL server)
+        return sorted(ms_drivers, key=extract_version, reverse=True)[0]
 
     def __require_local_server(self):
         if self.db_host != _LOCAL_SERVER:
