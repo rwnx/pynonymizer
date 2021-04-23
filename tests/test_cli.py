@@ -244,6 +244,30 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
+    def test_pynonymize_only_step(self, StrategyParser, FakeColumnSet, get_provider, read_config):
+        pynonymize(
+            input_path="TEST_INPUT",
+            strategyfile_path="TEST_STRATEGYFILE",
+            output_path="TEST_OUTPUT",
+            db_type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_name="TEST_NAME",
+            db_user="TEST_USER",
+            db_password="TEST_PASSWORD",
+            fake_locale="TEST_LOCALE",
+            only_step="ANONYMIZE_DB"
+        )
+        StrategyParser.return_value.parse_config.assert_called()
+        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+
+        provider = get_provider.return_value
+        provider.create_database.assert_not_called()
+        provider.restore_database.assert_not_called()
+        provider.anonymize_database.assert_called()
+        provider.dump_database.assert_not_called()
+        provider.drop_database.assert_not_called()
+
     def test_pynonymize_stop_at_step(self, StrategyParser, FakeColumnSet, get_provider, read_config):
         pynonymize(
             input_path="TEST_INPUT",
