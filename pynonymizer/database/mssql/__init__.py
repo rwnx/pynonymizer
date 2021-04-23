@@ -69,13 +69,13 @@ class MsSqlProvider(DatabaseProvider):
         
         ms_drivers = [i for i in pyodbc.drivers() if "sql server" in i.lower()]
         if len(ms_drivers) < 1:
-            raise DependencyError("Failed to detect any ODBC drivers on this system.")
+            raise DependencyError("odbc", "Failed to detect any ODBC drivers on this system.")
 
         if len(ms_drivers) > 1:
             self.logger.debug("multiple drivers detected for mssql: %s", ms_drivers)
 
         # Sort by the highest number (like, ODBC driver 14 for SQL server)
-        return sorted(ms_drivers, key=extract_version, reverse=True)[0]
+        return sorted(ms_drivers, key=_extract_driver_version, reverse=True)[0]
 
     def __require_local_server(self):
         if self.db_host != _LOCAL_SERVER:
