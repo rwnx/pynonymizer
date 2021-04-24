@@ -24,7 +24,7 @@ _DEFAULT_PORT = "1433"
 
 def _extract_driver_version(driver):
     try:
-        return int( re.findall("\d+", driver)[0] )
+        return int( re.findall(r"\d+", driver)[0] )
     except IndexError:
         return 0
 
