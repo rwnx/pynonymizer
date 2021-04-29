@@ -5,6 +5,10 @@ scripts:
     - SELECT * FROM customer LIMIT 1;
     
 tables:
+  film:
+    columns:
+      description: bs
+      title: word
   customer:
     columns:
       first_name: first_name
