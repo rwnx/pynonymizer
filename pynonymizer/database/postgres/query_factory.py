@@ -24,17 +24,14 @@ def _get_column_subquery(seed_table_name, column_strategy):
     if column_strategy.strategy_type == UpdateColumnStrategyTypes.EMPTY:
         return "('')"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
-        return f"( SELECT CONCAT({_RAND_MD5}, '@', {_RAND_MD5}, '.com') WHERE \"updatetarget\"=\"updatetarget\" )"
+        return f"( SELECT CONCAT({_RAND_MD5}, '@', {_RAND_MD5}, '.com') ORDER BY MD5(\"updatetarget\"::text) LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
-        return f"( SELECT {_RAND_MD5} WHERE \"updatetarget\"=\"updatetarget\" )"
+        return f"( SELECT {_RAND_MD5} ORDER BY MD5(\"updatetarget\"::text) LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-        # Add a dummy "updatetarget" where clause to fool the postgres optimizer into running the subquery on every row
-        # instead of once for the whole query
-        # See Also https://www.simononsoftware.com/problem-with-random-in-postgresql-subselect/
         column = column_strategy.qualifier
         if column_strategy.sql_type:
             column += "::" + column_strategy.sql_type
-        return f"( SELECT {column} FROM {seed_table_name} WHERE \"updatetarget\"=\"updatetarget\" ORDER BY RANDOM() LIMIT 1)"
+        return f"( SELECT {column} FROM {seed_table_name} ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
