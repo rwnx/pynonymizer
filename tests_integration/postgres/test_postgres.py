@@ -37,7 +37,7 @@ def test_anonymize_column_uniqueness():
         "pynonymizer",
         "-i", "pagila.sql.gz",
         "-o", "basic.sql",
-        "-s", "sakila.yml",
+        "-s", "pagila.yml",
         "-t", "postgres",
         "--db-name", "test_postgres",
         "--stop-at", "ANONYMIZE_DB"
