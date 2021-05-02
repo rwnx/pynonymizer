@@ -38,7 +38,7 @@ def test_basic():
     # some very rough output checks
     assert os.path.exists(tmp_output)
 
-def test_anonymize():
+def test_anonymize_column_uniqueness():
     output = subprocess.check_output([
         "pynonymizer",
         "-i", tmp_input,

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Fixed a bug where postgres tables could not be anonymized if they contained a json or jsonb column.
 
 ## [1.19.0] 2021-04-24
 - Added a new compact syntax for column strategy `literal`. Surrounding your value in parentheses `()` will select the literal strategy. 
