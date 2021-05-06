@@ -1,13 +1,15 @@
 #!/bin/bash -e
 
 set -e
+source /etc/lsb-release
+
 MSSQL_PID='developer'
 
 echo Adding Microsoft repositories...
 sudo curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-repoargs="$(curl https://packages.microsoft.com/config/ubuntu/18.04/mssql-server-2019.list)"
+repoargs="$(curl https://packages.microsoft.com/config/ubuntu/$DISTRIB_RELEASE/mssql-server-2019.list)"
 sudo add-apt-repository "${repoargs}"
-repoargs="$(curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list)"
+repoargs="$(curl https://packages.microsoft.com/config/ubuntu/$DISTRIB_RELEASE/prod.list)"
 sudo add-apt-repository "${repoargs}"
 
 echo Running apt-get update -y...
