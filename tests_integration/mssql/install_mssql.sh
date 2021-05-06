@@ -17,7 +17,9 @@ echo Installing SQL Server...
 sudo apt-get install -y mssql-server
 
 echo Running mssql-conf setup...
-sudo /opt/mssql/bin/mssql-conf -n setup accept-eula
+sudo MSSQL_SA_PASSWORD=$MSSQL_SA_PASSWORD \
+     MSSQL_PID=$MSSQL_PID \
+     /opt/mssql/bin/mssql-conf -n setup accept-eula
 
 echo Installing mssql-tools and unixODBC developer...
 sudo ACCEPT_EULA=Y apt-get install -y mssql-tools unixodbc-dev
