@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+set -e
 MSSQL_PID='developer'
 
 echo Adding Microsoft repositories...
