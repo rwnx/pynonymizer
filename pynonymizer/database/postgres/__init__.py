@@ -129,7 +129,7 @@ class PostgreSqlProvider(DatabaseProvider):
 
     def restore_database(self, input_path):
         """
-        Feed a `pg_dump` dumpfile to the `pg_restore` binary on stdin.
+        Feed a `pg_dump` dumpfile to the `psql` binary on stdin.
         :param input_path:
         :return:
         """
