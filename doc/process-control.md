@@ -13,6 +13,8 @@ Pynonymize offers a few of options for controlling the process.
                         [$PYNONYMIZER_SKIP_STEPS]
   --stop-at STEP        Choose a step to stop at (inclusive).
                         [$PYNONYMIZER_STOP_AT]
+  --only-step STEP      Choose one step to perform.
+                        [$PYNONYMIZER_ONLY_STEP]
 ```
 
 ## Steps
@@ -29,26 +31,15 @@ Pynonymizer's process is broken into steps:
 ## Control
 Essentially: steps can be run, or they can be skipped. 
 
-There are 3 ways a step can be skipped:
+There are a few ways a step can be skipped:
   - `--start-at` is set to a value *after* the current step
   - `--stop-at` is set to a step *before* the current step
   - `--skip-steps` includes the current step
+  - `--only-step` does *not* include the current step.
   
  If a step is skipped it will be logged as a warning, but the process will complete successfully as long as the remaining steps do.
  
 ## Examples
-
-### Keeping the database after anonymization
-```
-pynonymizer [...args] --stop-at DUMP_DB
-```
-
-### Anonymize an existing database only
-```
-pynonymizer [...args] --db-name database_name --start-at ANONYMIZE_DB --stop-at ANONYMIZE_DB
-```
-
-### Restore into existing DB (there are probably better tools for this)
-```
-pynonymizer [...args] --stop-at RESTORE_DB
-```
+* Keep a database afer anonymization: `pynonymizer [...] --stop-at DUMP_DB`
+* Anonymize `pynonymizer [...] --db-name sakila --only-step ANONYMIZE_DB`
+* Restore `pynonymizer [...] --db-name sakila --only-step RESTORE_DB`
