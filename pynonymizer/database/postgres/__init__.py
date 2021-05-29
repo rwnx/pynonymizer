@@ -11,8 +11,8 @@ from pynonymizer.strategy.table import TableStrategyTypes
 
 class PostgreSqlProvider(DatabaseProvider):
     """
-    A command-line based postgres provider. Uses `psql` and `psqldump`,
-    Because of the efficiency of piping mass amounts of sql into the command-line client.
+    A command-line based postgres provider. Uses `psql` and `pg_dump`,
+    because of the efficiency of piping mass amounts of sql into the command-line client.
     Unfortunately, this implementation provides limited feedback when things go wrong.
     """
     __CHUNK_SIZE = 8192
@@ -129,7 +129,7 @@ class PostgreSqlProvider(DatabaseProvider):
 
     def restore_database(self, input_path):
         """
-        Feed a mysqldump dumpfile to the mysql binary on stdin.
+        Feed a `pg_dump` dumpfile to the `psql` binary on stdin.
         :param input_path:
         :return:
         """
