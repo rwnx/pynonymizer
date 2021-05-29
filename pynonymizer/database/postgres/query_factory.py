@@ -28,10 +28,10 @@ def _get_column_subquery(seed_table_name, column_strategy):
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
         return f"( SELECT {_RAND_MD5} ORDER BY MD5(\"updatetarget\"::text) LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
-        column = column_strategy.qualifier
+        column = f"\"{column_strategy.qualifier}\""
         if column_strategy.sql_type:
             column += "::" + column_strategy.sql_type
-        return f"( SELECT {column} FROM {seed_table_name} ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1)"
+        return f"( SELECT {column} FROM \"{seed_table_name}\" ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1)"
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
@@ -50,7 +50,7 @@ def _escape_sql_value(value):
 
 
 def _get_qualified_table_name(schema, table):
-    return f"{schema}.{table}" if schema else table
+    return f"\"{schema}\".\"{table}\"" if schema else f"\"{table}\""
 
 
 def get_truncate_table(table_strategy):
@@ -68,7 +68,7 @@ def get_create_seed_table(table_name, qualifier_map):
 
     create_columns = [f"{qualifier} {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
 
-    return "CREATE TABLE {} ({});".format(table_name, ",".join(create_columns) )
+    return "CREATE TABLE \"{}\" ({});".format(table_name, ",".join(create_columns) )
 
 
 def get_drop_seed_table(table_name):
@@ -80,7 +80,7 @@ def get_insert_seed_row(table_name, qualifier_map):
     column_names = ",".join( [f"{qualifier}" for qualifier in qualifier_map.keys()] )
     column_values = ",".join( [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()] )
 
-    return "INSERT INTO {}({}) VALUES ({});".format(table_name, column_names, column_values)
+    return "INSERT INTO \"{}\" ({}) VALUES ({});".format(table_name, column_names, column_values)
 
 
 def get_create_database(database_name):

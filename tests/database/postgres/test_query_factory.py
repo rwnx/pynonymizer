@@ -24,15 +24,15 @@ and the sql returned should be very stable.
 
 
 def test_get_truncate_table(simple_strategy_trunc):
-    assert query_factory.get_truncate_table(simple_strategy_trunc) == "TRUNCATE TABLE truncate_table CASCADE;"
+    assert query_factory.get_truncate_table(simple_strategy_trunc) == "TRUNCATE TABLE \"truncate_table\" CASCADE;"
 
 # deletes are identical to truncates because postgres has cascading truncs
 def test_get_delete_table(simple_strategy_delete):
-    assert query_factory.get_delete_table(simple_strategy_delete) == "TRUNCATE TABLE delete_table CASCADE;"
+    assert query_factory.get_delete_table(simple_strategy_delete) == "TRUNCATE TABLE \"delete_table\" CASCADE;"
 
 
 def test_get_schema_truncate_table(simple_strategy_schema_trunc):
-    assert query_factory.get_truncate_table(simple_strategy_schema_trunc) == "TRUNCATE TABLE schema.truncate_schema_table CASCADE;"
+    assert query_factory.get_truncate_table(simple_strategy_schema_trunc) == "TRUNCATE TABLE \"schema\".\"truncate_schema_table\" CASCADE;"
 
 
 def test_get_drop_seed_table():
@@ -154,12 +154,12 @@ def unsupported_column_strategy():
 def test_get_insert_seed_row(qualifier_column_map):
     insert_seed_row = query_factory.get_insert_seed_row("seed_table", qualifier_column_map)
 
-    assert insert_seed_row == "INSERT INTO seed_table(first_name,last_name,first_name_test_arg_5) " \
+    assert insert_seed_row == "INSERT INTO \"seed_table\" (first_name,last_name,first_name_test_arg_5) " \
                               "VALUES ('test_value',645,'test_value');"
 
 
 def test_get_create_seed_table(qualifier_column_map):
-    assert query_factory.get_create_seed_table("seed_table", qualifier_column_map) == "CREATE TABLE seed_table (first_name VARCHAR(65535),last_name INT,first_name_test_arg_5 VARCHAR(65535));"
+    assert query_factory.get_create_seed_table("seed_table", qualifier_column_map) == "CREATE TABLE \"seed_table\" (first_name VARCHAR(65535),last_name INT,first_name_test_arg_5 VARCHAR(65535));"
 
 
 def test_get_create_seed_table_no_columns():
@@ -182,10 +182,10 @@ def test_get_update_table_fake_column(column_strategy_list):
     update_table_all = query_factory.get_update_table("seed_table", UpdateColumnsTableStrategy("anon_table", column_strategy_list))
 
     assert update_table_all == [
-            "UPDATE anon_table AS \"updatetarget\" SET "
-            "\"test_column1\" = ( SELECT first_name FROM seed_table ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1),"
-            "\"test_column2\" = ( SELECT last_name FROM seed_table ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1),"
-            "\"test_column7\" = ( SELECT user_id::UUID FROM seed_table ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1),"
+            "UPDATE \"anon_table\" AS \"updatetarget\" SET "
+            "\"test_column1\" = ( SELECT \"first_name\" FROM \"seed_table\" ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1),"
+            "\"test_column2\" = ( SELECT \"last_name\" FROM \"seed_table\" ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1),"
+            "\"test_column7\" = ( SELECT \"user_id\"::UUID FROM \"seed_table\" ORDER BY RANDOM(), MD5(\"updatetarget\"::text) LIMIT 1),"
             "\"test_column3\" = (''),"
             "\"test_column4\" = ( SELECT md5(random()::text) ORDER BY MD5(\"updatetarget\"::text) LIMIT 1),"
             "\"test_column5\" = ( SELECT CONCAT(md5(random()::text), '@', md5(random()::text), '.com') ORDER BY MD5(\"updatetarget\"::text) LIMIT 1),"
@@ -200,5 +200,5 @@ def test_get_update_table_literal(literal_strategy):
     ]))
 
     assert result_queries == [
-        "UPDATE anon_table AS \"updatetarget\" SET \"literal_column\" = RANDOM();"
+        "UPDATE \"anon_table\" AS \"updatetarget\" SET \"literal_column\" = RANDOM();"
     ]
