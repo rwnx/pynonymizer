@@ -267,7 +267,7 @@ tables:
 ```
 ## Key: Locale
 Some Faker providers support localization. Use this key to localize the generators during the 
-anonymization process. This option is identical to the cli option `-l`/`--locale` (now deprecated)
+anonymization process. This option is identical to the cli option `-l`/`--fake-locale` (now deprecated)
 
 You can see localized providers here https://faker.readthedocs.io/en/master/locales.html
 ```yaml
