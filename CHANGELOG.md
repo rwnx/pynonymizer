@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added Custom Providers to strategyfiles. You can now include custom Faker providers in your
+  strategyfiles, using the `providers` top-level key.
+- Added Locale key `locale`(top-level) to strategyfiles. This is designed to replace the `-l`/`--fake-locale` CLI option. 
+- Deprecated `-l`/`--fake-locale` option. You should use the `locale` key in your strategyfile. 
+  This will be removed in a future release.
 - Fixed a bug in postgres where table and column names were not consistently escaped. 
 - Fixed some documentation errors.
 

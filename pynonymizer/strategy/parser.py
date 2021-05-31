@@ -1,3 +1,5 @@
+
+from pynonymizer.fake import FakeColumnGenerator
 from pynonymizer.strategy.exceptions import UnknownColumnStrategyError, UnknownTableStrategyError, ConfigSyntaxError
 from pynonymizer.strategy.table import UpdateColumnsTableStrategy, TruncateTableStrategy, DeleteTableStrategy, TableStrategyTypes
 from pynonymizer.strategy.update_column import (
@@ -16,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 class StrategyParser:
-    def __init__(self, fake_seeder):
-        self.fake_seeder = fake_seeder
+    def __init__(self, fake_locale):
+        self.fake_locale = fake_locale
 
     @staticmethod
     def __normalize_table_config(table_config):
@@ -79,7 +81,7 @@ class StrategyParser:
             return column_config
 
     @staticmethod
-    def __normalize_config(config):
+    def __normalize_table_list(config):
         # if tables is given in dict form, normalize to list with table_name key
         if "tables" in config and isinstance(config["tables"], dict):
             tables_list = []
@@ -157,17 +159,22 @@ class StrategyParser:
 
 
 
-    def parse_config(self, raw_config):
+    def parse_config(self, raw_config, locale_override=None):
         """
         parse a configuration dict into a DatabaseStrategy.
         :param raw_config:
         :return:
         """
-        # Deepcopy raw_config to avoid normalization mutability issues
-        config = StrategyParser.__normalize_config(deepcopy(raw_config))
-        table_strategies = []
-        for table_config in config["tables"]:
-            table_strategies.append(self.__parse_table(table_config))
+        config = StrategyParser.__normalize_table_list(deepcopy(raw_config))
+
+        locale = config.get("locale", None)
+        if locale_override:
+            locale = locale_override
+
+        providers = config.get("providers", [])
+        self.fake_seeder = FakeColumnGenerator(locale=locale, providers=providers)
+
+        table_strategies = [self.__parse_table(table_config) for table_config in config["tables"]]
 
         before_scripts = None
         after_scripts = None

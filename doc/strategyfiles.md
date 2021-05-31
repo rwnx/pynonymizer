@@ -244,6 +244,37 @@ To get you started, here's a list of some useful generators.
 * `word`
 * `credit_card_number`
 
+Custom generators can be managed using the `providers` key. 
+
+## Key: Providers
+Providers is a list of fully qualified import paths for faker providers that this strategy 
+depends on. Examples might be providers you've created or from community providers in the python path e.g. `faker_airtravel.AirtravelProvider`. 
+
+You should specify the full import path of the provider, as would be passed to the 
+`Faker#add_provider` method. Pynonymizer will import and manage the rest. 
+
+You can then use the new data types as you would any other generator in your strategyfile. 
+
+Pynonymizer CLI will automatically include the current working directory in the path for importing custom provider modules. 
+
+```yaml
+providers:
+  - faker_airtravel.AirtravelProvider
+  - some_local_module.MySpecialProvider
+
+tables:
+  table_name:
+    columns:
+      column_name: my_generator_type
+```
+## Key: Locale
+Some Faker providers support localization. Use this key to localize the generators during the 
+anonymization process. This option is identical to the cli option `-l`/`--fake-locale` (now deprecated)
+
+You can see localized providers here https://faker.readthedocs.io/en/master/locales.html
+```yaml
+locale: en_GB
+```
 
 ## Key: Scripts
 Scripts is a top-level key describing SQL statements to be run during the anonymization process. These scripts can also return results that will be entered into the logs.

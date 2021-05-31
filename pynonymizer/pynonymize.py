@@ -1,4 +1,3 @@
-import yaml
 import logging
 from pynonymizer.database import get_temp_db_name, get_provider
 from pynonymizer.fake import FakeColumnGenerator
@@ -92,11 +91,10 @@ def pynonymize(
 
     # init strategy as it relies on I/O - fail fast here preferred to after restore
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
-        fake_seeder = FakeColumnGenerator(fake_locale)
-        strategy_parser = StrategyParser(fake_seeder)
+        strategy_parser = StrategyParser(fake_locale)
 
         logger.debug("loading strategyfile %s...", strategyfile_path)
-        strategy = strategy_parser.parse_config(read_config(strategyfile_path))
+        strategy = strategy_parser.parse_config(read_config(strategyfile_path), locale_override=fake_locale)
 
     # Discover db-type kwargs
     # mssql_backup_option -> backup_option and pass these to the constructor

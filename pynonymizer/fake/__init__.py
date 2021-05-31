@@ -2,6 +2,7 @@ from faker import Faker
 import logging
 import inspect
 from enum import Enum
+import importlib
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +55,14 @@ class UnsupportedFakeTypeError(Exception):
 
 
 class FakeColumnGenerator:
-    def __init__(self, locale="en_GB"):
+    def __init__(self, locale=None, providers=[]):
         self.__faker = Faker(locale)
+
+        for provider_path in providers:
+            module_path, cls_name = provider_path.rsplit(".", 1)
+            imported = importlib.import_module(module_path)
+            imported_cls = getattr(imported, cls_name)
+            self.__faker.add_provider(imported_cls)
 
     def supports(self, method_name, additional_kwargs=None):
         additional_kwargs = {} if additional_kwargs is None else additional_kwargs
