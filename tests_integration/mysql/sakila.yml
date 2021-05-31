@@ -1,7 +1,5 @@
-locale: "en_US"
-
 providers:
-  - .custom_provider.CustomProvider
+  - custom_provider.CustomProvider
 
 scripts:
   before: 

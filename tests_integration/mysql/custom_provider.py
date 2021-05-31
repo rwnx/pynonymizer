@@ -1,9 +1,12 @@
 from faker.providers import BaseProvider
-
-from faker.providers.person import Provider as PersonProvider
+from faker import Faker
 
 class CustomProvider(BaseProvider):
-  def name_email():
-    fname = PersonProvider.first_name()
-    lname = PersonProvider.last_name()
-    return f"{fname}_{lname} <{fname}.{lname}@example.com>"
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.faker = Faker()
+
+  def name_email(self):
+    fname = self.faker.first_name()
+    lname = self.faker.last_name()
+    return f"{fname} {lname} <{fname}.{lname}@example.com>"
