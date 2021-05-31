@@ -55,7 +55,7 @@ class UnsupportedFakeTypeError(Exception):
 
 
 class FakeColumnGenerator:
-    def __init__(self, locale="en_GB", providers=[]):
+    def __init__(self, locale=None, providers=[]):
         self.__faker = Faker(locale)
 
         for provider_path in providers:
