@@ -162,6 +162,8 @@ def cli(rawArgs=None):
         logger.warning("Positional STRATEGYFILE is deprecated. Use the -s/--strategy option instead.")
     if args.legacy_output:
         logger.warning("Positional OUTPUT is deprecated. Use the -o/--output option instead.")
+    if args.locale:
+        logger.warning("The locale option -l/--locale is deprecated. Use the locale: key in your strategyfile instead.")
 
     _warn_deprecated_env("DB_TYPE", "PYNONYMIZER_DB_TYPE")
     _warn_deprecated_env("DB_HOST", "PYNONYMIZER_DB_HOST")
