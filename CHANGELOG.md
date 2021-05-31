@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+## [1.21.0] 2021-05-31
 - Added Custom Providers to strategyfiles. You can now include custom Faker providers in your
   strategyfiles, using the `providers` top-level key.
 - Added Locale key `locale`(top-level) to strategyfiles. This is designed to replace the `-l`/`--fake-locale` CLI option. 
