@@ -1,3 +1,8 @@
+locale: "en_US"
+
+providers:
+  - custom_provider.CustomProvider
+
 scripts:
   before: 
     - SELECT * FROM actor LIMIT 1;
@@ -7,7 +12,7 @@ scripts:
 tables:
   film:
     columns:
-      description: bs
+      description: name_email
       title: unique_login
   actor:
     columns:
