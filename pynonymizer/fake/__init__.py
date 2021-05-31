@@ -60,7 +60,7 @@ class FakeColumnGenerator:
 
         for provider_path in providers:
             module_path, cls_name = provider_path.rsplit(".", 1)
-            imported = importlib.import_module(module_path, package="")
+            imported = importlib.import_module(module_path)
             imported_cls = getattr(imported, cls_name)
             self.__faker.add_provider(imported_cls)
 
