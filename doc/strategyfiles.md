@@ -253,12 +253,14 @@ depends on. Examples might be providers you've created or from community provide
 You should specify the full import path of the provider, as would be passed to the 
 `Faker#add_provider` method. Pynonymizer will import and manage the rest. 
 
-You can then use the new data types as you would any other generator in your strategyfile.
+You can then use the new data types as you would any other generator in your strategyfile. 
+
+Pynonymizer CLI will automatically include the current working directory in the path for importing custom provider modules. 
 
 ```yaml
 providers:
   - faker_airtravel.AirtravelProvider
-  - .some_relative_module.MySpecialProvider
+  - some_local_module.MySpecialProvider
 
 tables:
   table_name:

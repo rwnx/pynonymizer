@@ -174,7 +174,10 @@ def cli(rawArgs=None):
     
     if args.verbose:
         console_handler.setLevel(logging.DEBUG)
-        
+
+    # Add local project dir to path in case of custom provider imports     
+    if "." not in sys.path:
+        sys.path.append(".")
     try:
         pynonymize(
             input_path=input,

@@ -3,7 +3,6 @@ import logging
 import inspect
 from enum import Enum
 import importlib
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +57,6 @@ class UnsupportedFakeTypeError(Exception):
 class FakeColumnGenerator:
     def __init__(self, locale="en_GB", providers=[]):
         self.__faker = Faker(locale)
-        if "." not in sys.path:
-            sys.path.append(".")
 
         for provider_path in providers:
             module_path, cls_name = provider_path.rsplit(".", 1)
