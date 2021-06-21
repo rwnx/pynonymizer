@@ -167,7 +167,7 @@ class StrategyParser:
         """
         config = StrategyParser.__normalize_table_list(deepcopy(raw_config))
 
-        locale = config.get("locale", None)
+        locale = config.get("locale", "en_GB")
         if locale_override:
             locale = locale_override
 

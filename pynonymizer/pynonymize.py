@@ -44,9 +44,6 @@ def pynonymize(
     if db_type is None:
         db_type = "mysql"
 
-    if fake_locale is None:
-        fake_locale = "en_GB"
-
     if seed_rows is None:
         seed_rows = 150
 

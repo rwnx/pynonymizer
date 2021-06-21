@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Fixed a bug in the config parser that would always override the locale with either the cli argument or the fallback
+
 ## [1.21.0] 2021-05-31
 - Added Custom Providers to strategyfiles. You can now include custom Faker providers in your
   strategyfiles, using the `providers` top-level key.
