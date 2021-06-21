@@ -1,7 +1,7 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
-from pynonymizer.fake import UnsupportedFakeTypeError
+from pynonymizer.fake import UnsupportedFakeTypeError, FakeColumnGenerator
 from pynonymizer.strategy import database
 from pynonymizer.strategy.exceptions import UnknownTableStrategyError, UnknownColumnStrategyError, ConfigSyntaxError
 from pynonymizer.strategy.table import TableStrategyTypes
@@ -255,3 +255,50 @@ def test_table_raises_when_given_unrelated_key(strategy_parser):
                 }
             }
         })
+
+
+def test_locale_set_in_strategy_file_strategy_parse(strategy_parser):
+    with patch.object(FakeColumnGenerator, "__init__", return_value=None) as mocked_fake_column_generator:
+        strategy_parser.parse_config(
+            {
+                "tables": [
+                    {
+                        "table_name": "table1",
+                        "type": "truncate",
+                    },
+                ],
+                "locale": "de_DE"
+            }
+        )
+        mocked_fake_column_generator.assert_called_with(locale='de_DE', providers=[])
+
+
+def test_locale_not_set_in_strategy_file_strategy_parse(strategy_parser):
+    with patch.object(FakeColumnGenerator, "__init__", return_value=None) as mocked_fake_column_generator:
+        strategy_parser.parse_config(
+            {
+                "tables": [
+                    {
+                        "table_name": "table1",
+                        "type": "truncate",
+                    },
+                ]
+            }
+        )
+        mocked_fake_column_generator.assert_called_with(locale='en_GB', providers=[])
+
+
+def test_locale_set_via_argument_strategy_parse(strategy_parser):
+    with patch.object(FakeColumnGenerator, "__init__", return_value=None) as mocked_fake_column_generator:
+        strategy_parser.parse_config(
+            {
+                "tables": [
+                    {
+                        "table_name": "table1",
+                        "type": "truncate",
+                    },
+                ]
+            },
+            locale_override="ja_JP"
+        )
+        mocked_fake_column_generator.assert_called_with(locale='ja_JP', providers=[])
