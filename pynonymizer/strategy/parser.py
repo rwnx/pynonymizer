@@ -49,8 +49,11 @@ class StrategyParser:
 
     @staticmethod
     def __normalize_column_config(column_config):
-        # If the column config doesn't have a "type" specified, it needs to be determined automatically.
-        if "type" not in column_config:
+        if isinstance(column_config, dict) and "type" in column_config:
+            return column_config
+
+        # If the column config is not a dict with "type" specified, the type needs to be determined automatically.
+        else:
             if column_config == "empty":
                 return {
                     "type": UpdateColumnStrategyTypes.EMPTY.value
@@ -77,8 +80,6 @@ class StrategyParser:
                     "type": UpdateColumnStrategyTypes.FAKE_UPDATE.value,
                     "fake_type": column_config
                 }
-        else:
-            return column_config
 
     @staticmethod
     def __normalize_table_list(config):
@@ -102,7 +103,7 @@ class StrategyParser:
             for column_name, column_config in columns_config.items():
                 normalized_column = StrategyParser.__normalize_column_config(column_config)
                 normalized_column["column_name"] = column_name
-                column_list.append( normalized_column )
+                column_list.append(normalized_column)
 
             return column_list
 
