@@ -142,6 +142,20 @@ def test_unknown_column_strategy(strategy_parser):
         })
 
 
+def test_column_strategy_literal_containing_type(strategy_parser):
+    strategy_parser.parse_config({
+        "tables": {
+            "accounts": {
+                "columns": {
+                    "current_sign_in_ip": "(content_type_id)"  # Valid literal strategy shorthand containing "type"
+                }
+            },
+
+            "transactions": "truncate"
+        }
+    })
+
+
 def test_unknown_table_strategy_bad_dict(strategy_parser):
     with pytest.raises(UnknownTableStrategyError):
         strategy_parser.parse_config({
