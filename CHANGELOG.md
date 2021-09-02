@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Fixed a bug in the config parser where literal column strategies that contained `type` threw an error
 
 ## [1.21.1] 2021-06-22
 - Fixed a bug in the config parser that would always override the locale with either the cli argument or the fallback
