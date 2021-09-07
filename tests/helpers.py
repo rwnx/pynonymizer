@@ -19,8 +19,7 @@ class SuperdictOf:
         return self.required_dict.items() <= actual.items()
 
     def __ne__(self, actual):
-        return not(self.required_dict.items() <= actual.items())
-
+        return not (self.required_dict.items() <= actual.items())
 
 
 class ComparableRegex:
@@ -45,4 +44,4 @@ def not_raises(exception):
 
 
 def list_rindex(alist, value):
-  return len(alist) - alist[-1::-1].index(value) - 1
+    return len(alist) - alist[-1::-1].index(value) - 1

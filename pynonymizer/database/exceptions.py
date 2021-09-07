@@ -4,6 +4,7 @@ from pynonymizer.exceptions import PynonymizerError
 class DatabaseProviderError(PynonymizerError):
     pass
 
+
 class DependencyError(DatabaseProviderError):
     def __init__(self, name, message):
         self.name = name

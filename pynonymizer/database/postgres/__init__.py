@@ -15,15 +15,26 @@ class PostgreSqlProvider(DatabaseProvider):
     because of the efficiency of piping mass amounts of sql into the command-line client.
     Unfortunately, this implementation provides limited feedback when things go wrong.
     """
+
     __CHUNK_SIZE = 8192
     logger = logging.getLogger(__name__)
 
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, cmd_opts=None, dump_opts=None):
+    def __init__(
+        self,
+        db_host,
+        db_user,
+        db_pass,
+        db_name,
+        db_port=None,
+        seed_rows=None,
+        cmd_opts=None,
+        dump_opts=None,
+    ):
         if db_port is None:
             db_port = "5432"
         if db_host is None:
             db_host = "127.0.0.1"
-        
+
         if cmd_opts is None:
             cmd_opts = ""
         if dump_opts is None:
@@ -40,16 +51,34 @@ class PostgreSqlProvider(DatabaseProvider):
 
         self.seed_rows = int(seed_rows)
 
-        self.__runner = execution.PSqlCmdRunner(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, additional_opts=cmd_opts)
-        self.__dumper = execution.PSqlDumpRunner(db_host=db_host, db_user=db_user, db_pass=db_pass, db_name=db_name, db_port=db_port, additional_opts=dump_opts)
+        self.__runner = execution.PSqlCmdRunner(
+            db_host=db_host,
+            db_user=db_user,
+            db_pass=db_pass,
+            db_name=db_name,
+            db_port=db_port,
+            additional_opts=cmd_opts,
+        )
+        self.__dumper = execution.PSqlDumpRunner(
+            db_host=db_host,
+            db_user=db_user,
+            db_pass=db_pass,
+            db_name=db_name,
+            db_port=db_port,
+            additional_opts=dump_opts,
+        )
 
     def __seed(self, qualifier_map):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
-        for i in tqdm(range(0, self.seed_rows), desc="Inserting seed data", unit="rows"):
+        for i in tqdm(
+            range(0, self.seed_rows), desc="Inserting seed data", unit="rows"
+        ):
             self.logger.debug(f"Inserting seed row {i}")
-            self.__runner.db_execute(query_factory.get_insert_seed_row(SEED_TABLE_NAME, qualifier_map))
+            self.__runner.db_execute(
+                query_factory.get_insert_seed_row(SEED_TABLE_NAME, qualifier_map)
+            )
 
     def __estimate_dumpsize(self):
         """
@@ -66,11 +95,11 @@ class PostgreSqlProvider(DatabaseProvider):
             return None
 
     def __read_until_empty_byte(self, data):
-        return iter(lambda: data.read(self.__CHUNK_SIZE), b'')
+        return iter(lambda: data.read(self.__CHUNK_SIZE), b"")
 
     def __run_scripts(self, script_list, title=""):
         for i, script in enumerate(script_list):
-            self.logger.info(f"Running {title} script #{i} \"{script[:50]}\"")
+            self.logger.info(f'Running {title} script #{i} "{script[:50]}"')
             self.logger.info(self.__runner.db_execute(script))
 
     def create_database(self):
@@ -91,7 +120,9 @@ class PostgreSqlProvider(DatabaseProvider):
 
         if len(qualifier_map) > 0:
             self.logger.info("creating seed table with %d columns", len(qualifier_map))
-            create_seed_table_sql = query_factory.get_create_seed_table(SEED_TABLE_NAME, qualifier_map)
+            create_seed_table_sql = query_factory.get_create_seed_table(
+                SEED_TABLE_NAME, qualifier_map
+            )
             self.__runner.db_execute(create_seed_table_sql)
 
             self.logger.info("Inserting seed data")
@@ -102,19 +133,33 @@ class PostgreSqlProvider(DatabaseProvider):
         table_strategies = database_strategy.table_strategies
         self.logger.info("Anonymizing %d tables", len(table_strategies))
 
-        with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
+        with tqdm(
+            desc="Anonymizing database", total=len(table_strategies)
+        ) as progressbar:
             for table_strategy in table_strategies:
                 if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-                    progressbar.set_description("Truncating {}".format(table_strategy.qualified_name))
-                    self.__runner.db_execute(query_factory.get_truncate_table(table_strategy))
+                    progressbar.set_description(
+                        "Truncating {}".format(table_strategy.qualified_name)
+                    )
+                    self.__runner.db_execute(
+                        query_factory.get_truncate_table(table_strategy)
+                    )
 
                 elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
-                    progressbar.set_description("Deleting {}".format(table_strategy.qualified_name))
-                    self.__runner.db_execute(query_factory.get_delete_table(table_strategy))
+                    progressbar.set_description(
+                        "Deleting {}".format(table_strategy.qualified_name)
+                    )
+                    self.__runner.db_execute(
+                        query_factory.get_delete_table(table_strategy)
+                    )
 
                 elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
-                    progressbar.set_description("Anonymizing {}".format(table_strategy.qualified_name))
-                    statements = query_factory.get_update_table(SEED_TABLE_NAME, table_strategy)
+                    progressbar.set_description(
+                        "Anonymizing {}".format(table_strategy.qualified_name)
+                    )
+                    statements = query_factory.get_update_table(
+                        SEED_TABLE_NAME, table_strategy
+                    )
                     self.__runner.db_execute(statements)
 
                 else:
@@ -138,7 +183,13 @@ class PostgreSqlProvider(DatabaseProvider):
 
         batch_processor = self.__runner.open_batch_processor()
         with input_obj.open() as dumpfile_data:
-            with tqdm(desc="Restoring", total=dumpsize, unit='B', unit_scale=True, unit_divisor=1000) as bar:
+            with tqdm(
+                desc="Restoring",
+                total=dumpsize,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1000,
+            ) as bar:
                 for chunk in self.__read_until_empty_byte(dumpfile_data):
                     batch_processor.write(chunk)
                     batch_processor.flush()
@@ -155,7 +206,13 @@ class PostgreSqlProvider(DatabaseProvider):
 
         dump_process = self.__dumper.open_dumper()
         with output_obj.open() as output_file:
-            with tqdm(desc="Dumping", total=dumpsize_estimate, unit='B', unit_scale=True, unit_divisor=1000) as bar:
+            with tqdm(
+                desc="Dumping",
+                total=dumpsize_estimate,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=1000,
+            ) as bar:
                 for chunk in self.__read_until_empty_byte(dump_process):
                     output_file.write(chunk)
                     bar.update(len(chunk))

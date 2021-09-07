@@ -2,6 +2,7 @@ class PynonymizerError(Exception):
     """
     A base error class for this application.
     """
+
     pass
 
 

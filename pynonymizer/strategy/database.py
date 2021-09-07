@@ -20,17 +20,13 @@ class DatabaseStrategy:
             for script in after_scripts:
                 self.after_scripts.append(script)
 
-
     @property
     def scripts(self):
         """
         Deprecated - use before/after vars
         :return:
         """
-        return {
-            "before": self.before_scripts,
-            "after": self.after_scripts
-        }
+        return {"before": self.before_scripts, "after": self.after_scripts}
 
     @property
     def fake_update_qualifier_map(self):
@@ -38,7 +34,10 @@ class DatabaseStrategy:
         for table_strategy in self.table_strategies:
             if table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
                 for column_strategy in table_strategy.column_strategies:
-                    if column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
+                    if (
+                        column_strategy.strategy_type
+                        == UpdateColumnStrategyTypes.FAKE_UPDATE
+                    ):
                         column_strategies[column_strategy.qualifier] = column_strategy
 
         return column_strategies

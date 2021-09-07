@@ -14,13 +14,17 @@ class UnknownUpdateColumnFakeTypeError(StrategyError):
 class UnknownTableStrategyError(StrategyError):
     def __init__(self, config):
         self.config = config
-        super().__init__("Unable to determine table strategy from value: {}".format(config))
+        super().__init__(
+            "Unable to determine table strategy from value: {}".format(config)
+        )
 
 
 class UnknownColumnStrategyError(StrategyError):
     def __init__(self, config):
         self.config = config
-        super().__init__("Unable to determine column strategy from value: {}".format(config))
+        super().__init__(
+            "Unable to determine column strategy from value: {}".format(config)
+        )
 
 
 class ConfigSyntaxError(StrategyError):
