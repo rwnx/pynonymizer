@@ -14,7 +14,7 @@ Once everyone's happy the request will be merged.
 
 There are a few key indicators of an acceptable contribution. 
 
-* Format your code with `black`. A github action will do this automatically if it's not submitted 
+* Format your code with `black`. A github action will automatically format incoming PRs if it's required.
 * Create high-quality, useful tests for features, changes in functionality, and bug replication cases.
 * Write descriptive, informative [commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
 * Add user-facing description of your work to an entry in the `CHANGELOG.md` file, under the `[Unreleased]` section. If you're unsure why this is important, check out [RELEASING.md](RELEASING.md) for the intended release process.
