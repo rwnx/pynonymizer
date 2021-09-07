@@ -2,6 +2,7 @@ import gzip
 import lzma
 import os
 import sys
+
 """
 Streaming output files for streamable providers
 """
@@ -19,12 +20,14 @@ class GzipOutput:
     def open(self):
         return gzip.open(self.filename, "wb")
 
+
 class XzOutput:
     def __init__(self, filename):
         self.filename = filename
 
     def open(self):
         return lzma.open(self.filename, "wb")
+
 
 class RawOutput:
     def __init__(self, filename):
@@ -33,9 +36,11 @@ class RawOutput:
     def open(self):
         return open(self.filename, "wb")
 
+
 class StdOutOutput:
     def open(self):
         return sys.stdout.buffer
+
 
 def resolve_output(filename):
     if filename == "-":

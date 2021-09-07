@@ -1,5 +1,10 @@
 import pytest
-from pynonymizer.database.exceptions import DatabaseProviderError, DependencyError, UnsupportedTableStrategyError, UnsupportedColumnStrategyError
+from pynonymizer.database.exceptions import (
+    DatabaseProviderError,
+    DependencyError,
+    UnsupportedTableStrategyError,
+    UnsupportedColumnStrategyError,
+)
 
 
 def test_database_provider_error():

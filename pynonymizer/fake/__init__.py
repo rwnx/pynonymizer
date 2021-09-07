@@ -13,6 +13,7 @@ class FakeDataType(Enum):
     DATETIME = "DATETIME"
     INT = "INT"
 
+
 """
 We have to create a mapping here between faker types and rough return values, because providers need to know how to
 Store the generated values in the 'seed' table.
@@ -21,28 +22,28 @@ FakeColumnGenerator will assume STRING unless the below mapping overrides it.
 """
 _FAKE_DATA_TYPES = {
     # date_time
-    "random_int":      FakeDataType.INT,
-    "date_between":   FakeDataType.DATE,
-    "date_between_dates":   FakeDataType.DATE,
-    "date_object":   FakeDataType.DATE,
-    "date_of_birth":   FakeDataType.DATE,
-    "date_this_century":   FakeDataType.DATE,
-    "date_this_decade":   FakeDataType.DATE,
-    "date_this_month":   FakeDataType.DATE,
-    "date_this_year":   FakeDataType.DATE,
-    "date_time":   FakeDataType.DATETIME,
-    "date_time_ad":   FakeDataType.DATETIME,
-    "date_time_between":   FakeDataType.DATETIME,
-    "date_time_between_dates":   FakeDataType.DATETIME,
-    "date_time_this_century":   FakeDataType.DATETIME,
-    "date_time_this_decade":   FakeDataType.DATETIME,
-    "date_time_this_month":   FakeDataType.DATETIME,
-    "date_time_this_year":   FakeDataType.DATETIME,
-    "future_date":   FakeDataType.DATE,
-    "future_datetime":   FakeDataType.DATETIME,
-    "past_date":   FakeDataType.DATE,
-    "past_datetime":   FakeDataType.DATETIME,
-    "date":            FakeDataType.DATE
+    "random_int": FakeDataType.INT,
+    "date_between": FakeDataType.DATE,
+    "date_between_dates": FakeDataType.DATE,
+    "date_object": FakeDataType.DATE,
+    "date_of_birth": FakeDataType.DATE,
+    "date_this_century": FakeDataType.DATE,
+    "date_this_decade": FakeDataType.DATE,
+    "date_this_month": FakeDataType.DATE,
+    "date_this_year": FakeDataType.DATE,
+    "date_time": FakeDataType.DATETIME,
+    "date_time_ad": FakeDataType.DATETIME,
+    "date_time_between": FakeDataType.DATETIME,
+    "date_time_between_dates": FakeDataType.DATETIME,
+    "date_time_this_century": FakeDataType.DATETIME,
+    "date_time_this_decade": FakeDataType.DATETIME,
+    "date_time_this_month": FakeDataType.DATETIME,
+    "date_time_this_year": FakeDataType.DATETIME,
+    "future_date": FakeDataType.DATE,
+    "future_datetime": FakeDataType.DATETIME,
+    "past_date": FakeDataType.DATE,
+    "past_datetime": FakeDataType.DATETIME,
+    "date": FakeDataType.DATE,
 }
 
 
@@ -96,5 +97,3 @@ class FakeColumnGenerator:
         method = getattr(self.__faker, method_name)
 
         return method(**additional_kwargs)
-
-

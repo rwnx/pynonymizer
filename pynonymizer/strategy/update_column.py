@@ -1,7 +1,8 @@
 from enum import Enum
-from pynonymizer.fake import  UnsupportedFakeTypeError
+from pynonymizer.fake import UnsupportedFakeTypeError
 from abc import ABC, abstractmethod
 import hashlib
+
 
 class UpdateColumnStrategyTypes(Enum):
     EMPTY = "EMPTY"
@@ -43,7 +44,7 @@ class UniqueEmailUpdateColumnStrategy(UpdateColumnStrategy):
 class LiteralUpdateColumnStrategy(UpdateColumnStrategy):
     strategy_type = UpdateColumnStrategyTypes.LITERAL
 
-    def __init__(self, column_name,  value, where=None):
+    def __init__(self, column_name, value, where=None):
         super().__init__(column_name, where)
         self.value = value
 
@@ -51,7 +52,15 @@ class LiteralUpdateColumnStrategy(UpdateColumnStrategy):
 class FakeUpdateColumnStrategy(UpdateColumnStrategy):
     strategy_type = UpdateColumnStrategyTypes.FAKE_UPDATE
 
-    def __init__(self, column_name, fake_column_generator, fake_type, where=None, fake_args=None, sql_type=None):
+    def __init__(
+        self,
+        column_name,
+        fake_column_generator,
+        fake_type,
+        where=None,
+        fake_args=None,
+        sql_type=None,
+    ):
         fake_args = {} if fake_args is None else fake_args
         super().__init__(column_name, where)
         self.fake_type = fake_type
@@ -70,12 +79,18 @@ class FakeUpdateColumnStrategy(UpdateColumnStrategy):
         e.g. file_path_depth_1
         :return:
         """
-        sorted_args = "_".join( [f"{arg}_{value}" for arg, value in sorted(self.fake_args.items(), key=lambda item: item[0])] )
+        sorted_args = "_".join(
+            [
+                f"{arg}_{value}"
+                for arg, value in sorted(
+                    self.fake_args.items(), key=lambda item: item[0]
+                )
+            ]
+        )
         args_hash = hashlib.md5(bytes(sorted_args, "utf8")).hexdigest()
 
         # keep the whole thing below 64chars for maximum database compatibility
         return (self.fake_type + (("_" + args_hash) if sorted_args else ""))[:64]
-
 
     @property
     def value(self):

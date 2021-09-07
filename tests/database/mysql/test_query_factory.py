@@ -11,7 +11,7 @@ from pynonymizer.strategy.update_column import (
     EmptyUpdateColumnStrategy,
     UniqueLoginUpdateColumnStrategy,
     UniqueEmailUpdateColumnStrategy,
-    LiteralUpdateColumnStrategy
+    LiteralUpdateColumnStrategy,
 )
 import pynonymizer.database.mysql.query_factory as query_factory
 
@@ -26,62 +26,88 @@ and the sql returned should be very stable.
 
 
 def test_get_truncate_table():
-    assert query_factory.get_truncate_table("test") == "SET FOREIGN_KEY_CHECKS=0; " \
-           "TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;"
+    assert (
+        query_factory.get_truncate_table("test") == "SET FOREIGN_KEY_CHECKS=0; "
+        "TRUNCATE TABLE `test`; SET FOREIGN_KEY_CHECKS=1;"
+    )
+
 
 def test_get_delete_table():
     assert query_factory.get_delete_table("test") == "DELETE FROM `test`;"
 
+
 def test_get_drop_seed_table():
-    assert query_factory.get_drop_seed_table("seed_table") == "DROP TABLE IF EXISTS `seed_table`;"
+    assert (
+        query_factory.get_drop_seed_table("seed_table")
+        == "DROP TABLE IF EXISTS `seed_table`;"
+    )
 
 
 def test_get_create_database():
-    assert query_factory.get_create_database("test_database") == "CREATE DATABASE `test_database`;"
+    assert (
+        query_factory.get_create_database("test_database")
+        == "CREATE DATABASE `test_database`;"
+    )
 
 
 def test_get_drop_database():
-    assert query_factory.get_drop_database("test_database") == "DROP DATABASE IF EXISTS `test_database`;"
+    assert (
+        query_factory.get_drop_database("test_database")
+        == "DROP DATABASE IF EXISTS `test_database`;"
+    )
 
 
 def test_get_dumpsize_estimate():
-    assert query_factory.get_dumpsize_estimate("test") == "SELECT data_bytes FROM " \
-           "(SELECT SUM(data_length) AS data_bytes " \
-           "FROM information_schema.tables WHERE table_schema = 'test') AS data;"
+    assert (
+        query_factory.get_dumpsize_estimate("test") == "SELECT data_bytes FROM "
+        "(SELECT SUM(data_length) AS data_bytes "
+        "FROM information_schema.tables WHERE table_schema = 'test') AS data;"
+    )
+
 
 @pytest.fixture
 def str_fake_column_generator():
     return Mock(
-            get_data_type=Mock(return_value=FakeDataType.STRING),
-            get_value=Mock(return_value="test_value")
-        )
+        get_data_type=Mock(return_value=FakeDataType.STRING),
+        get_value=Mock(return_value="test_value"),
+    )
+
+
 @pytest.fixture
 def int_fake_column_generator():
     return Mock(
         get_data_type=Mock(return_value=FakeDataType.INT),
-        get_value=Mock(return_value=645)
+        get_value=Mock(return_value=645),
     )
+
+
 @pytest.fixture
 def uuid_fake_column_generator():
     return Mock(
         get_data_type=Mock(return_value=FakeDataType.STRING),
-        get_value=Mock(return_value="d4b7d972-99c9-4c0f-83c0-4cf2c63fd6ed")
+        get_value=Mock(return_value="d4b7d972-99c9-4c0f-83c0-4cf2c63fd6ed"),
     )
 
 
 @pytest.fixture
 def fake_update_column_str_first_name(str_fake_column_generator):
-    return FakeUpdateColumnStrategy("test_column1",str_fake_column_generator, "first_name")
+    return FakeUpdateColumnStrategy(
+        "test_column1", str_fake_column_generator, "first_name"
+    )
 
 
 @pytest.fixture
 def fake_update_column_int_last_name(int_fake_column_generator):
-    return FakeUpdateColumnStrategy("test_column2",int_fake_column_generator, "last_name")
+    return FakeUpdateColumnStrategy(
+        "test_column2", int_fake_column_generator, "last_name"
+    )
 
 
 @pytest.fixture
 def fake_update_column_uuid_user_id(uuid_fake_column_generator):
-    return FakeUpdateColumnStrategy("test_column7", uuid_fake_column_generator, "user_id", sql_type="UUID")
+    return FakeUpdateColumnStrategy(
+        "test_column7", uuid_fake_column_generator, "user_id", sql_type="UUID"
+    )
 
 
 @pytest.fixture
@@ -110,16 +136,31 @@ def database_strategy():
 
 
 @pytest.fixture
-def qualifier_column_map(fake_update_column_str_first_name,fake_update_column_int_last_name,empty_strategy,ulogin_strategy, uemail_strategy,literal_strategy):
+def qualifier_column_map(
+    fake_update_column_str_first_name,
+    fake_update_column_int_last_name,
+    empty_strategy,
+    ulogin_strategy,
+    uemail_strategy,
+    literal_strategy,
+):
     return {
         "first_name": fake_update_column_str_first_name,
         "last_name": fake_update_column_int_last_name,
-        "first_name_test_arg_5": fake_update_column_str_first_name
+        "first_name_test_arg_5": fake_update_column_str_first_name,
     }
 
 
 @pytest.fixture
-def column_strategy_list(fake_update_column_str_first_name,fake_update_column_int_last_name,fake_update_column_uuid_user_id,empty_strategy,ulogin_strategy, uemail_strategy,literal_strategy):
+def column_strategy_list(
+    fake_update_column_str_first_name,
+    fake_update_column_int_last_name,
+    fake_update_column_uuid_user_id,
+    empty_strategy,
+    ulogin_strategy,
+    uemail_strategy,
+    literal_strategy,
+):
     return [
         fake_update_column_str_first_name,
         fake_update_column_int_last_name,
@@ -127,7 +168,7 @@ def column_strategy_list(fake_update_column_str_first_name,fake_update_column_in
         empty_strategy,
         ulogin_strategy,
         uemail_strategy,
-        literal_strategy
+        literal_strategy,
     ]
 
 
@@ -150,14 +191,22 @@ def unsupported_column_strategy():
 
 
 def test_get_insert_seed_row(qualifier_column_map):
-    insert_seed_row = query_factory.get_insert_seed_row("seed_table", qualifier_column_map)
+    insert_seed_row = query_factory.get_insert_seed_row(
+        "seed_table", qualifier_column_map
+    )
 
-    assert insert_seed_row == "INSERT INTO `seed_table`(`first_name`,`last_name`,`first_name_test_arg_5`) " \
-                              "VALUES ('test_value',645,'test_value');"
+    assert (
+        insert_seed_row
+        == "INSERT INTO `seed_table`(`first_name`,`last_name`,`first_name_test_arg_5`) "
+        "VALUES ('test_value',645,'test_value');"
+    )
 
 
 def test_get_create_seed_table(qualifier_column_map):
-    assert query_factory.get_create_seed_table("seed_table", qualifier_column_map) == "CREATE TABLE `seed_table` (`first_name` TEXT,`last_name` INT,`first_name_test_arg_5` TEXT);"
+    assert (
+        query_factory.get_create_seed_table("seed_table", qualifier_column_map)
+        == "CREATE TABLE `seed_table` (`first_name` TEXT,`last_name` INT,`first_name_test_arg_5` TEXT);"
+    )
 
 
 def test_get_create_seed_table_no_columns():
@@ -177,26 +226,29 @@ def test_get_update_table_unsupported_column_type(update_table_strategy_unknown)
 
 
 def test_get_update_table_fake_column(column_strategy_list):
-    update_table_all = query_factory.get_update_table("seed_table", UpdateColumnsTableStrategy("anon_table", column_strategy_list))
+    update_table_all = query_factory.get_update_table(
+        "seed_table", UpdateColumnsTableStrategy("anon_table", column_strategy_list)
+    )
 
     assert update_table_all == [
-            "UPDATE `anon_table` SET "
-            "`test_column1` = ( SELECT `first_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column2` = ( SELECT `last_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column7` = ( SELECT CAST(`user_id` AS UUID) FROM `seed_table` ORDER BY RAND() LIMIT 1),"
-            "`test_column3` = (''),"
-            "`test_column4` = ( SELECT MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())) ),"
-            "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"
-            "`test_column6` = RAND();"
-            ]
+        "UPDATE `anon_table` SET "
+        "`test_column1` = ( SELECT `first_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+        "`test_column2` = ( SELECT `last_name` FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+        "`test_column7` = ( SELECT CAST(`user_id` AS UUID) FROM `seed_table` ORDER BY RAND() LIMIT 1),"
+        "`test_column3` = (''),"
+        "`test_column4` = ( SELECT MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())) ),"
+        "`test_column5` = ( SELECT CONCAT(MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '@', MD5(FLOOR((NOW() + RAND()) * (RAND() * RAND() / RAND()) + RAND())), '.com') ),"
+        "`test_column6` = RAND();"
+    ]
 
 
 def test_get_update_table_literal(literal_strategy):
 
-    result_queries = query_factory.get_update_table("seed_table", UpdateColumnsTableStrategy("anon_table", [
-        LiteralUpdateColumnStrategy("literal_column", "RAND()")
-    ]))
+    result_queries = query_factory.get_update_table(
+        "seed_table",
+        UpdateColumnsTableStrategy(
+            "anon_table", [LiteralUpdateColumnStrategy("literal_column", "RAND()")]
+        ),
+    )
 
-    assert result_queries == [
-        "UPDATE `anon_table` SET `literal_column` = RAND();"
-    ]
+    assert result_queries == ["UPDATE `anon_table` SET `literal_column` = RAND();"]

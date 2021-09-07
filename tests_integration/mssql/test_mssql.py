@@ -22,49 +22,61 @@ os.chmod(tmp_input, 0o777)
 
 def test_basic():
     """
-        Perform an actual run against the local database using the modified sakila DB
-        perform some basic checks against the output file
+    Perform an actual run against the local database using the modified sakila DB
+    perform some basic checks against the output file
     """
-    output = subprocess.check_output([
-        "pynonymizer",
-        "-i", tmp_input,
-        "-o", tmp_output,
-        "-s", "sakila.yml",
-        "-t", "mssql"
+    output = subprocess.check_output(
+        [
+            "pynonymizer",
+            "-i",
+            tmp_input,
+            "-o",
+            tmp_output,
+            "-s",
+            "sakila.yml",
+            "-t",
+            "mssql",
         ],
-        cwd=test_dir
+        cwd=test_dir,
     )
 
     # some very rough output checks
     assert os.path.exists(tmp_output)
 
+
 def test_anonymize_column_uniqueness():
-    output = subprocess.check_output([
-        "pynonymizer",
-        "-i", tmp_input,
-        "-o", tmp_output,
-        "-s", "sakila.yml",
-        "-t", "mssql",
-        "--db-name", "test_mssql",
-        "--stop-at", "ANONYMIZE_DB"
+    output = subprocess.check_output(
+        [
+            "pynonymizer",
+            "-i",
+            tmp_input,
+            "-o",
+            tmp_output,
+            "-s",
+            "sakila.yml",
+            "-t",
+            "mssql",
+            "--db-name",
+            "test_mssql",
+            "--stop-at",
+            "ANONYMIZE_DB",
         ],
-        cwd=test_dir
+        cwd=test_dir,
     )
     driver = [i for i in pyodbc.drivers() if "sql server" in i.lower()][0]
     conn = pyodbc.connect(
         driver=driver,
-        uid=user, 
+        uid=user,
         pwd=password,
         database="test_mssql",
         server="(local)",
-        autocommit=True
+        autocommit=True,
     )
-    agg_names = conn.execute("SELECT COUNT(1), first_name FROM actor GROUP BY first_name;").fetchall()
+    agg_names = conn.execute(
+        "SELECT COUNT(1), first_name FROM actor GROUP BY first_name;"
+    ).fetchall()
 
     print(agg_names)
 
-    # make sure that names was actually randomized instead of simply set to the same value "randomly" 
+    # make sure that names was actually randomized instead of simply set to the same value "randomly"
     assert len(agg_names) > 1
-
-
-    

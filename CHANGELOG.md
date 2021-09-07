@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added a workflow that automatically runs `black` on incoming PRs, to set a canonical standard for formatting in the project.
 
 ## [1.21.2] 2021-09-06
 - Fixed a bug in the config parser where literal column strategies that contained `type` threw an error

@@ -5,6 +5,7 @@ from pynonymizer.database.mssql import MsSqlProvider
 from pynonymizer.database.postgres import PostgreSqlProvider
 from pynonymizer.database.exceptions import UnknownDatabaseTypeError
 
+
 def get_temp_db_name(filename=None):
     name, _ = os.path.splitext(os.path.basename(filename))
     return f"{name}_{uuid.uuid4().hex}"

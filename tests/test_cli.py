@@ -11,6 +11,7 @@ def mock_getenv_old(name):
         return None
     return f"OLDENV_{name}"
 
+
 @patch("dotenv.find_dotenv")
 @patch("dotenv.load_dotenv")
 @patch("pynonymizer.cli.create_parser")
@@ -43,10 +44,13 @@ class MainArgTests(unittest.TestCase):
             postgres_dump_opts="--additional",
             postgres_cmd_opts="--additional",
             dry_run=True,
-            verbose=True
+            verbose=True,
         )
+
     @patch("os.getenv", Mock(side_effect=mock_getenv_old))
-    def test_when_old_env_should_call_pynonymizer(self, pynonymize, create_parser, load_dotenv, find_dotenv):
+    def test_when_old_env_should_call_pynonymizer(
+        self, pynonymize, create_parser, load_dotenv, find_dotenv
+    ):
         parser_mock = Mock(parse_args=Mock(return_value=self.parsed_args))
         create_parser.return_value = parser_mock
 
@@ -74,7 +78,7 @@ class MainArgTests(unittest.TestCase):
             postgres_dump_opts="--additional",
             postgres_cmd_opts="--additional",
             dry_run=True,
-            verbose=True
+            verbose=True,
         )
 
     def test_dotenv_called(self, pynonymize, create_parser, load_dotenv, find_dotenv):
@@ -89,7 +93,9 @@ class MainArgTests(unittest.TestCase):
         find_dotenv.assert_called()
         load_dotenv.assert_called()
 
-    def test_arg_pass_legacy_override(self, pynonymize, create_parser, load_dotenv, find_dotenv):
+    def test_arg_pass_legacy_override(
+        self, pynonymize, create_parser, load_dotenv, find_dotenv
+    ):
         """
         the parsed set of args should be passed to the pynonymize cli function
         legacy args should override normal ones to account for old positional behaviour
@@ -109,8 +115,7 @@ class MainArgTests(unittest.TestCase):
 
         assert call_kwargs["input_path"] == "LEGACY_INPUT"
         assert call_kwargs["strategyfile_path"] == "LEGACY_STRATEGYFILE"
-        assert call_kwargs["output_path"]       == "LEGACY_OUTPUT"
-
+        assert call_kwargs["output_path"] == "LEGACY_OUTPUT"
 
     def test_arg_pass_normal(self, pynonymize, create_parser, load_dotenv, find_dotenv):
         """
@@ -146,14 +151,17 @@ class MainArgTests(unittest.TestCase):
             postgres_dump_opts="--additional",
             postgres_cmd_opts="--additional",
             dry_run=True,
-            verbose=True
+            verbose=True,
         )
 
 
 @patch("dotenv.find_dotenv", Mock())
 @patch("dotenv.load_dotenv", Mock())
 @patch("pynonymizer.cli.create_parser", Mock())
-@patch("pynonymizer.cli.pynonymize", Mock(side_effect=ArgumentValidationError(["test validation"])))
+@patch(
+    "pynonymizer.cli.pynonymize",
+    Mock(side_effect=ArgumentValidationError(["test validation"])),
+)
 def test_sysexit_on_argument_invalid():
     """
     If pynonymize throws an argument validation error, cli should exit with err 2
@@ -162,6 +170,7 @@ def test_sysexit_on_argument_invalid():
         cli(["blah"])
 
     assert e_info.value.code == 2
+
 
 @patch("dotenv.find_dotenv", Mock())
 @patch("dotenv.load_dotenv", Mock())
