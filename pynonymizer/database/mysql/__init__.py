@@ -182,19 +182,22 @@ class MySqlProvider(DatabaseProvider):
         input_obj = resolve_input(input_path)
         dumpsize = input_obj.get_size()
 
-        batch_processor = self.__runner.open_batch_processor()
-        with input_obj.open() as dumpfile_data:
-            with tqdm(
-                desc="Restoring",
-                total=dumpsize,
-                unit="B",
-                unit_scale=True,
-                unit_divisor=1000,
-            ) as bar:
-                for chunk in self.__read_until_empty_byte(dumpfile_data):
-                    batch_processor.write(chunk)
-                    batch_processor.flush()
-                    bar.update(len(chunk))
+        try:
+            batch_processor = self.__runner.open_batch_processor()
+            with input_obj.open() as dumpfile_data:
+                with tqdm(
+                    desc="Restoring",
+                    total=dumpsize,
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1000,
+                ) as bar:
+                    for chunk in self.__read_until_empty_byte(dumpfile_data):
+                        batch_processor.write(chunk)
+                        batch_processor.flush()
+                        bar.update(len(chunk))
+        finally:
+            batch_processor.close()
 
     def dump_database(self, output_path):
         """
