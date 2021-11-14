@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+## [1.21.3] 2021-11-14
 - Added a workflow that automatically runs `black` on incoming PRs, to set a canonical standard for formatting in the project.
 - Fixed a bug in mysql/postgres where stdin is not closed after reading
 
