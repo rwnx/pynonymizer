@@ -2,7 +2,11 @@ from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 from pynonymizer.strategy.table import TableStrategyTypes
-from pynonymizer.database.exceptions import UnsupportedColumnStrategyError, UnsupportedTableStrategyError, DependencyError
+from pynonymizer.database.exceptions import (
+    UnsupportedColumnStrategyError,
+    UnsupportedTableStrategyError,
+    DependencyError,
+)
 from pynonymizer.fake import FakeDataType
 
 import math
@@ -16,17 +20,19 @@ _FAKE_COLUMN_TYPES = {
     FakeDataType.STRING: "VARCHAR(MAX)",
     FakeDataType.DATE: "DATE",
     FakeDataType.DATETIME: "DATETIME",
-    FakeDataType.INT: "INT"
+    FakeDataType.INT: "INT",
 }
 
 _LOCAL_SERVER = "127.0.0.1"
 _DEFAULT_PORT = "1433"
 
+
 def _extract_driver_version(driver):
     try:
-        return int( re.findall(r"\d+", driver)[0] )
+        return int(re.findall(r"\d+", driver)[0])
     except IndexError:
         return 0
+
 
 class MsSqlProvider(DatabaseProvider):
     """
@@ -40,7 +46,17 @@ class MsSqlProvider(DatabaseProvider):
     # Values lower than 5 often yield unreliable results on smaller backups
     __STATS = 5
 
-    def __init__(self, db_host, db_user, db_pass, db_name, db_port=None, seed_rows=None, backup_compression=False, driver=None):
+    def __init__(
+        self,
+        db_host,
+        db_user,
+        db_pass,
+        db_name,
+        db_port=None,
+        seed_rows=None,
+        backup_compression=False,
+        driver=None,
+    ):
         # import here for fast-failiness
         import pyodbc
 
@@ -66,10 +82,12 @@ class MsSqlProvider(DatabaseProvider):
 
     def __detect_driver(self):
         import pyodbc
-        
+
         ms_drivers = [i for i in pyodbc.drivers() if "sql server" in i.lower()]
         if len(ms_drivers) < 1:
-            raise DependencyError("odbc", "Failed to detect any ODBC drivers on this system.")
+            raise DependencyError(
+                "odbc", "Failed to detect any ODBC drivers on this system."
+            )
 
         if len(ms_drivers) > 1:
             self.logger.debug("multiple drivers detected for mssql: %s", ms_drivers)
@@ -79,12 +97,16 @@ class MsSqlProvider(DatabaseProvider):
 
     def __require_local_server(self):
         if self.db_host != _LOCAL_SERVER:
-            raise DependencyError("db_host", "This operation does not support remote servers due to backup file "
-                                                "location requirements. You must omit db_host from your configuration "
-                                                "and run pynonymizer on the same server as the database.")
+            raise DependencyError(
+                "db_host",
+                "This operation does not support remote servers due to backup file "
+                "location requirements. You must omit db_host from your configuration "
+                "and run pynonymizer on the same server as the database.",
+            )
 
     def __connection(self):
         import pyodbc
+
         """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
@@ -92,13 +114,14 @@ class MsSqlProvider(DatabaseProvider):
                 server=f"{self.db_host},{self.db_port}",
                 uid=self.db_user,
                 pwd=self.db_pass,
-                autocommit=True
+                autocommit=True,
             )
 
         return self.__conn
 
     def __db_connection(self):
         import pyodbc
+
         """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
@@ -107,7 +130,7 @@ class MsSqlProvider(DatabaseProvider):
                 server=f"{self.db_host},{self.db_port}",
                 uid=self.db_user,
                 pwd=self.db_pass,
-                autocommit=True
+                autocommit=True,
             )
 
         return self.__db_conn
@@ -135,13 +158,15 @@ class MsSqlProvider(DatabaseProvider):
         checking the model db seems like a good 'boring' solution
         :return: Default data directory e.g. "C:\\DATA"
         """
-        datafile = self.__execute("""
+        datafile = self.__execute(
+            """
         SELECT physical_name
         FROM sys.master_files mf
         INNER JOIN sys.[databases] d
         ON mf.[database_id] = d.[database_id]
         WHERE d.[name] = 'model' AND type = 0
-        """).fetchone()[0]
+        """
+        ).fetchone()[0]
 
         return self.__get_path(datafile).parent
 
@@ -151,13 +176,15 @@ class MsSqlProvider(DatabaseProvider):
         __get_default_datafolder: see for more info
         :return:
         """
-        logfile = self.__execute("""
+        logfile = self.__execute(
+            """
         SELECT physical_name
         FROM sys.master_files mf
         INNER JOIN sys.[databases] d
         ON mf.[database_id] = d.[database_id]
         WHERE d.[name] = 'model' AND type = 1
-        """).fetchone()[0]
+        """
+        ).fetchone()[0]
 
         return self.__get_path(logfile).parent
 
@@ -169,7 +196,9 @@ class MsSqlProvider(DatabaseProvider):
         datadir = self.__get_default_datafolder()
         logdir = self.__get_default_logfolder()
 
-        filelist = self.__execute(f"RESTORE FILELISTONLY FROM DISK = ?;", input_path).fetchall()
+        filelist = self.__execute(
+            f"RESTORE FILELISTONLY FROM DISK = ?;", input_path
+        ).fetchall()
 
         move_file_map = {}
         for file in filelist:
@@ -200,8 +229,9 @@ class MsSqlProvider(DatabaseProvider):
 
     def __run_scripts(self, script_list, title=""):
         import pyodbc
+
         for i, script in enumerate(script_list):
-            self.logger.info(f"Running {title} script #{i} \"{script[:50]}\"")
+            self.logger.info(f'Running {title} script #{i} "{script[:50]}"')
             cursor = self.__db_execute(script)
             results = None
             try:
@@ -211,8 +241,13 @@ class MsSqlProvider(DatabaseProvider):
             self.logger.info(results)
 
     def __create_seed_table(self, qualifier_map):
-        seed_column_lines = ["[{}] {}".format(name, _FAKE_COLUMN_TYPES[col.data_type]) for name, col in qualifier_map.items()]
-        create_statement = "CREATE TABLE [{}]({});".format(SEED_TABLE_NAME, ",".join(seed_column_lines))
+        seed_column_lines = [
+            "[{}] {}".format(name, _FAKE_COLUMN_TYPES[col.data_type])
+            for name, col in qualifier_map.items()
+        ]
+        create_statement = "CREATE TABLE [{}]({});".format(
+            SEED_TABLE_NAME, ",".join(seed_column_lines)
+        )
 
         self.__db_execute(create_statement)
 
@@ -220,15 +255,23 @@ class MsSqlProvider(DatabaseProvider):
         self.__db_execute("DROP TABLE IF EXISTS [{}];".format(SEED_TABLE_NAME))
 
     def __insert_seed_row(self, qualifier_map):
-        column_list = ",".join(["[{}]".format(qualifier) for qualifier in qualifier_map])
-        substitution_list = ",".join([" ?".format(qualifier) for qualifier in qualifier_map])
+        column_list = ",".join(
+            ["[{}]".format(qualifier) for qualifier in qualifier_map]
+        )
+        substitution_list = ",".join(
+            [" ?".format(qualifier) for qualifier in qualifier_map]
+        )
         value_list = [column.value for qualifier, column in qualifier_map.items()]
 
-        statement = "INSERT INTO [{}]({}) VALUES ({});".format(SEED_TABLE_NAME, column_list, substitution_list)
+        statement = "INSERT INTO [{}]({}) VALUES ({});".format(
+            SEED_TABLE_NAME, column_list, substitution_list
+        )
         self.__db_execute(statement, value_list)
 
     def __seed(self, qualifier_map):
-        for i in tqdm(range(0, self.seed_rows), desc="Inserting seed data", unit="rows"):
+        for i in tqdm(
+            range(0, self.seed_rows), desc="Inserting seed data", unit="rows"
+        ):
             self.__insert_seed_row(qualifier_map)
 
     def __get_column_subquery(self, column_strategy, table_name, column_name):
@@ -250,11 +293,15 @@ class MsSqlProvider(DatabaseProvider):
             raise UnsupportedColumnStrategyError(column_strategy)
 
     def create_database(self):
-        self.logger.warning("MSSQL: create_database ignored, database will be created when restore_db is run")
+        self.logger.warning(
+            "MSSQL: create_database ignored, database will be created when restore_db is run"
+        )
 
     def drop_database(self):
         # force connection close so we can always drop the db: sometimes timing makes a normal drop impossible.
-        self.__execute(f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;")
+        self.__execute(
+            f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;"
+        )
         self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy):
@@ -272,18 +319,26 @@ class MsSqlProvider(DatabaseProvider):
         table_strategies = database_strategy.table_strategies
         self.logger.info("Anonymizing %d tables", len(table_strategies))
 
-        with tqdm(desc="Anonymizing database", total=len(table_strategies)) as progressbar:
+        with tqdm(
+            desc="Anonymizing database", total=len(table_strategies)
+        ) as progressbar:
             for table_strategy in table_strategies:
                 table_name = table_strategy.table_name
-                schema_prefix = f"[{table_strategy.schema}]." if table_strategy.schema else ""
+                schema_prefix = (
+                    f"[{table_strategy.schema}]." if table_strategy.schema else ""
+                )
 
                 if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
                     progressbar.set_description("Truncating {}".format(table_name))
-                    self.__db_execute("TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name))
+                    self.__db_execute(
+                        "TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name)
+                    )
 
                 elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
                     progressbar.set_description("Deleting {}".format(table_name))
-                    self.__db_execute("DELETE FROM {}[{}];".format(schema_prefix, table_name))
+                    self.__db_execute(
+                        "DELETE FROM {}[{}];".format(schema_prefix, table_name)
+                    )
 
                 elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
                     progressbar.set_description("Anonymizing {}".format(table_name))
@@ -291,11 +346,32 @@ class MsSqlProvider(DatabaseProvider):
                     total_wheres = len(where_grouping)
 
                     for i, (where, column_map) in enumerate(where_grouping.items()):
-                        column_assignments = ",".join(["[{}] = {}".format(name, self.__get_column_subquery(column, table_name, name)) for name, column in column_map.items()])
+                        column_assignments = ",".join(
+                            [
+                                "[{}] = {}".format(
+                                    name,
+                                    self.__get_column_subquery(
+                                        column, table_name, name
+                                    ),
+                                )
+                                for name, column in column_map.items()
+                            ]
+                        )
                         where_clause = f" WHERE {where}" if where else ""
-                        progressbar.set_description("Anonymizing {}: w[{}/{}]".format(table_name, i+1, total_wheres))
+                        progressbar.set_description(
+                            "Anonymizing {}: w[{}/{}]".format(
+                                table_name, i + 1, total_wheres
+                            )
+                        )
                         # Disable ANSI_WARNINGS to allow oversized fake data to be truncated without error
-                        self.__db_execute("SET ANSI_WARNINGS off; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS on;".format(schema_prefix, table_name, column_assignments, where_clause))
+                        self.__db_execute(
+                            "SET ANSI_WARNINGS off; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS on;".format(
+                                schema_prefix,
+                                table_name,
+                                column_assignments,
+                                where_clause,
+                            )
+                        )
 
                 else:
                     raise UnsupportedTableStrategyError(table_strategy)
@@ -312,15 +388,17 @@ class MsSqlProvider(DatabaseProvider):
 
         move_files = self.__get_file_moves(input_path)
 
-        self.logger.info("Found %d files in %s", len(move_files), input_path )
+        self.logger.info("Found %d files in %s", len(move_files), input_path)
         self.logger.debug(move_files)
 
         # get move statements and flatten pairs out so we can do the 2-param substitution
-        move_clauses = ", ".join( ["MOVE ? TO ?"] * len(move_files) )
+        move_clauses = ", ".join(["MOVE ? TO ?"] * len(move_files))
         move_clause_params = [item for pair in move_files.items() for item in pair]
 
-        restore_cursor = self.__execute(f"RESTORE DATABASE ? FROM DISK = ? WITH {move_clauses}, STATS = ?;",
-                                        [self.db_name, input_path, *move_clause_params, self.__STATS])
+        restore_cursor = self.__execute(
+            f"RESTORE DATABASE ? FROM DISK = ? WITH {move_clauses}, STATS = ?;",
+            [self.db_name, input_path, *move_clause_params, self.__STATS],
+        )
 
         self.__async_operation_progress("Restoring Database", restore_cursor)
 
@@ -331,7 +409,12 @@ class MsSqlProvider(DatabaseProvider):
         if self.__backup_compression:
             with_options.append("COMPRESSION")
 
-        with_options_str = ",".join(with_options) + ", " if len(with_options) > 0 else ""
+        with_options_str = (
+            ",".join(with_options) + ", " if len(with_options) > 0 else ""
+        )
 
-        dump_cursor = self.__execute(f"BACKUP DATABASE ? TO DISK = ? WITH {with_options_str}STATS = ?;", [self.db_name, output_path, self.__STATS])
+        dump_cursor = self.__execute(
+            f"BACKUP DATABASE ? TO DISK = ? WITH {with_options_str}STATS = ?;",
+            [self.db_name, output_path, self.__STATS],
+        )
         self.__async_operation_progress("Dumping Database", dump_cursor)

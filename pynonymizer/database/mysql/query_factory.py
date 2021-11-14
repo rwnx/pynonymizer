@@ -2,6 +2,7 @@ from datetime import date, datetime
 from pynonymizer.database.exceptions import UnsupportedColumnStrategyError
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 from pynonymizer.fake import FakeDataType
+
 """
 All Static query generation functions
 """
@@ -9,7 +10,7 @@ _FAKE_COLUMN_TYPES = {
     FakeDataType.STRING: "TEXT",
     FakeDataType.DATE: "DATE",
     FakeDataType.DATETIME: "DATETIME",
-    FakeDataType.INT: "INT"
+    FakeDataType.INT: "INT",
 }
 
 # For preservation of unique values across versions of mysql, and this bug:
@@ -53,6 +54,7 @@ def _escape_sql_value(value):
 def get_truncate_table(table_name):
     return f"SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE `{table_name}`; SET FOREIGN_KEY_CHECKS=1;"
 
+
 def get_delete_table(table_name):
     return f"DELETE FROM `{table_name}`;"
 
@@ -61,9 +63,12 @@ def get_create_seed_table(table_name, qualifier_map):
     if len(qualifier_map) < 1:
         raise ValueError("Cannot create a seed table with no columns")
 
-    create_columns = [f"`{qualifier}` {_get_sql_type(strategy.data_type)}" for qualifier, strategy in qualifier_map.items()]
+    create_columns = [
+        f"`{qualifier}` {_get_sql_type(strategy.data_type)}"
+        for qualifier, strategy in qualifier_map.items()
+    ]
 
-    return "CREATE TABLE `{}` ({});".format(table_name, ",".join(create_columns) )
+    return "CREATE TABLE `{}` ({});".format(table_name, ",".join(create_columns))
 
 
 def get_drop_seed_table(table_name):
@@ -72,10 +77,14 @@ def get_drop_seed_table(table_name):
 
 def get_insert_seed_row(table_name, qualifier_map):
 
-    column_names = ",".join( [f"`{qualifier}`" for qualifier in qualifier_map.keys()] )
-    column_values = ",".join( [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()] )
+    column_names = ",".join([f"`{qualifier}`" for qualifier in qualifier_map.keys()])
+    column_values = ",".join(
+        [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()]
+    )
 
-    return "INSERT INTO `{}`({}) VALUES ({});".format(table_name, column_names, column_values)
+    return "INSERT INTO `{}`({}) VALUES ({});".format(
+        table_name, column_names, column_values
+    )
 
 
 def get_create_database(database_name):
@@ -95,20 +104,25 @@ def get_update_table(seed_table_name, update_table_strategy):
     for where, column_map in update_table_strategy.group_by_where().items():
         where_update_statements[where] = []
         for column_name, column_strategy in column_map.items():
-            where_update_statements[where].append("`{}` = {}".format(
-                column_name,
-                _get_column_subquery(seed_table_name, column_strategy))
+            where_update_statements[where].append(
+                "`{}` = {}".format(
+                    column_name, _get_column_subquery(seed_table_name, column_strategy)
+                )
             )
 
-        assignments = ",".join( where_update_statements[where] )
+        assignments = ",".join(where_update_statements[where])
         where_clause = f" WHERE {where}" if where else ""
 
-        output_statements.append( f"UPDATE `{update_table_strategy.table_name}` SET {assignments}{where_clause};")
+        output_statements.append(
+            f"UPDATE `{update_table_strategy.table_name}` SET {assignments}{where_clause};"
+        )
 
     return output_statements
 
 
 def get_dumpsize_estimate(database_name):
-    return "SELECT data_bytes " \
-           "FROM (SELECT SUM(data_length) AS data_bytes FROM information_schema.tables WHERE table_schema = '{}') " \
-           "AS data;".format(database_name)
+    return (
+        "SELECT data_bytes "
+        "FROM (SELECT SUM(data_length) AS data_bytes FROM information_schema.tables WHERE table_schema = '{}') "
+        "AS data;".format(database_name)
+    )

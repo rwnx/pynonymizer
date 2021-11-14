@@ -7,7 +7,7 @@ test_path_examples = [
     "complex/multi/part/path/test/",
     "complex\\multi\\part\\path\\test\\",
     "/absolute/path/test/",
-    "C:\\absolute\\path\\test\\"
+    "C:\\absolute\\path\\test\\",
 ]
 
 
@@ -18,7 +18,7 @@ test_path_examples = [
 def test_read_config_json(load_json, load_yaml, open, path_example):
     filepath = path_example + "test.json"
     config = read_config(filepath)
-    load_json.assert_called_once_with( open().__enter__().read() )
+    load_json.assert_called_once_with(open().__enter__().read())
     assert config == load_json()
 
 

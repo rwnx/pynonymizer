@@ -13,7 +13,6 @@ class NoExecutablesInPathTests(unittest.TestCase):
         with pytest.raises(DependencyError):
             PSqlDumpRunner("1.2.3.4", "user", "password", "name")
 
-
     def test_cmd_runner_missing_mysql(self):
         with pytest.raises(DependencyError):
             PSqlCmdRunner("1.2.3.4", "user", "password", "name")
@@ -24,12 +23,33 @@ class NoExecutablesInPathTests(unittest.TestCase):
 @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
 class DumperTests(unittest.TestCase):
     def test_open_dumper_defaults(self, check_output, popen):
-        dump_runner = PSqlDumpRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="5432", additional_opts="--quick --other-option=1")
+        dump_runner = PSqlDumpRunner(
+            "1.2.3.4",
+            "db_user",
+            "db_password",
+            "db_name",
+            db_port="5432",
+            additional_opts="--quick --other-option=1",
+        )
         open_result = dump_runner.open_dumper()
 
         # dumper should open a process for the current db dump, piping stdout for processing
-        popen.assert_called_with(['pg_dump', '--host','1.2.3.4', "--port", "5432", '--username', 'db_user', "--quick", "--other-option=1", 'db_name'],
-                                 env=SuperdictOf({"PGPASSWORD": "db_password"}), stdout=subprocess.PIPE)
+        popen.assert_called_with(
+            [
+                "pg_dump",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--quick",
+                "--other-option=1",
+                "db_name",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+            stdout=subprocess.PIPE,
+        )
 
         # dumper should return the stdout of that process
         assert open_result == popen.return_value.stdout
@@ -40,13 +60,35 @@ class DumperTests(unittest.TestCase):
 @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
 class CmdTests(unittest.TestCase):
     def test_open_batch_processor_defaults(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", db_port="5432", additional_opts="--quick --other-option=1")
+        cmd_runner = PSqlCmdRunner(
+            "1.2.3.4",
+            "db_user",
+            "db_password",
+            "db_name",
+            db_port="5432",
+            additional_opts="--quick --other-option=1",
+        )
         open_result = cmd_runner.open_batch_processor()
 
         # dumper should open a process for the current db dump, piping stdout for processing
-        popen.assert_called_with(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "--quiet",  "--quick", "--other-option=1"],
-                                 env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                 stdin=subprocess.PIPE)
+        popen.assert_called_with(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--dbname",
+                "db_name",
+                "--quiet",
+                "--quick",
+                "--other-option=1",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+            stdin=subprocess.PIPE,
+        )
 
         # dumper should return the stdin of that process
         assert open_result == popen.return_value.stdin
@@ -55,60 +97,189 @@ class CmdTests(unittest.TestCase):
         """
         execute should execute an arbitrary statement with valid args
         """
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
+        cmd_runner = PSqlCmdRunner(
+            "1.2.3.4",
+            "db_user",
+            "db_password",
+            "db_name",
+            additional_opts="--quick --other-option=1",
+        )
         execute_result = cmd_runner.execute("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--quick", "--other-option=1", "--command",
-                                         "SELECT `column` from `table`;"],
-                                        env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                        )
+        check_output.assert_called_with(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--quick",
+                "--other-option=1",
+                "--command",
+                "SELECT `column` from `table`;",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+        )
 
     def test_execute_list(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
-        execute_result = cmd_runner.execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
+        cmd_runner = PSqlCmdRunner(
+            "1.2.3.4",
+            "db_user",
+            "db_password",
+            "db_name",
+            additional_opts="--quick --other-option=1",
+        )
+        execute_result = cmd_runner.execute(
+            ["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"]
+        )
 
-        check_output.assert_any_call(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--quick", "--other-option=1", "--command",
-                                         "SELECT `column` from `table`;"],
-                                     env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                     )
+        check_output.assert_any_call(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--quick",
+                "--other-option=1",
+                "--command",
+                "SELECT `column` from `table`;",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+        )
 
-        check_output.assert_any_call(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--quick", "--other-option=1", "--command",
-                                         "SELECT `column2` from `table2`;"],
-                                     env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                     )
+        check_output.assert_any_call(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--quick",
+                "--other-option=1",
+                "--command",
+                "SELECT `column2` from `table2`;",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+        )
 
     def test_db_execute(self, check_output, popen):
         """
         execute should execute an arbitrary statement with valid args
         """
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
+        cmd_runner = PSqlCmdRunner(
+            "1.2.3.4",
+            "db_user",
+            "db_password",
+            "db_name",
+            additional_opts="--quick --other-option=1",
+        )
         execute_result = cmd_runner.db_execute("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "--quick", "--other-option=1", "--command", "SELECT `column` from `table`;"],
-                                        env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                        )
+        check_output.assert_called_with(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--dbname",
+                "db_name",
+                "--quick",
+                "--other-option=1",
+                "--command",
+                "SELECT `column` from `table`;",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+        )
 
     def test_db_execute_list(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
-        execute_result = cmd_runner.db_execute(["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"])
+        cmd_runner = PSqlCmdRunner(
+            "1.2.3.4",
+            "db_user",
+            "db_password",
+            "db_name",
+            additional_opts="--quick --other-option=1",
+        )
+        execute_result = cmd_runner.db_execute(
+            ["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"]
+        )
 
-        check_output.assert_any_call(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "--quick", "--other-option=1", "--command",
-                                      "SELECT `column` from `table`;"],
-                                     env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                     )
-        check_output.assert_any_call(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "--quick", "--other-option=1", "--command",
-                                      "SELECT `column2` from `table2`;"],
-                                     env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                     )
+        check_output.assert_any_call(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--dbname",
+                "db_name",
+                "--quick",
+                "--other-option=1",
+                "--command",
+                "SELECT `column` from `table`;",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+        )
+        check_output.assert_any_call(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--dbname",
+                "db_name",
+                "--quick",
+                "--other-option=1",
+                "--command",
+                "SELECT `column2` from `table2`;",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+        )
 
     def test_get_single_result(self, check_output, popen):
         """
         execute should execute an arbitrary statement and return the decoded, no-column result
         """
-        cmd_runner = PSqlCmdRunner("1.2.3.4", "db_user", "db_password", "db_name", additional_opts="--quick --other-option=1")
+        cmd_runner = PSqlCmdRunner(
+            "1.2.3.4",
+            "db_user",
+            "db_password",
+            "db_name",
+            additional_opts="--quick --other-option=1",
+        )
         single_result = cmd_runner.get_single_result("SELECT `column` from `table`;")
 
-        check_output.assert_called_with(["psql", "--host", "1.2.3.4", "--port", "5432", "--username", "db_user", "--dbname", "db_name", "-tA", "--quick", "--other-option=1", "--command", "SELECT `column` from `table`;"],
-                                        env=SuperdictOf({"PGPASSWORD": "db_password"}),
-                                        )
+        check_output.assert_called_with(
+            [
+                "psql",
+                "--host",
+                "1.2.3.4",
+                "--port",
+                "5432",
+                "--username",
+                "db_user",
+                "--dbname",
+                "db_name",
+                "-tA",
+                "--quick",
+                "--other-option=1",
+                "--command",
+                "SELECT `column` from `table`;",
+            ],
+            env=SuperdictOf({"PGPASSWORD": "db_password"}),
+        )
         assert single_result == check_output.return_value.decode.return_value

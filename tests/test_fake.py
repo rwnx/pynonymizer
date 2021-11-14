@@ -10,10 +10,12 @@ class CustomProviderTests(unittest.TestCase):
     @patch("importlib.import_module")
     @patch("pynonymizer.fake.Faker")
     def test_when_using_custom_provider_should_add_provider(self, fake, import_module):
-        generator = FakeColumnGenerator(locale="en_GB", providers=["some.module.somewhere.MagicProvider"])
+        generator = FakeColumnGenerator(
+            locale="en_GB", providers=["some.module.somewhere.MagicProvider"]
+        )
         import_module.assert_any_call("some.module.somewhere")
         fake().add_provider.assert_any_call(import_module().MagicProvider)
-        
+
 
 class FakeColumnGeneratorTests(unittest.TestCase):
     def setUp(self):

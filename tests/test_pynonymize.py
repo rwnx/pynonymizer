@@ -2,7 +2,11 @@ import pytest
 import unittest
 from unittest.mock import patch, Mock, mock_open
 from pynonymizer.cli import cli
-from pynonymizer.pynonymize import ArgumentValidationError, DatabaseConnectionError, pynonymize
+from pynonymizer.pynonymize import (
+    ArgumentValidationError,
+    DatabaseConnectionError,
+    pynonymize,
+)
 from types import SimpleNamespace
 
 
@@ -13,8 +17,9 @@ def test_pynonymize_missing_db_credentials():
             strategyfile_path="strategyfile.yml",
             output_path="output.sql",
             db_user=None,
-            db_password=None
+            db_password=None,
         )
+
 
 @patch("dotenv.find_dotenv", Mock())
 @patch("dotenv.load_dotenv", Mock())
@@ -24,7 +29,9 @@ def test_pynonymize_missing_db_credentials():
 @patch("pynonymizer.pynonymize.StrategyParser")
 @patch("builtins.open", mock_open(read_data="TESTFILEDATA"))
 class MainProcessTests(unittest.TestCase):
-    def test_any_db_kwarg(self, StrategyParser, FakeColumnSet, get_provider, read_config):
+    def test_any_db_kwarg(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         """
         test that dynamic args are passed to the provider properly e.g. mssql_blah
         """
@@ -39,13 +46,24 @@ class MainProcessTests(unittest.TestCase):
             db_user="TEST_USER",
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
-            mysql_other_amazing_var="TEST_DYNAMIC_VAR", # as this is mssql, this should be ignored
-            mssql_special_provider_var="TEST_DYNAMIC_VAR2"
+            mysql_other_amazing_var="TEST_DYNAMIC_VAR",  # as this is mssql, this should be ignored
+            mssql_special_provider_var="TEST_DYNAMIC_VAR2",
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="mssql", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150, special_provider_var="TEST_DYNAMIC_VAR2")
+        get_provider.assert_called_with(
+            type="mssql",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+            special_provider_var="TEST_DYNAMIC_VAR2",
+        )
 
-    def test_pynonymize_main_process(self, StrategyParser, FakeColumnSet, get_provider, read_config):
+    def test_pynonymize_main_process(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         """
         a rough smoke test for the cli process. This needs an integration test to back it up.
         """
@@ -60,10 +78,18 @@ class MainProcessTests(unittest.TestCase):
             db_user="TEST_USER",
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
-            seed_rows=999
+            seed_rows=999,
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT",  db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=999)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=999,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()
@@ -72,7 +98,9 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_pynonymize_only_step(self, StrategyParser, FakeColumnSet, get_provider, read_config):
+    def test_pynonymize_only_step(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -84,10 +112,18 @@ class MainProcessTests(unittest.TestCase):
             db_user="TEST_USER",
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
-            only_step="ANONYMIZE_DB"
+            only_step="ANONYMIZE_DB",
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_not_called()
@@ -96,7 +132,9 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_not_called()
 
-    def test_pynonymize_stop_at_step(self, StrategyParser, FakeColumnSet, get_provider, read_config):
+    def test_pynonymize_stop_at_step(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -108,10 +146,18 @@ class MainProcessTests(unittest.TestCase):
             db_user="TEST_USER",
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
-            stop_at_step="ANONYMIZE_DB"
+            stop_at_step="ANONYMIZE_DB",
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()
@@ -120,8 +166,9 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_not_called()
 
-    def test_pynonymize_skip_steps(self, StrategyParser, FakeColumnSet, get_provider,
-                                     read_config):
+    def test_pynonymize_skip_steps(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -133,9 +180,17 @@ class MainProcessTests(unittest.TestCase):
             db_user="TEST_USER",
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
-            skip_steps=["ANONYMIZE_DB", "CREATE_DB", "DUMP_DB"]
+            skip_steps=["ANONYMIZE_DB", "CREATE_DB", "DUMP_DB"],
         )
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_not_called()
@@ -144,8 +199,9 @@ class MainProcessTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_called()
 
-    def test_pynonymize_start_at_step(self, StrategyParser, FakeColumnSet, get_provider,
-                                      read_config):
+    def test_pynonymize_start_at_step(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -157,10 +213,18 @@ class MainProcessTests(unittest.TestCase):
             db_user="TEST_USER",
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
-            start_at_step="ANONYMIZE_DB"
+            start_at_step="ANONYMIZE_DB",
         )
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_not_called()
@@ -192,8 +256,10 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
     END = 9999
 
     """
-    def test_optional_input_when_skip_input_steps(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+
+    def test_optional_input_when_skip_input_steps(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path=None,
             strategyfile_path="TEST_STRATEGYFILE",
@@ -207,11 +273,19 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step=None,
             stop_at_step=None,
-            skip_steps=["RESTORE_DB"]
+            skip_steps=["RESTORE_DB"],
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()
@@ -220,8 +294,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_input_when_start_at_after_input_steps(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_input_when_start_at_after_input_steps(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path=None,
             strategyfile_path="TEST_STRATEGYFILE",
@@ -235,11 +310,19 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step="ANONYMIZE_DB",
             stop_at_step=None,
-            skip_steps=None
+            skip_steps=None,
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_not_called()
@@ -248,8 +331,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_input_when_stop_at_before_input_steps(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_input_when_stop_at_before_input_steps(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path=None,
             strategyfile_path="TEST_STRATEGYFILE",
@@ -263,10 +347,18 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step=None,
             stop_at_step="CREATE_DB",
-            skip_steps=None
+            skip_steps=None,
         )
 
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()
@@ -275,8 +367,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_not_called()
 
-    def test_optional_strategyfile_when_skip_anonymize(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_strategyfile_when_skip_anonymize(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path=None,
@@ -290,9 +383,17 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step=None,
             stop_at_step=None,
-            skip_steps=["ANONYMIZE_DB"]
+            skip_steps=["ANONYMIZE_DB"],
         )
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()
@@ -301,8 +402,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_strategyfile_when_start_at_after_anonymize(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_strategyfile_when_start_at_after_anonymize(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path=None,
@@ -316,9 +418,17 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step="DUMP_DB",
             stop_at_step=None,
-            skip_steps=None
+            skip_steps=None,
         )
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_not_called()
@@ -327,8 +437,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
 
-    def test_optional_strategyfile_when_stop_at_before_anonymize(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_strategyfile_when_stop_at_before_anonymize(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path=None,
@@ -342,9 +453,17 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step=None,
             stop_at_step="RESTORE_DB",
-            skip_steps=None
+            skip_steps=None,
         )
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()
@@ -353,8 +472,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_not_called()
 
-    def test_optional_output_when_skip_output_steps(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_output_when_skip_output_steps(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -368,11 +488,19 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step=None,
             stop_at_step=None,
-            skip_steps=["DUMP_DB"]
+            skip_steps=["DUMP_DB"],
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()
@@ -381,8 +509,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_called()
 
-    def test_optional_output_when_start_at_after_output_steps(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_output_when_start_at_after_output_steps(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -396,9 +525,17 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step="DROP_DB",
             stop_at_step=None,
-            skip_steps=None
+            skip_steps=None,
         )
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_not_called()
@@ -407,8 +544,9 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
         provider.dump_database.assert_not_called()
         provider.drop_database.assert_called()
 
-    def test_optional_output_when_stop_at_before_output_steps(self, StrategyParser, FakeColumnSet,
-                                                  get_provider, read_config):
+    def test_optional_output_when_stop_at_before_output_steps(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -422,11 +560,19 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             start_at_step=None,
             stop_at_step=None,
-            skip_steps=["DUMP_DB"]
+            skip_steps=["DUMP_DB"],
         )
 
         StrategyParser.return_value.parse_config.assert_called()
-        get_provider.assert_called_with(type="TEST_TYPE", db_host="TEST_HOST", db_port="TEST_PORT", db_user="TEST_USER", db_pass="TEST_PASSWORD", db_name="TEST_NAME", seed_rows=150)
+        get_provider.assert_called_with(
+            type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_user="TEST_USER",
+            db_pass="TEST_PASSWORD",
+            db_name="TEST_NAME",
+            seed_rows=150,
+        )
 
         provider = get_provider.return_value
         provider.create_database.assert_called()

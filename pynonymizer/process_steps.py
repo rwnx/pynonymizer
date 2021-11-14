@@ -50,19 +50,25 @@ class StepSkippedReason(SkipReason):
         self.skipped_steps = skipped_steps
 
     def __str__(self):
-        formatted_skips = ", ".join(["[{}]".format(step.name) for step in self.skipped_steps])
+        formatted_skips = ", ".join(
+            ["[{}]".format(step.name) for step in self.skipped_steps]
+        )
         return "Skipping ({})".format(formatted_skips)
+
 
 class DryRunReason(SkipReason):
     def __str__(self):
         return "Skipping (DRY RUN)"
+
 
 class StepAction:
     """
     A container that represents the action for a step (run, or skip) and the reason(s) why
     """
 
-    def __init__(self, process_step, start_at_step, stop_at_step, skip_steps, dry_run=False):
+    def __init__(
+        self, process_step, start_at_step, stop_at_step, skip_steps, dry_run=False
+    ):
         self.process_step = process_step
 
         skip_reasons = []
@@ -91,22 +97,33 @@ class StepAction:
     def summary(self):
         if self.skipped:
             skip_strings = [str(reason) for reason in self.skip_reasons]
-            return "Skipped [{}]: ({})".format(self.process_step.name, ",\n".join(skip_strings))
+            return "Skipped [{}]: ({})".format(
+                self.process_step.name, ",\n".join(skip_strings)
+            )
         else:
             return "[{}]".format(self.process_step.name)
 
 
 class StepActionMap:
-    def __init__(self, start_at_step=ProcessSteps.START, stop_at_step=ProcessSteps.END, skip_steps=None, dry_run=False, only_step=None):
+    def __init__(
+        self,
+        start_at_step=ProcessSteps.START,
+        stop_at_step=ProcessSteps.END,
+        skip_steps=None,
+        dry_run=False,
+        only_step=None,
+    ):
         action_map = {}
         if only_step:
             start_at_step = only_step
             stop_at_step = only_step
-            
+
         if skip_steps is None:
             skip_steps = []
         for step in ProcessSteps:
-            action_map[step] = StepAction(step, start_at_step, stop_at_step, skip_steps, dry_run=dry_run)
+            action_map[step] = StepAction(
+                step, start_at_step, stop_at_step, skip_steps, dry_run=dry_run
+            )
 
         self.__action_map = action_map
 

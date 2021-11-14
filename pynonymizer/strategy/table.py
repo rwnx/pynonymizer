@@ -24,8 +24,10 @@ class TableStrategy(ABC):
     def qualified_name(self):
         return f"{self.schema}.{self.table_name}" if self.schema else self.table_name
 
+
 class DeleteTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.DELETE
+
 
 class TruncateTableStrategy(TableStrategy):
     strategy_type = TableStrategyTypes.TRUNCATE
@@ -52,7 +54,9 @@ class UpdateColumnsTableStrategy(TableStrategy):
             if where_condition not in grouped_columns:
                 grouped_columns[where_condition] = {}
 
-            grouped_columns[where_condition][column_strategy.column_name] = column_strategy
+            grouped_columns[where_condition][
+                column_strategy.column_name
+            ] = column_strategy
 
         return grouped_columns
 

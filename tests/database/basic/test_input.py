@@ -1,7 +1,13 @@
 import pytest
 from unittest import TestCase
 from unittest.mock import mock_open, patch
-from pynonymizer.database.basic.input import GzipInput, RawInput, UnknownInputTypeError, resolve_input, StdInInput
+from pynonymizer.database.basic.input import (
+    GzipInput,
+    RawInput,
+    UnknownInputTypeError,
+    resolve_input,
+    StdInInput,
+)
 
 
 def test_gzip_open():
@@ -14,7 +20,7 @@ def test_gzip_open():
 
 
 def test_gzip_get_size():
-    with patch("builtins.open", mock_open(read_data=b'X\x1f\x00\x00')) as mock_file:
+    with patch("builtins.open", mock_open(read_data=b"X\x1f\x00\x00")) as mock_file:
         gz = GzipInput("testfile.gz")
         assert gz.get_size() == 8024
 
@@ -29,11 +35,13 @@ def test_raw_open():
 
         assert open_result == mock_file.return_value
 
+
 def test_stdin_open():
     with patch("sys.stdin") as mock_stdin:
         std = StdInInput()
 
         assert std.open() is mock_stdin.buffer
+
 
 @patch("os.path.getsize", autospec=True)
 def test_raw_get_size(getsize):
@@ -49,13 +57,14 @@ def test_raw_get_size(getsize):
 def test_resolve_stdin():
     assert isinstance(resolve_input("-"), StdInInput)
 
+
 class ResolveFromFilepathTest(TestCase):
     test_path_examples = [
         "",
         "complex/multi/part/path/test/",
         "complex\\multi\\part\\path\\test\\",
         "/absolute/path/test/",
-        "C:\\absolute\\path\\test\\"
+        "C:\\absolute\\path\\test\\",
     ]
 
     def test_resolve_raw(self):

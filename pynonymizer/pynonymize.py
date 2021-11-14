@@ -11,18 +11,31 @@ logger = logging.getLogger(__name__)
 
 
 def pynonymize(
-        input_path=None, strategyfile_path=None, output_path=None, db_user=None, db_password=None, db_type=None,
-        db_host=None, db_name=None, db_port=None, fake_locale=None, only_step=None, start_at_step=None, stop_at_step=None, skip_steps=None,
-        seed_rows=None, dry_run=False, verbose=False,
-
-        **kwargs
-    ):
+    input_path=None,
+    strategyfile_path=None,
+    output_path=None,
+    db_user=None,
+    db_password=None,
+    db_type=None,
+    db_host=None,
+    db_name=None,
+    db_port=None,
+    fake_locale=None,
+    only_step=None,
+    start_at_step=None,
+    stop_at_step=None,
+    skip_steps=None,
+    seed_rows=None,
+    dry_run=False,
+    verbose=False,
+    **kwargs,
+):
     """
     Runs a pynonymize process as if the CLI had been invoked.
 
     :raises:
         ArgumentValidationError: used when kwargs are missing or unable to be auto-resolved.
-        
+
     """
     # Default and Normalize args
     if only_step is not None:
@@ -52,7 +65,7 @@ def pynonymize(
         stop_at_step=stop_at_step,
         skip_steps=skip_steps,
         dry_run=dry_run,
-        only_step=only_step
+        only_step=only_step,
     )
 
     # Validate mandatory args (depends on step actions)
@@ -91,7 +104,9 @@ def pynonymize(
         strategy_parser = StrategyParser(fake_locale)
 
         logger.debug("loading strategyfile %s...", strategyfile_path)
-        strategy = strategy_parser.parse_config(read_config(strategyfile_path), locale_override=fake_locale)
+        strategy = strategy_parser.parse_config(
+            read_config(strategyfile_path), locale_override=fake_locale
+        )
 
     # Discover db-type kwargs
     # mssql_backup_option -> backup_option and pass these to the constructor
@@ -99,9 +114,11 @@ def pynonymize(
     db_arg_prefix = f"{db_type}_"
     for k, v in kwargs.items():
         if k.startswith(db_arg_prefix):
-            db_kwargs[ k[len(db_arg_prefix):] ] = v
+            db_kwargs[k[len(db_arg_prefix) :]] = v
 
-    logger.debug("Database: (%s:%s)%s@%s name: %s", db_host, db_port, db_type, db_user, db_name)
+    logger.debug(
+        "Database: (%s:%s)%s@%s name: %s", db_host, db_port, db_type, db_user, db_name
+    )
     db_provider = get_provider(
         type=db_type,
         db_host=db_host,
@@ -110,7 +127,7 @@ def pynonymize(
         db_name=db_name,
         db_port=db_port,
         seed_rows=seed_rows,
-        **db_kwargs
+        **db_kwargs,
     )
 
     # main process - no destructive/non-retryable actions should happen before this line ---
