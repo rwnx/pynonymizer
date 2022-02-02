@@ -197,7 +197,7 @@ class MySqlProvider(DatabaseProvider):
                         batch_processor.flush()
                         bar.update(len(chunk))
         finally:
-            batch_processor.close()
+            self.__runner.close_batch_processor()
 
     def dump_database(self, output_path):
         """

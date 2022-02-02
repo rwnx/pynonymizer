@@ -55,6 +55,7 @@ class MySqlCmdRunner:
         self.db_name = db_name
         self.db_port = db_port
         self.additional_opts = shlex.split(additional_opts)
+        self.process = None
 
         if not (shutil.which("mysql")):
             raise DependencyError(
@@ -142,7 +143,15 @@ class MySqlCmdRunner:
             self.__mask_subprocess_error(error)
 
     def open_batch_processor(self):
-        return subprocess.Popen(
+        self.close_batch_processor()
+        self.process = subprocess.Popen(
             self.__get_base_params() + self.additional_opts + [self.db_name],
             stdin=subprocess.PIPE,
-        ).stdin
+        )
+        return self.process.stdin
+
+    def close_batch_processor(self):
+        if self.process is not None:
+            self.process.stdin.close()
+            self.process.wait()
+            self.process = None
