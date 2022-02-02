@@ -60,6 +60,7 @@ class PSqlCmdRunner:
         self.db_name = db_name
         self.db_port = db_port
         self.additional_opts = shlex.split(additional_opts)
+        self.process = None
 
         if not (shutil.which("psql")):
             raise DependencyError(
@@ -139,10 +140,18 @@ class PSqlCmdRunner:
         ).decode()
 
     def open_batch_processor(self):
-        return subprocess.Popen(
+        self.close_batch_processor()
+        self.process = subprocess.Popen(
             self.__get_base_params()
             + ["--dbname", self.db_name, "--quiet"]
             + self.additional_opts,
             env=self.__get_env(),
             stdin=subprocess.PIPE,
-        ).stdin
+        )
+        return self.process.stdin
+
+    def close_batch_processor(self):
+        if self.process is not None:
+            self.process.stdin.close()
+            self.process.wait()
+            self.process = None
