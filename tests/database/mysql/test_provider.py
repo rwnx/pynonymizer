@@ -117,7 +117,7 @@ def test_dump_database(resolve_output, query_factory, execution):
 @patch("pynonymizer.database.mysql.execution", autospec=True)
 @patch("pynonymizer.database.mysql.query_factory", autospec=True)
 def test_anonymize_database_unsupported_table_strategy(query_factory, execution):
-    with pytest.raises(UnsupportedTableStrategyError) as e_info:
+    with pytest.raises(Exception) as e_info:
         provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
         database_strategy = DatabaseStrategy(
             [
