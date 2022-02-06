@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.22.0] 2022-02-06
 - Fixed a bug in mysql/postgres that didn't wait for the restore dump process to complete before starting the anonymize procedure
 - Changed anonymization process to attempt to attempt anonymize all tables before throwing errors. [#96]
 
