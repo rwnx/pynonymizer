@@ -319,64 +319,79 @@ class MsSqlProvider(DatabaseProvider):
         table_strategies = database_strategy.table_strategies
         self.logger.info("Anonymizing %d tables", len(table_strategies))
 
+        anonymization_errors = []
+
         with tqdm(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
             for table_strategy in table_strategies:
-                table_name = table_strategy.table_name
-                schema_prefix = (
-                    f"[{table_strategy.schema}]." if table_strategy.schema else ""
-                )
-
-                if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-                    progressbar.set_description("Truncating {}".format(table_name))
-                    self.__db_execute(
-                        "TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name)
+                try:
+                    table_name = table_strategy.table_name
+                    schema_prefix = (
+                        f"[{table_strategy.schema}]." if table_strategy.schema else ""
                     )
 
-                elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
-                    progressbar.set_description("Deleting {}".format(table_name))
-                    self.__db_execute(
-                        "DELETE FROM {}[{}];".format(schema_prefix, table_name)
-                    )
-
-                elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
-                    progressbar.set_description("Anonymizing {}".format(table_name))
-                    where_grouping = table_strategy.group_by_where()
-                    total_wheres = len(where_grouping)
-
-                    for i, (where, column_map) in enumerate(where_grouping.items()):
-                        column_assignments = ",".join(
-                            [
-                                "[{}] = {}".format(
-                                    name,
-                                    self.__get_column_subquery(
-                                        column, table_name, name
-                                    ),
-                                )
-                                for name, column in column_map.items()
-                            ]
-                        )
-                        where_clause = f" WHERE {where}" if where else ""
-                        progressbar.set_description(
-                            "Anonymizing {}: w[{}/{}]".format(
-                                table_name, i + 1, total_wheres
-                            )
-                        )
-                        # Disable ANSI_WARNINGS to allow oversized fake data to be truncated without error
+                    if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
+                        progressbar.set_description("Truncating {}".format(table_name))
                         self.__db_execute(
-                            "SET ANSI_WARNINGS off; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS on;".format(
-                                schema_prefix,
-                                table_name,
-                                column_assignments,
-                                where_clause,
-                            )
+                            "TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name)
                         )
 
-                else:
-                    raise UnsupportedTableStrategyError(table_strategy)
+                    elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
+                        progressbar.set_description("Deleting {}".format(table_name))
+                        self.__db_execute(
+                            "DELETE FROM {}[{}];".format(schema_prefix, table_name)
+                        )
+
+                    elif (
+                        table_strategy.strategy_type
+                        == TableStrategyTypes.UPDATE_COLUMNS
+                    ):
+                        progressbar.set_description("Anonymizing {}".format(table_name))
+                        where_grouping = table_strategy.group_by_where()
+                        total_wheres = len(where_grouping)
+
+                        for i, (where, column_map) in enumerate(where_grouping.items()):
+                            column_assignments = ",".join(
+                                [
+                                    "[{}] = {}".format(
+                                        name,
+                                        self.__get_column_subquery(
+                                            column, table_name, name
+                                        ),
+                                    )
+                                    for name, column in column_map.items()
+                                ]
+                            )
+                            where_clause = f" WHERE {where}" if where else ""
+                            progressbar.set_description(
+                                "Anonymizing {}: w[{}/{}]".format(
+                                    table_name, i + 1, total_wheres
+                                )
+                            )
+                            # Disable ANSI_WARNINGS to allow oversized fake data to be truncated without error
+                            self.__db_execute(
+                                "SET ANSI_WARNINGS off; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS on;".format(
+                                    schema_prefix,
+                                    table_name,
+                                    column_assignments,
+                                    where_clause,
+                                )
+                            )
+
+                    else:
+                        raise UnsupportedTableStrategyError(table_strategy)
+
+                except Exception as e:
+                    anonymization_errors.append(e)
+                    self.logger.exception(
+                        f"Error while anonymizing table {table_strategy.qualified_name}"
+                    )
 
                 progressbar.update()
+
+        if len(anonymization_errors) > 0:
+            raise Exception("Error during anonymization")
 
         self.__run_scripts(database_strategy.after_scripts, "after")
 

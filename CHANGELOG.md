@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 - Fixed a bug in mysql/postgres that didn't wait for the restore dump process to complete before starting the anonymize procedure
+- Changed anonymization process to attempt to attempt anonymize all tables before throwing errors. [#96]
 
 ## [1.21.3] 2021-11-14
 - Added a workflow that automatically runs `black` on incoming PRs, to set a canonical standard for formatting in the project.

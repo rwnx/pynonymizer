@@ -133,39 +133,53 @@ class PostgreSqlProvider(DatabaseProvider):
         table_strategies = database_strategy.table_strategies
         self.logger.info("Anonymizing %d tables", len(table_strategies))
 
+        anonymization_errors = []
+
         with tqdm(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
             for table_strategy in table_strategies:
-                if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-                    progressbar.set_description(
-                        "Truncating {}".format(table_strategy.qualified_name)
-                    )
-                    self.__runner.db_execute(
-                        query_factory.get_truncate_table(table_strategy)
-                    )
+                try:
+                    if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
+                        progressbar.set_description(
+                            "Truncating {}".format(table_strategy.qualified_name)
+                        )
+                        self.__runner.db_execute(
+                            query_factory.get_truncate_table(table_strategy)
+                        )
 
-                elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
-                    progressbar.set_description(
-                        "Deleting {}".format(table_strategy.qualified_name)
-                    )
-                    self.__runner.db_execute(
-                        query_factory.get_delete_table(table_strategy)
-                    )
+                    elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
+                        progressbar.set_description(
+                            "Deleting {}".format(table_strategy.qualified_name)
+                        )
+                        self.__runner.db_execute(
+                            query_factory.get_delete_table(table_strategy)
+                        )
 
-                elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
-                    progressbar.set_description(
-                        "Anonymizing {}".format(table_strategy.qualified_name)
-                    )
-                    statements = query_factory.get_update_table(
-                        SEED_TABLE_NAME, table_strategy
-                    )
-                    self.__runner.db_execute(statements)
+                    elif (
+                        table_strategy.strategy_type
+                        == TableStrategyTypes.UPDATE_COLUMNS
+                    ):
+                        progressbar.set_description(
+                            "Anonymizing {}".format(table_strategy.qualified_name)
+                        )
+                        statements = query_factory.get_update_table(
+                            SEED_TABLE_NAME, table_strategy
+                        )
+                        self.__runner.db_execute(statements)
 
-                else:
-                    raise UnsupportedTableStrategyError(table_strategy)
+                    else:
+                        raise UnsupportedTableStrategyError(table_strategy)
+                except Exception as e:
+                    anonymization_errors.append(e)
+                    self.logger.exception(
+                        f"Error while anonymizing table {table_strategy.qualified_name}"
+                    )
 
                 progressbar.update()
+
+        if len(anonymization_errors) > 0:
+            raise Exception("Error during anonymization")
 
         self.__run_scripts(database_strategy.after_scripts, "after")
 
