@@ -28,6 +28,7 @@ def pynonymize(
     seed_rows=None,
     dry_run=False,
     verbose=False,
+    ignore_anonymization_errors=False,
     **kwargs,
 ):
     """
@@ -141,7 +142,11 @@ def pynonymize(
 
     logger.info(actions.summary(ProcessSteps.ANONYMIZE_DB))
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
-        db_provider.anonymize_database(strategy)
+        try:
+            db_provider.anonymize_database(strategy)
+        except Exception as e:
+            if not ignore_anonymization_errors:
+                raise e
 
     logger.info(actions.summary(ProcessSteps.DUMP_DB))
     if not actions.skipped(ProcessSteps.DUMP_DB):

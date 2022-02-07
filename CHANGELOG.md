@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Added a new option, `--ignore-anonymization-errors` that will allow the anonymization step to error without propagating errors upstream. This is useful if you always want the resulting dumpfile, even when there are db or schema faults. 
 
 ## [1.22.0] 2022-02-06
 - Fixed a bug in mysql/postgres that didn't wait for the restore dump process to complete before starting the anonymize procedure

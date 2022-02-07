@@ -121,7 +121,8 @@ usage: pynonymizer [-h] [--input INPUT]
                    [--mysql-dump-opts MYSQL_DUMP_OPTS]
                    [--postgres-cmd-opts POSTGRES_CMD_OPTS]
                    [--postgres-dump-opts POSTGRES_DUMP_OPTS]
-                   [-v] [--verbose] [--dry-run]
+                   [-v] [--verbose] [--dry-run] 
+                   [--ignore-anonymization-errors]
 
 A tool for writing better anonymization strategies for your
 production databases.
@@ -210,6 +211,10 @@ optional arguments:
   --dry-run             Instruct pynonymizer to skip all process
                         steps. Useful for testing safely.
                         [$PYNONYMIZER_DRY_RUN]
+  --ignore-anonymization-errors
+                        Instruct pynonymizer to ignore errors during the 
+                        anonymization process and continue as normal
+                        [$PYNONYMIZER_IGNORE_ANONYMIZATION_ERRORS]
 
 ```
 ### Package
