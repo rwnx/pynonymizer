@@ -20,7 +20,6 @@ Pynonymize offers a few of options for controlling the process.
 ## Steps
 Pynonymizer's process is broken into steps:
   - `START`: NOOP action, first
-  - `GET_SOURCE`: Fetch input (future)
   - `CREATE_DB`: Create the named database
   - `RESTORE_DB`: Restore the database from input 
   - `ANONYMIZE_DB`: Run the anonymization process
