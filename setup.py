@@ -1,9 +1,6 @@
 import setuptools
 import sys
 
-if sys.version_info < (3, 6):
-    sys.exit("pynonymizer requires Python 3.6+ to run")
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -21,10 +18,10 @@ setuptools.setup(
         "Operating System :: POSIX",
         "Topic :: Database",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     author="Rowan Twell",
     author_email="rxntwe@gmail.com",
