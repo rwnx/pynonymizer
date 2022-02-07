@@ -200,6 +200,13 @@ def create_parser():
         help="Instruct pynonymizer to skip all process steps. Useful for testing safely.  [$PYNONYMIZER_DRY_RUN]",
     )
 
+    parser.add_argument(
+        "--ignore-anonymization-errors",
+        default=os.getenv("PYNONYMIZER_IGNORE_ANONYMIZATION_ERRORS") or False,
+        action="store_true",
+        help="Instruct pynonymizer to ignore errors during the anonymization process and continue as normal.  [$PYNONYMIZER_IGNORE_ANONYMIZATION_ERRORS]",
+    )
+
     return parser
 
 
@@ -292,6 +299,7 @@ def cli(rawArgs=None):
             postgres_dump_opts=args.postgres_dump_opts,
             dry_run=args.dry_run,
             verbose=args.verbose,
+            ignore_anonymization_errors=args.ignore_anonymization_errors,
         )
     except ModuleNotFoundError as error:
         if error.name == "pyodbc" and args.db_type == "mssql":

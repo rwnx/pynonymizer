@@ -64,9 +64,6 @@ class MainProcessTests(unittest.TestCase):
     def test_pynonymize_main_process(
         self, StrategyParser, FakeColumnSet, get_provider, read_config
     ):
-        """
-        a rough smoke test for the cli process. This needs an integration test to back it up.
-        """
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",
@@ -232,6 +229,48 @@ class MainProcessTests(unittest.TestCase):
         provider.anonymize_database.assert_called()
         provider.dump_database.assert_called()
         provider.drop_database.assert_called()
+
+    def test_pynonymize__when_anonymize_raises__should_error(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
+        get_provider.return_value.anonymize_database.side_effect = Exception(
+            "a problem!"
+        )
+        with pytest.raises(Exception):
+            pynonymize(
+                input_path="TEST_INPUT",
+                strategyfile_path="TEST_STRATEGYFILE",
+                output_path="TEST_OUTPUT",
+                db_type="TEST_TYPE",
+                db_host="TEST_HOST",
+                db_port="TEST_PORT",
+                db_name="TEST_NAME",
+                db_user="TEST_USER",
+                db_password="TEST_PASSWORD",
+                fake_locale="TEST_LOCALE",
+                seed_rows=999,
+            )
+
+    def test_pynonymize__when_ignore_errors_when_anonymize_raises__should_not_error(
+        self, StrategyParser, FakeColumnSet, get_provider, read_config
+    ):
+        get_provider.return_value.anonymize_database.side_effect = Exception(
+            "a problem!"
+        )
+        pynonymize(
+            input_path="TEST_INPUT",
+            strategyfile_path="TEST_STRATEGYFILE",
+            output_path="TEST_OUTPUT",
+            db_type="TEST_TYPE",
+            db_host="TEST_HOST",
+            db_port="TEST_PORT",
+            db_name="TEST_NAME",
+            db_user="TEST_USER",
+            db_password="TEST_PASSWORD",
+            fake_locale="TEST_LOCALE",
+            seed_rows=999,
+            ignore_anonymization_errors=True,
+        )
 
 
 @patch("dotenv.find_dotenv", Mock())

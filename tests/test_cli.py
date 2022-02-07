@@ -45,6 +45,7 @@ class MainArgTests(unittest.TestCase):
             postgres_cmd_opts="--additional",
             dry_run=True,
             verbose=True,
+            ignore_anonymization_errors=True,
         )
 
     @patch("os.getenv", Mock(side_effect=mock_getenv_old))
@@ -79,6 +80,7 @@ class MainArgTests(unittest.TestCase):
             postgres_cmd_opts="--additional",
             dry_run=True,
             verbose=True,
+            ignore_anonymization_errors=True,
         )
 
     def test_dotenv_called(self, pynonymize, create_parser, load_dotenv, find_dotenv):
@@ -152,6 +154,7 @@ class MainArgTests(unittest.TestCase):
             postgres_cmd_opts="--additional",
             dry_run=True,
             verbose=True,
+            ignore_anonymization_errors=True,
         )
 
 
