@@ -3,7 +3,6 @@ from enum import Enum
 
 class ProcessSteps(Enum):
     START = 0
-    GET_SOURCE = 100
     CREATE_DB = 200
     RESTORE_DB = 300
     ANONYMIZE_DB = 400

@@ -286,7 +286,6 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
     that are only mandatory for certain steps.
 
     START = 0
-    GET_SOURCE = 100
     CREATE_DB = 200
     RESTORE_DB = 300
     ANONYMIZE_DB = 400
