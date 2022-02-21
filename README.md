@@ -42,7 +42,8 @@ There are a wide variety of data types available which should suit the column in
 * `file_path`
 * `[...]`
 
-For a full list of data generation strategies, see the docs on [strategyfiles](https://github.com/rwnx/pynonymizer/blob/master/doc/strategyfiles.md)
+Pynonymizer's main data replacement mechanism `fake_update` is a random selection from a small pool of data (`--seed-rows` controls the available Faker data). This process is chosen for compatibility and speed of operation, but does not guarantee uniqueness. 
+This may or may not suit your exact use-case. For a full list of data generation strategies, see the docs on [strategyfiles](https://github.com/rwnx/pynonymizer/blob/master/doc/strategyfiles.md)
 
 ### Examples
 
@@ -179,8 +180,8 @@ optional arguments:
                         [$PYNONYMIZER_STOP_AT]
   --seed-rows SEED_ROWS
                         Specify a number of rows to populate the
-                        fake data table used during
-                        anonymization. [$PYNONYMIZER_SEED_ROWS]
+                        fake data table used during anonymization. 
+                        Defaults to 150. [$PYNONYMIZER_SEED_ROWS]
   --mssql-driver MSSQL_DRIVER
                         [MSSQL] ODBC driver to use for database
                         connection [$PYNONYMIZER_MSSQL_DRIVER]

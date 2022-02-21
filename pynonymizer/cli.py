@@ -144,9 +144,9 @@ def create_parser():
 
     parser.add_argument(
         "--seed-rows",
-        default=os.getenv("PYNONYMIZER_SEED_ROWS"),
+        default=os.getenv("PYNONYMIZER_SEED_ROWS") or 150,
         type=int,
-        help="Specify a number of rows to populate the fake data table used during anonymization.  [$PYNONYMIZER_SEED_ROWS]",
+        help="Specify a number of rows to populate the fake data table used during anonymization. Defaults to 150. [$PYNONYMIZER_SEED_ROWS]",
     )
 
     parser.add_argument(

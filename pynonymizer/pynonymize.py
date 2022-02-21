@@ -58,9 +58,6 @@ def pynonymize(
     if db_type is None:
         db_type = "mysql"
 
-    if seed_rows is None:
-        seed_rows = 150
-
     actions = StepActionMap(
         start_at_step=start_at_step,
         stop_at_step=stop_at_step,

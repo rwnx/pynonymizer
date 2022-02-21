@@ -46,9 +46,6 @@ class PostgreSqlProvider(DatabaseProvider):
         self.db_name = db_name
         self.db_port = db_port
 
-        if seed_rows is None:
-            seed_rows = 150
-
         self.seed_rows = int(seed_rows)
 
         self.__runner = execution.PSqlCmdRunner(
