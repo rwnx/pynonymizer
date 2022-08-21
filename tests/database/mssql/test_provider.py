@@ -9,7 +9,9 @@ from tests.helpers import list_rindex
 
 @pytest.fixture
 def provider():
-    return MsSqlProvider(None, "DB_USER", "DB_PASS", "DB_NAME", driver="testdriver", seed_rows=150)
+    return MsSqlProvider(
+        None, "DB_USER", "DB_PASS", "DB_NAME", driver="testdriver", seed_rows=150
+    )
 
 
 @pytest.fixture
@@ -141,7 +143,9 @@ def mock_backup_side_effect(statement, *args, **kwargs):
 def test_detect_drivers__when_many_drivers__should_connect_with_highest_numbered(
     drivers, connect
 ):
-    provider = MsSqlProvider("192.168.2.1", "username", "password", "dbname", seed_rows=150)
+    provider = MsSqlProvider(
+        "192.168.2.1", "username", "password", "dbname", seed_rows=150
+    )
     provider.drop_database()
 
     connect.assert_any_call(
