@@ -9,7 +9,7 @@ from tests.helpers import list_rindex
 
 @pytest.fixture
 def provider():
-    return MsSqlProvider(None, "DB_USER", "DB_PASS", "DB_NAME", driver="testdriver")
+    return MsSqlProvider(None, "DB_USER", "DB_PASS", "DB_NAME", driver="testdriver", seed_rows=150)
 
 
 @pytest.fixture
@@ -21,6 +21,7 @@ def provider_with_compression():
         "DB_NAME",
         driver="testdriver",
         backup_compression=True,
+        seed_rows=150,
     )
 
 
@@ -140,7 +141,7 @@ def mock_backup_side_effect(statement, *args, **kwargs):
 def test_detect_drivers__when_many_drivers__should_connect_with_highest_numbered(
     drivers, connect
 ):
-    provider = MsSqlProvider("192.168.2.1", "username", "password", "dbname")
+    provider = MsSqlProvider("192.168.2.1", "username", "password", "dbname", seed_rows=150)
     provider.drop_database()
 
     connect.assert_any_call(
@@ -155,12 +156,12 @@ def test_detect_drivers__when_many_drivers__should_connect_with_highest_numbered
 @patch("pyodbc.drivers", return_value=[])
 def test_detect_drivers__when_no_drivers__raises_dependencyerror(drivers):
     with pytest.raises(DependencyError):
-        MsSqlProvider("192.168.2.1", "username", "password", "dbname")
+        MsSqlProvider("192.168.2.1", "username", "password", "dbname", seed_rows=150)
 
 
 def test_raise_on_remote_server_backup():
     provider = MsSqlProvider(
-        "192.168.2.1", "username", "password", "dbname", driver="driver"
+        "192.168.2.1", "username", "password", "dbname", driver="driver", seed_rows=150
     )
     with pytest.raises(DependencyError):
         provider.dump_database("./output.bak")
@@ -168,7 +169,7 @@ def test_raise_on_remote_server_backup():
 
 def test_raise_on_remote_server_restore():
     provider = MsSqlProvider(
-        "192.168.2.1", "username", "password", "dbname", driver="driver"
+        "192.168.2.1", "username", "password", "dbname", driver="driver", seed_rows=150
     )
     with pytest.raises(DependencyError):
         provider.restore_database("./local.bak")

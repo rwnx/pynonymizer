@@ -48,6 +48,7 @@ class MainProcessTests(unittest.TestCase):
             fake_locale="TEST_LOCALE",
             mysql_other_amazing_var="TEST_DYNAMIC_VAR",  # as this is mssql, this should be ignored
             mssql_special_provider_var="TEST_DYNAMIC_VAR2",
+            seed_rows=150,
         )
         StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with(
@@ -110,6 +111,7 @@ class MainProcessTests(unittest.TestCase):
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
             only_step="ANONYMIZE_DB",
+            seed_rows=150,
         )
         StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with(
@@ -144,6 +146,7 @@ class MainProcessTests(unittest.TestCase):
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
             stop_at_step="ANONYMIZE_DB",
+            seed_rows=150,
         )
         StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with(
@@ -178,6 +181,7 @@ class MainProcessTests(unittest.TestCase):
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
             skip_steps=["ANONYMIZE_DB", "CREATE_DB", "DUMP_DB"],
+            seed_rows=150,
         )
         get_provider.assert_called_with(
             type="TEST_TYPE",
@@ -211,6 +215,7 @@ class MainProcessTests(unittest.TestCase):
             db_password="TEST_PASSWORD",
             fake_locale="TEST_LOCALE",
             start_at_step="ANONYMIZE_DB",
+            seed_rows=150,
         )
         StrategyParser.return_value.parse_config.assert_called()
         get_provider.assert_called_with(
@@ -312,6 +317,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step=None,
             stop_at_step=None,
             skip_steps=["RESTORE_DB"],
+            seed_rows=150,
         )
 
         StrategyParser.return_value.parse_config.assert_called()
@@ -349,6 +355,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step="ANONYMIZE_DB",
             stop_at_step=None,
             skip_steps=None,
+            seed_rows=150,
         )
 
         StrategyParser.return_value.parse_config.assert_called()
@@ -386,6 +393,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step=None,
             stop_at_step="CREATE_DB",
             skip_steps=None,
+            seed_rows=150,
         )
 
         get_provider.assert_called_with(
@@ -422,6 +430,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step=None,
             stop_at_step=None,
             skip_steps=["ANONYMIZE_DB"],
+            seed_rows=150,
         )
         get_provider.assert_called_with(
             type="TEST_TYPE",
@@ -457,6 +466,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step="DUMP_DB",
             stop_at_step=None,
             skip_steps=None,
+            seed_rows=150,
         )
         get_provider.assert_called_with(
             type="TEST_TYPE",
@@ -492,6 +502,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step=None,
             stop_at_step="RESTORE_DB",
             skip_steps=None,
+            seed_rows=150,
         )
         get_provider.assert_called_with(
             type="TEST_TYPE",
@@ -527,6 +538,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step=None,
             stop_at_step=None,
             skip_steps=["DUMP_DB"],
+            seed_rows=150,
         )
 
         StrategyParser.return_value.parse_config.assert_called()
@@ -564,6 +576,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step="DROP_DB",
             stop_at_step=None,
             skip_steps=None,
+            seed_rows=150,
         )
         get_provider.assert_called_with(
             type="TEST_TYPE",
@@ -599,6 +612,7 @@ class OptionalArgumentsSkippedTests(unittest.TestCase):
             start_at_step=None,
             stop_at_step=None,
             skip_steps=["DUMP_DB"],
+            seed_rows=150,
         )
 
         StrategyParser.return_value.parse_config.assert_called()

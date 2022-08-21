@@ -52,8 +52,8 @@ class MsSqlProvider(DatabaseProvider):
         db_user,
         db_pass,
         db_name,
+        seed_rows,
         db_port=None,
-        seed_rows=None,
         backup_compression=False,
         driver=None,
     ):

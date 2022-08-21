@@ -25,8 +25,8 @@ class PostgreSqlProvider(DatabaseProvider):
         db_user,
         db_pass,
         db_name,
+        seed_rows,
         db_port=None,
-        seed_rows=None,
         cmd_opts=None,
         dump_opts=None,
     ):

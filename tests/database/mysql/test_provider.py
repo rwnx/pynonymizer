@@ -19,6 +19,7 @@ def test_init_runners_correctly(execution):
         "root",
         "password",
         "db_name",
+        seed_rows=150,
         cmd_opts="--test-arg=cmd",
         dump_opts="--test-arg=3",
     )
@@ -43,7 +44,7 @@ def test_init_runners_correctly(execution):
 @patch("pynonymizer.database.mysql.execution", autospec=True)
 @patch("pynonymizer.database.mysql.query_factory", autospec=True)
 def test_create_database(query_factory, execution):
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
     provider.create_database()
 
     # assert that the query factory is called with the db name, and the output is passed to the execute runner
@@ -56,7 +57,7 @@ def test_create_database(query_factory, execution):
 @patch("pynonymizer.database.mysql.execution", autospec=True)
 @patch("pynonymizer.database.mysql.query_factory", autospec=True)
 def test_drop_database(query_factory, execution):
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
     provider.drop_database()
 
     # assert that the query factory is called with the db name, and the output is passed to the execute runner
@@ -70,7 +71,7 @@ def test_drop_database(query_factory, execution):
 @patch("pynonymizer.database.mysql.query_factory", autospec=True)
 @patch("pynonymizer.database.mysql.resolve_input")
 def test_restore_database(resolve_input, query_factory, execution):
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
     rand_data = bytes(os.urandom(8193))
     mock_input = Mock(
         get_size=Mock(return_value=8193), open=mock_open(read_data=rand_data)
@@ -94,7 +95,7 @@ def test_restore_database(resolve_input, query_factory, execution):
 @patch("pynonymizer.database.mysql.query_factory", autospec=True)
 @patch("pynonymizer.database.mysql.resolve_output")
 def test_dump_database(resolve_output, query_factory, execution):
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
     rand_data = bytes(os.urandom(8192))
     mock_output = Mock(open=mock_open())
     resolve_output.return_value = mock_output
@@ -118,7 +119,7 @@ def test_dump_database(resolve_output, query_factory, execution):
 @patch("pynonymizer.database.mysql.query_factory", autospec=True)
 def test_anonymize_database_unsupported_table_strategy(query_factory, execution):
     with pytest.raises(Exception) as e_info:
-        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+        provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
         database_strategy = DatabaseStrategy(
             [
                 Mock(
@@ -136,7 +137,7 @@ def test_before_script_run(query_factory, execution):
     manager = Mock()
     manager.attach_mock(execution, "execution")
 
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
     database_strategy = DatabaseStrategy(
         table_strategies=[TruncateTableStrategy("table1")],
         before_scripts=["SELECT `before` FROM `before_table`;"],
@@ -165,7 +166,7 @@ def test_after_script_run(query_factory, execution):
     manager = Mock()
     manager.attach_mock(execution, "execution")
 
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
     database_strategy = DatabaseStrategy(
         table_strategies=[TruncateTableStrategy("table1")],
         after_scripts=["SELECT `after` FROM `after_table`;"],
@@ -197,7 +198,7 @@ def test_anonymize_database(
     manager = Mock()
     manager.attach_mock(execution, "execution")
 
-    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name")
+    provider = MySqlProvider("1.2.3.4", "root", "password", "db_name", seed_rows=150)
 
     provider.anonymize_database(simple_strategy)
 
