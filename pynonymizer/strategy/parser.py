@@ -126,6 +126,7 @@ class StrategyParser:
         )
         try:
             if update_column_type == UpdateColumnStrategyTypes.EMPTY:
+                logger.warning("DeprecationWarning: UpdateColumnStrategyTypes.EMPTY is deprecated and may be removed in a future release.")
                 return EmptyUpdateColumnStrategy(**column_config)
 
             elif update_column_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:

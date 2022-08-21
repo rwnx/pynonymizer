@@ -13,7 +13,7 @@ The below examples will be given in yaml, although the underlying structures wil
 tables:
   accounts:
     columns:
-      password: empty
+      password: ( '' )
       current_sign_in_ip: ipv4_public
       last_sign_in_ip: ipv4_public
       created_at: ( NOW() )
@@ -107,45 +107,34 @@ Overwrite columns in the table with specific or randomized values.
 table_name:
   type: update_columns
   columns:
-    column_name1: empty
+    column_name1: ( '' )
     #[...]
   
 # Compact Syntax: `type` can be omitted if `columns` key is present
 table_name:
   columns:
-    column_name1: empty
+    column_name1: ( '' )
     #[...]
     
 #Columns can also be given in a list of verbose objects, if multiple column strategies for the same column are required.
 table_name:
     columns:
       - column_name: column_name1
-      type: empty
+      type: ( '' )
       where: cake OR death
       - column_name: column_name1
-      type: empty
+      type: ( '' )
 
 ```
 #### `where`
 ```yaml
 column_name:
-    type: empty
+    type: ( '' )
     where: username = 'barry'
 ```
 All update_column types support a `where` key, that can be used to add conditions to updates. This is only available in the verbose syntax, and must be a string of predicate(s) that will be appended to the query. Pynonymizer does not check syntax for sql, so you must ensure that what you've written works in your database's language.
 
 Update statements will be grouped on the content of the where key and executed together, i.e. if you have 2 unique WHERE statements, pynonymizer will execute 3 update statements: 1 with 1st where clause, 1 with 2nd where clause, 3rd with no where clause. 
-
-#### Column Strategy: `empty`
-Replaces a column with an empty value (usually `''`)
-
-```yaml
-column_name: 
-  type: empty
-  
-# Compact Syntax: string "empty"
-column_name: empty
-```
 
 #### Column Strategy: `unique_login`
 Replaces a column with a unique value that vaguely resembles a username.
@@ -197,7 +186,7 @@ column_name:
   sql_type: VARCHAR(255)
 
 
-# Compact Syntax: specify any supported faker method string, excluding the keywords `empty`, `unique_login`, `unique_email`
+# Compact Syntax: specify any supported faker method string, excluding the keywords `unique_login`, `unique_email`
 column_name: file_path
 ```
 You can specify a fake update with any default [Faker](https://faker.readthedocs.io/en/master/) provider.

@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added a new option, `--ignore-anonymization-errors` that will allow the anonymization step to error without propagating errors upstream. This is useful if you always want the resulting dumpfile, even when there are db or schema faults. 
 ### Changed
 - Changed how seed rows are assigned their default value and made sure this value made it's way into the documentation (150 rows by default).
+### Deprecated
+- Column Strategy "empty" has been deprecated because its effect was inconsistent on different providers and column types.
+  using it will generate a warning on config parse. It has been removed from the documentation so as to cut down on confusion.
+  The recommended way to update a column to empty is to use a `literal` set to the appropriate "empty" data for the column.
 ### Removed
 - Removed offical test support for python 3.6
 - Removed process step `GET_SOURCE`(no-op) as it was causing confusion. This is not considered a breaking change as it was never implemented.
