@@ -26,8 +26,8 @@ class MySqlProvider(DatabaseProvider):
         db_user,
         db_pass,
         db_name,
+        seed_rows,
         db_port=None,
-        seed_rows=None,
         cmd_opts=None,
         dump_opts=None,
     ):
@@ -45,9 +45,6 @@ class MySqlProvider(DatabaseProvider):
         self.db_pass = db_pass
         self.db_name = db_name
         self.db_port = db_port
-
-        if seed_rows is None:
-            seed_rows = 150
 
         self.seed_rows = int(seed_rows)
 

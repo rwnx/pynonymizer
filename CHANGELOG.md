@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+- Changed how seed rows are assigned their default value and made sure this value made it's way into the documentation (150 rows by default).
 - Added a new option, `--ignore-anonymization-errors` that will allow the anonymization step to error without propagating errors upstream. This is useful if you always want the resulting dumpfile, even when there are db or schema faults. 
 - Removed offical test support for python 3.6
 - Added offical test support for python 3.10
