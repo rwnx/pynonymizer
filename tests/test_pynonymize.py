@@ -10,17 +10,6 @@ from pynonymizer.pynonymize import (
 from types import SimpleNamespace
 
 
-def test_pynonymize_missing_db_credentials():
-    with pytest.raises(ArgumentValidationError):
-        pynonymize(
-            input_path="input.sql",
-            strategyfile_path="strategyfile.yml",
-            output_path="output.sql",
-            db_user=None,
-            db_password=None,
-        )
-
-
 @patch("dotenv.find_dotenv", Mock())
 @patch("dotenv.load_dotenv", Mock())
 @patch("pynonymizer.pynonymize.read_config")
@@ -29,12 +18,9 @@ def test_pynonymize_missing_db_credentials():
 @patch("pynonymizer.pynonymize.StrategyParser")
 @patch("builtins.open", mock_open(read_data="TESTFILEDATA"))
 class MainProcessTests(unittest.TestCase):
-    def test_any_db_kwarg(
+    def test_dynamic_db_args_passed_to_provder_unprefixed(
         self, StrategyParser, FakeColumnSet, get_provider, read_config
     ):
-        """
-        test that dynamic args are passed to the provider properly e.g. mssql_blah
-        """
         pynonymize(
             input_path="TEST_INPUT",
             strategyfile_path="TEST_STRATEGYFILE",

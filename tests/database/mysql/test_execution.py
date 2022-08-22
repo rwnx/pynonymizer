@@ -21,6 +21,30 @@ class NoExecutablesInPathTests(unittest.TestCase):
 @patch("subprocess.check_output")
 @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
 class DumperTests(unittest.TestCase):
+    def test_open_dumper__when_omitting_optional_args__should_not_pass_args(
+        self, check_output, popen
+    ):
+        dump_runner = MySqlDumpRunner(
+            db_host=None,
+            db_user=None,
+            db_pass=None,
+            db_name="db_name",
+            additional_opts="--quick --single-transaction",
+        )
+
+        open_result = dump_runner.open_dumper()
+
+        # dumper should open a process for the current db dump, piping stdout for processing
+        popen.assert_called_with(
+            [
+                "mysqldump",
+                "--quick",
+                "--single-transaction",
+                "db_name",
+            ],
+            stdout=subprocess.PIPE,
+        )
+
     def test_open_dumper__when_using_additional_opts__should_pass_split_args_to_popen(
         self, check_output, popen
     ):
@@ -40,8 +64,6 @@ class DumperTests(unittest.TestCase):
                 "mysqldump",
                 "--host",
                 "1.2.3.4",
-                "--port",
-                "3306",
                 "--user",
                 "db_user",
                 "-pdb_password",
@@ -64,8 +86,6 @@ class DumperTests(unittest.TestCase):
                 "mysqldump",
                 "--host",
                 "1.2.3.4",
-                "--port",
-                "3306",
                 "--user",
                 "db_user",
                 "-pdb_password",
@@ -109,6 +129,28 @@ class DumperTests(unittest.TestCase):
 @patch("subprocess.check_output")
 @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
 class CmdTests(unittest.TestCase):
+    def test__batch_processor__when_omitted_optional_args__should_not_call_cli_with_args(
+        self, check_output, popen
+    ):
+        cmd_runner = MySqlCmdRunner(
+            db_user=None,
+            db_pass=None,
+            db_name="db_name",
+            db_host=None,
+            additional_opts="--quick --single-transaction",
+        )
+        open_result = cmd_runner.open_batch_processor()
+
+        popen.assert_called_with(
+            [
+                "mysql",
+                "--quick",
+                "--single-transaction",
+                "db_name",
+            ],
+            stdin=subprocess.PIPE,
+        )
+
     def test_open_batch_processor(self, check_output, popen):
         cmd_runner = MySqlCmdRunner(
             "1.2.3.4",
@@ -140,6 +182,28 @@ class CmdTests(unittest.TestCase):
 
         # dumper should return the stdin of that process
         assert open_result == popen.return_value.stdin
+
+    def test__execute__when_omitted_optional_args__should_not_call_cli_with_args(
+        self, check_output, popen
+    ):
+        cmd_runner = MySqlCmdRunner(
+            db_user=None,
+            db_pass=None,
+            db_name="db_name",
+            db_host=None,
+            additional_opts="--quick --single-transaction",
+        )
+        execute_result = cmd_runner.execute("SELECT `column` from `table`;")
+
+        check_output.assert_called_with(
+            [
+                "mysql",
+                "--quick",
+                "--single-transaction",
+                "--execute",
+                "SELECT `column` from `table`;",
+            ]
+        )
 
     def test_execute(self, check_output, popen):
         """
