@@ -90,8 +90,10 @@ def pynonymize(
         if db_user is None:
             validations.append("Missing DB_USER")
 
-        if db_password is None:
-            validations.append("Missing DB_PASSWORD")
+        # postgres supports implicit db_pass using the .pgpass file
+        if db_type != "postgres":
+            if db_password is None:
+                validations.append("Missing DB_PASSWORD")
 
     if db_name is None:
         validations.append("Missing DB_NAME: Auto-resolve failed.")

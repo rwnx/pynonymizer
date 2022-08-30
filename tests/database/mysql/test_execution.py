@@ -10,11 +10,11 @@ import subprocess
 class NoExecutablesInPathTests(unittest.TestCase):
     def test_dump_runner_missing_mysqldump(self):
         with pytest.raises(DependencyError):
-            MySqlDumpRunner("1.2.3.4", "user", "password", "name")
+            MySqlDumpRunner("1.2.3.4", "user", "password", "name", db_port=None)
 
     def test_cmd_runner_missing_mysql(self):
         with pytest.raises(DependencyError):
-            MySqlCmdRunner("1.2.3.4", "user", "password", "name")
+            MySqlCmdRunner("1.2.3.4", "user", "password", "name", db_port=None)
 
 
 @patch("subprocess.Popen")
@@ -29,6 +29,7 @@ class DumperTests(unittest.TestCase):
             db_user=None,
             db_pass=None,
             db_name="db_name",
+            db_port=None,
             additional_opts="--quick --single-transaction",
         )
 
@@ -49,10 +50,11 @@ class DumperTests(unittest.TestCase):
         self, check_output, popen
     ):
         dump_runner = MySqlDumpRunner(
-            "1.2.3.4",
-            "db_user",
-            "db_password",
-            "db_name",
+            db_host="1.2.3.4",
+            db_user="db_user",
+            db_pass="db_password",
+            db_name="db_name",
+            db_port=None,
             additional_opts="--quick --single-transaction",
         )
 
@@ -77,7 +79,13 @@ class DumperTests(unittest.TestCase):
     def test_open_dumper__when_port_is_not_passed__should_use_defaults(
         self, check_output, popen
     ):
-        dump_runner = MySqlDumpRunner("1.2.3.4", "db_user", "db_password", "db_name")
+        dump_runner = MySqlDumpRunner(
+            db_host="1.2.3.4",
+            db_user="db_user",
+            db_pass="db_password",
+            db_name="db_name",
+            db_port=None,
+        )
         open_result = dump_runner.open_dumper()
 
         # dumper should open a process for the current db dump, piping stdout for processing
@@ -137,6 +145,7 @@ class CmdTests(unittest.TestCase):
             db_pass=None,
             db_name="db_name",
             db_host=None,
+            db_port=None,
             additional_opts="--quick --single-transaction",
         )
         open_result = cmd_runner.open_batch_processor()
@@ -191,6 +200,7 @@ class CmdTests(unittest.TestCase):
             db_pass=None,
             db_name="db_name",
             db_host=None,
+            db_port=None,
             additional_opts="--quick --single-transaction",
         )
         execute_result = cmd_runner.execute("SELECT `column` from `table`;")

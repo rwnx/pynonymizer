@@ -38,7 +38,8 @@ class PSqlDumpRunner:
 
     def __get_env(self):
         new_env = os.environ.copy()
-        new_env.update({"PGPASSWORD": self.db_pass})
+        if self.db_pass:
+            new_env.update({"PGPASSWORD": self.db_pass})
 
         return new_env
 
@@ -80,7 +81,8 @@ class PSqlCmdRunner:
 
     def __get_env(self):
         new_env = os.environ.copy()
-        new_env.update({"PGPASSWORD": self.db_pass})
+        if self.db_pass:
+            new_env.update({"PGPASSWORD": self.db_pass})
 
         return new_env
 

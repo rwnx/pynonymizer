@@ -17,8 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 ### Changed
-- In MySQL,`db_host`, `db_user`, `db_pass` and `db_port` are now optional and will be omitted from CLI options if not passed to pynonymizer. 
-  This is to facilitate usage of provider-specific config formats like `my.cnf` [#108]
+- In MySQL,`db_host`, `db_user`, `db_pass` and `db_port` are now optional and will be omitted from CLI options if not passed.
+  You can now use the `my.cnf` file to pass config to the mysql CLI. [#108]
+- In Postgres, `db_pass` will be optional and will be omitted from CLI options if not passed. You can now use the `.pgpass` file to securely pass the password to the pg CLI.
 
 ## [1.23.0] 2022-08-22
 ### Added

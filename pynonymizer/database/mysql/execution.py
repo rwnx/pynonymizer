@@ -18,11 +18,11 @@ def _optional_arg_pair(arg_value_pair):
 class MySqlDumpRunner:
     def __init__(
         self,
-        db_host=None,
-        db_user=None,
-        db_pass=None,
-        db_name=None,
-        db_port=None,
+        db_host,
+        db_user,
+        db_pass,
+        db_name,
+        db_port,
         additional_opts="",
     ):
         self.db_host = db_host
@@ -67,11 +67,11 @@ class MySqlDumpRunner:
 class MySqlCmdRunner:
     def __init__(
         self,
-        db_host=None,
-        db_user=None,
-        db_pass=None,
-        db_name=None,
-        db_port=None,
+        db_host,
+        db_user,
+        db_pass,
+        db_name,
+        db_port,
         additional_opts="",
     ):
         self.db_host = db_host
