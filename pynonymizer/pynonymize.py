@@ -85,11 +85,15 @@ def pynonymize(
         if output_path is None:
             validations.append("Missing OUTPUT")
 
-    if db_user is None:
-        validations.append("Missing DB_USER")
+    # Mysql supports my.cnf files with additional config, so we have to assume db_host, db_user, db_password, db_port could all be in there
+    if db_type != "mysql":
+        if db_user is None:
+            validations.append("Missing DB_USER")
 
-    if db_password is None:
-        validations.append("Missing DB_PASSWORD")
+        # postgres supports implicit db_pass using the .pgpass file
+        if db_type != "postgres":
+            if db_password is None:
+                validations.append("Missing DB_PASSWORD")
 
     if db_name is None:
         validations.append("Missing DB_NAME: Auto-resolve failed.")

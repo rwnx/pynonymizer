@@ -1,6 +1,6 @@
 import pytest
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, ANY
 from pynonymizer.database.exceptions import DependencyError
 from pynonymizer.database.postgres.execution import PSqlCmdRunner, PSqlDumpRunner
 from tests.helpers import SuperdictOf
@@ -20,18 +20,45 @@ class NoExecutablesInPathTests(unittest.TestCase):
 
 @patch("subprocess.Popen")
 @patch("subprocess.check_output")
-@patch("shutil.which", Mock(return_value="fake/path/to/executable"))
-class DumperTests(unittest.TestCase):
-    def test_open_dumper_defaults(self, check_output, popen):
-        dump_runner = PSqlDumpRunner(
-            "1.2.3.4",
-            "db_user",
-            "db_password",
-            "db_name",
+class DumperWithMissingPasswordTests(unittest.TestCase):
+    @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
+    def setup_method(self, test_method):
+        self.dump_runner = PSqlDumpRunner(
+            db_host="1.2.3.4",
+            db_user="db_user",
+            db_pass=None,
+            db_name="db_name",
             db_port="5432",
             additional_opts="--quick --other-option=1",
         )
-        open_result = dump_runner.open_dumper()
+
+    def test_open_dumper__should_not_pass_pgpassword(self, check_output, popen):
+        open_result = self.dump_runner.open_dumper()
+
+        popen.assert_called()
+        popen.assert_not_called_with(
+            ANY,
+            env=SuperdictOf({"PGPASSWORD": ANY}),
+            stdout=ANY,
+        )
+
+
+@patch("subprocess.Popen")
+@patch("subprocess.check_output")
+class DumperTests(unittest.TestCase):
+    @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
+    def setup_method(self, test_method):
+        self.dump_runner = PSqlDumpRunner(
+            db_host="1.2.3.4",
+            db_user="db_user",
+            db_pass="db_password",
+            db_name="db_name",
+            db_port="5432",
+            additional_opts="--quick --other-option=1",
+        )
+
+    def test_open_dumper__should_open_pipe_to_pgdump(self, check_output, popen):
+        open_result = self.dump_runner.open_dumper()
 
         # dumper should open a process for the current db dump, piping stdout for processing
         popen.assert_called_with(
@@ -57,10 +84,51 @@ class DumperTests(unittest.TestCase):
 
 @patch("subprocess.Popen")
 @patch("subprocess.check_output")
-@patch("shutil.which", Mock(return_value="fake/path/to/executable"))
+class CmdWithAllArgsTets(unittest.TestCase):
+    @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
+    def setup_method(self, test_method):
+        self.cmd_runner = PSqlCmdRunner(
+            db_host="1.2.3.4",
+            db_user="db_user",
+            db_pass=None,
+            db_name="db_name",
+            db_port="5432",
+            additional_opts="--quick --other-option=1",
+        )
+
+    def test_open_batch_processor__should_not_pass_pgpassword(
+        self, check_output, popen
+    ):
+        open_result = self.cmd_runner.open_batch_processor()
+
+        popen.assert_called()
+        popen.assert_not_called_with(
+            ANY,
+            env=SuperdictOf({"PGPASSWORD": ANY}),
+            stdin=ANY,
+        )
+
+    def test_execute__should_not_pass_pgpassword(self, check_output, popen):
+        execute_result = self.cmd_runner.execute("SELECT `column` from `table`;")
+
+        check_output.assert_called()
+        check_output.assert_not_called_with(ANY, env=SuperdictOf({"PGPASSWORD": ANY}))
+
+    def test_execute_list__should_not_pass_pgpassword(self, check_output, popen):
+        execute_result = self.cmd_runner.execute(
+            ["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"]
+        )
+
+        check_output.assert_called()
+        check_output.assert_not_called_with(ANY, env=SuperdictOf({"PGPASSWORD": ANY}))
+
+
+@patch("subprocess.Popen")
+@patch("subprocess.check_output")
 class CmdTests(unittest.TestCase):
-    def test_open_batch_processor_defaults(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner(
+    @patch("shutil.which", Mock(return_value="fake/path/to/executable"))
+    def setup_method(self, test_method):
+        self.cmd_runner = PSqlCmdRunner(
             "1.2.3.4",
             "db_user",
             "db_password",
@@ -68,7 +136,9 @@ class CmdTests(unittest.TestCase):
             db_port="5432",
             additional_opts="--quick --other-option=1",
         )
-        open_result = cmd_runner.open_batch_processor()
+
+    def test_open_batch_processor__should_open_psql_pipe(self, check_output, popen):
+        open_result = self.cmd_runner.open_batch_processor()
 
         # dumper should open a process for the current db dump, piping stdout for processing
         popen.assert_called_with(
@@ -94,17 +164,7 @@ class CmdTests(unittest.TestCase):
         assert open_result == popen.return_value.stdin
 
     def test_execute(self, check_output, popen):
-        """
-        execute should execute an arbitrary statement with valid args
-        """
-        cmd_runner = PSqlCmdRunner(
-            "1.2.3.4",
-            "db_user",
-            "db_password",
-            "db_name",
-            additional_opts="--quick --other-option=1",
-        )
-        execute_result = cmd_runner.execute("SELECT `column` from `table`;")
+        execute_result = self.cmd_runner.execute("SELECT `column` from `table`;")
 
         check_output.assert_called_with(
             [
@@ -124,14 +184,7 @@ class CmdTests(unittest.TestCase):
         )
 
     def test_execute_list(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner(
-            "1.2.3.4",
-            "db_user",
-            "db_password",
-            "db_name",
-            additional_opts="--quick --other-option=1",
-        )
-        execute_result = cmd_runner.execute(
+        execute_result = self.cmd_runner.execute(
             ["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"]
         )
 
@@ -173,14 +226,7 @@ class CmdTests(unittest.TestCase):
         """
         execute should execute an arbitrary statement with valid args
         """
-        cmd_runner = PSqlCmdRunner(
-            "1.2.3.4",
-            "db_user",
-            "db_password",
-            "db_name",
-            additional_opts="--quick --other-option=1",
-        )
-        execute_result = cmd_runner.db_execute("SELECT `column` from `table`;")
+        execute_result = self.cmd_runner.db_execute("SELECT `column` from `table`;")
 
         check_output.assert_called_with(
             [
@@ -202,14 +248,7 @@ class CmdTests(unittest.TestCase):
         )
 
     def test_db_execute_list(self, check_output, popen):
-        cmd_runner = PSqlCmdRunner(
-            "1.2.3.4",
-            "db_user",
-            "db_password",
-            "db_name",
-            additional_opts="--quick --other-option=1",
-        )
-        execute_result = cmd_runner.db_execute(
+        execute_result = self.cmd_runner.db_execute(
             ["SELECT `column` from `table`;", "SELECT `column2` from `table2`;"]
         )
 
@@ -254,14 +293,9 @@ class CmdTests(unittest.TestCase):
         """
         execute should execute an arbitrary statement and return the decoded, no-column result
         """
-        cmd_runner = PSqlCmdRunner(
-            "1.2.3.4",
-            "db_user",
-            "db_password",
-            "db_name",
-            additional_opts="--quick --other-option=1",
+        single_result = self.cmd_runner.get_single_result(
+            "SELECT `column` from `table`;"
         )
-        single_result = cmd_runner.get_single_result("SELECT `column` from `table`;")
 
         check_output.assert_called_with(
             [

@@ -3,14 +3,27 @@ import shlex
 import subprocess
 from pynonymizer.database.exceptions import DependencyError
 
-"""
-Seperate everything that touches actual query exec into its own module
-"""
+
+def _optional_arg(condition, value):
+    if condition:
+        return value
+    else:
+        return []
+
+
+def _optional_arg_pair(arg_value_pair):
+    return _optional_arg(arg_value_pair[1], arg_value_pair)
 
 
 class MySqlDumpRunner:
     def __init__(
-        self, db_host, db_user, db_pass, db_name, db_port="3306", additional_opts=""
+        self,
+        db_host,
+        db_user,
+        db_pass,
+        db_name,
+        db_port,
+        additional_opts="",
     ):
         self.db_host = db_host
         self.db_user = db_user
@@ -19,20 +32,26 @@ class MySqlDumpRunner:
         self.db_port = db_port
         self.additional_opts = shlex.split(additional_opts)
 
+        if db_name is None:
+            raise ValueError("db_name cannot be null")
+
         if not (shutil.which("mysqldump")):
             raise DependencyError(
                 "mysqldump", "The 'mysqldump' client must be present in the $PATH"
             )
 
+    def __ifdef(self):
+        if self.db_host:
+            return ["--host", self.db_host]
+        else:
+            return []
+
     def __get_base_params(self):
         return [
-            "--host",
-            self.db_host,
-            "--port",
-            self.db_port,
-            "--user",
-            self.db_user,
-            f"-p{self.db_pass}",
+            *_optional_arg_pair(["--host", self.db_host]),
+            *_optional_arg_pair(["--port", self.db_port]),
+            *_optional_arg_pair(["--user", self.db_user]),
+            *_optional_arg(self.db_pass, [f"-p{self.db_pass}"]),
         ]
 
     def open_dumper(self):
@@ -47,7 +66,13 @@ class MySqlDumpRunner:
 
 class MySqlCmdRunner:
     def __init__(
-        self, db_host, db_user, db_pass, db_name, db_port="3306", additional_opts=""
+        self,
+        db_host,
+        db_user,
+        db_pass,
+        db_name,
+        db_port,
+        additional_opts="",
     ):
         self.db_host = db_host
         self.db_user = db_user
@@ -56,6 +81,9 @@ class MySqlCmdRunner:
         self.db_port = db_port
         self.additional_opts = shlex.split(additional_opts)
         self.process = None
+
+        if db_name is None:
+            raise ValueError("db_name cannot be null")
 
         if not (shutil.which("mysql")):
             raise DependencyError(
@@ -84,13 +112,10 @@ class MySqlCmdRunner:
     def __get_base_params(self):
         return [
             "mysql",
-            "-h",
-            self.db_host,
-            "-P",
-            self.db_port,
-            "-u",
-            self.db_user,
-            f"-p{self.db_pass}",
+            *_optional_arg_pair(["-h", self.db_host]),
+            *_optional_arg_pair(["-P", self.db_port]),
+            *_optional_arg_pair(["-u", self.db_user]),
+            *_optional_arg(self.db_pass, [f"-p{self.db_pass}"]),
         ]
 
     def execute(self, statements):

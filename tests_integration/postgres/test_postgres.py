@@ -1,6 +1,7 @@
 import pytest
 import subprocess
 import os
+import unittest
 
 # force getenv to error here for more human-readable errors
 user = os.getenv("PYNONYMIZER_DB_USER")
@@ -8,6 +9,60 @@ password = os.getenv("PYNONYMIZER_DB_PASSWORD")
 host = os.getenv("PYNONYMIZER_DB_HOST")
 
 test_dir = os.path.dirname(os.path.realpath(__file__))
+
+home = os.path.expanduser("~")
+config_path = os.path.join(home, ".pgpass")
+
+
+class OptionalConfigTests(unittest.TestCase):
+    @classmethod
+    def setup_class(cls):
+        with open(config_path, "w+") as f:
+            f.write(
+                f"""
+*:*:*:*:{password}
+"""
+            )
+
+        # postgres will not load a .pgpass file unless it has the correct permissions
+        os.chmod(config_path, 0o600)
+
+    def test_optional_config(self):
+        # remove db password from env (used in other tests)
+        new_env = os.environ.copy()
+        del new_env["PYNONYMIZER_DB_PASSWORD"]
+
+        # Rather than rely on the default loading behaviour of .pgpass, which seems to be iffy in CI
+        # (and is definitely NOT the subject under test!) force it here with the PGPASSFILE env
+        new_env["PGPASSFILE"] = config_path
+        output_path = os.path.join(test_dir, "./optionalConfig.sql.xz")
+
+        output = subprocess.check_output(
+            [
+                "pynonymizer",
+                "--db-host",
+                host,
+                "--db-user",
+                user,
+                "--db-type",
+                "postgres",
+                "-i",
+                "pagila.sql.gz",
+                "-s",
+                "pagila.yml",
+                "-o",
+                output_path,
+            ],
+            cwd=test_dir,
+            env=new_env,
+        )
+
+        # some very rough output checks
+        assert os.path.exists(output_path)
+
+    @classmethod
+    def teardown_class(cls):
+        os.remove(config_path)
 
 
 def get_single(db, query):
