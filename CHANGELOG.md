@@ -16,10 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [1.24.0] 2022-09-07
 ### Changed
 - In MySQL,`db_host`, `db_user`, `db_pass` and `db_port` are now optional and will be omitted from CLI options if not passed.
-  You can now use the `my.cnf` file to pass config to the mysql CLI. [#108]
-- In Postgres, `db_pass` will be optional and will be omitted from CLI options if not passed. You can now use the `.pgpass` file to securely pass the password to the pg CLI.
+  You can now use the `my.cnf` file to pass config to the mysql CLI. [#108]. Read more about the rationale behind these changes in [doc/database-credentials.md](doc/database-credentials.md).
+- In Postgres, `db_pass` will be optional and will be omitted from CLI options if not passed. You can now use the `.pgpass` file to securely pass the password to the pg CLI. Read more about the rationale behind these changes in [doc/database-credentials.md](doc/database-credentials.md).
 
 ## [1.23.0] 2022-08-22
 ### Added
