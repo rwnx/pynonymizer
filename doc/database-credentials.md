@@ -16,7 +16,7 @@ The same is true for config passed directly to pynonymizer.
 As pynonymizer uses the CLI, the CLI's normal mechanisms for this will also work. 
 
 For providers (mysql and postgres) that allow external configuration, `--db-user` and `--db-pass` will be optional, to support loading credentials through the relevant file:
-    * mysql: `my.cnf`/`*.cnf` files: https://dev.mysql.com/doc/refman/8.0/en/option-files.html
-    * postgres: `.pgpass` file https://www.postgresql.org/docs/current/libpq-pgpass.html
-    * mssql: Not currently supported. 
+* mysql: `my.cnf`/`*.cnf` files: https://dev.mysql.com/doc/refman/8.0/en/option-files.html
+* postgres: `.pgpass` file https://www.postgresql.org/docs/current/libpq-pgpass.html
+* mssql: Not currently supported. 
 
