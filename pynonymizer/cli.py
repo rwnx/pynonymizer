@@ -89,7 +89,7 @@ def create_parser():
         "--db-password",
         "-p",
         default=os.getenv("PYNONYMIZER_DB_PASSWORD") or os.getenv("DB_PASS"),
-        help="Database credentials: password. Recommended: use environment variables to avoid exposing secrets in production environments. [$PYNONYMIZER_DB_PASSWORD]",
+        help="Database credentials: password. [$PYNONYMIZER_DB_PASSWORD]",
     )
 
     parser.add_argument(
