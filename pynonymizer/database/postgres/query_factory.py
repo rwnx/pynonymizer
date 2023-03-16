@@ -92,7 +92,6 @@ def get_drop_seed_table(table_name):
 
 
 def get_insert_seed_row(table_name, qualifier_map):
-
     column_names = ",".join([f"{qualifier}" for qualifier in qualifier_map.keys()])
     column_values = ",".join(
         [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()]
