@@ -210,7 +210,7 @@ def test_get_insert_seed_row(qualifier_column_map):
 def test_get_create_seed_table(qualifier_column_map):
     assert (
         query_factory.get_create_seed_table("seed_table", qualifier_column_map)
-        == 'CREATE TABLE "seed_table" (first_name VARCHAR(65535),last_name INT,first_name_test_arg_5 VARCHAR(65535));'
+        == 'CREATE TABLE "seed_table" (_id SERIAL NOT NULL PRIMARY KEY,first_name VARCHAR(65535),last_name INT,first_name_test_arg_5 VARCHAR(65535));'
     )
 
 
@@ -237,9 +237,9 @@ def test_get_update_table_fake_column(column_strategy_list):
 
     assert update_table_all == [
         'UPDATE "anon_table" AS "updatetarget" SET '
-        '"test_column1" = ( SELECT "first_name" FROM "seed_table" ORDER BY RANDOM(), MD5("updatetarget"::text) LIMIT 1),'
-        '"test_column2" = ( SELECT "last_name" FROM "seed_table" ORDER BY RANDOM(), MD5("updatetarget"::text) LIMIT 1),'
-        '"test_column7" = ( SELECT "user_id"::UUID FROM "seed_table" ORDER BY RANDOM(), MD5("updatetarget"::text) LIMIT 1),'
+        '"test_column1" = ( SELECT "first_name" FROM "seed_table" WHERE "_id"=MOD(ABS((\'x\' || MD5(updatetarget::text))::bit(32)::int), (SELECT MAX("_id") FROM "seed_table")) + 1),'
+        '"test_column2" = ( SELECT "last_name" FROM "seed_table" WHERE "_id"=MOD(ABS((\'x\' || MD5(updatetarget::text))::bit(32)::int), (SELECT MAX("_id") FROM "seed_table")) + 1),'
+        '"test_column7" = ( SELECT "user_id"::UUID FROM "seed_table" WHERE "_id"=MOD(ABS((\'x\' || MD5(updatetarget::text))::bit(32)::int), (SELECT MAX("_id") FROM "seed_table")) + 1),'
         "\"test_column3\" = (''),"
         '"test_column4" = ( SELECT md5(random()::text) ORDER BY MD5("updatetarget"::text) LIMIT 1),'
         "\"test_column5\" = ( SELECT CONCAT(md5(random()::text), '@', md5(random()::text), '.com') ORDER BY MD5(\"updatetarget\"::text) LIMIT 1),"
