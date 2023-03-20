@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+### Changed
+- Postgres FAKE_UPDATE strategy now uses an id-based randomization to pick from the seed table. 
+  This speeds up updates on large tables, as the seed table no longer needs to be ordered for every row in the target table.
+  Also this makes performances less dependent on the length of the seed table.
 
 ## [1.24.0] 2022-09-07
 ### Changed
@@ -39,7 +43,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [1.22.0] 2022-02-06
 ### Changed
-- Changed anonymization process to attempt to attempt anonymize all tables before throwing errors. [#96]
+- Changed anonymization process to attempt to anonymize all tables before throwing errors. [#96]
 ### Fixed
 - Fixed a bug in mysql/postgres that didn't wait for the restore dump process to complete before starting the anonymize procedure
 

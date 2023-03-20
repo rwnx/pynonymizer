@@ -16,6 +16,12 @@ _FAKE_COLUMN_TYPES = {
 # Random text function
 _RAND_MD5 = "md5(random()::text)"
 
+# Pseudo random integer function
+_PSEUDO_RANDOM_INT = "ABS(('x' || MD5(updatetarget::text))::bit(32)::int)"
+
+# Seed Table Id column name
+_ID = "_id"
+
 
 def _get_sql_type(data_type):
     return _FAKE_COLUMN_TYPES[data_type]
@@ -32,7 +38,11 @@ def _get_column_subquery(seed_table_name, column_strategy):
         column = f'"{column_strategy.qualifier}"'
         if column_strategy.sql_type:
             column += "::" + column_strategy.sql_type
-        return f'( SELECT {column} FROM "{seed_table_name}" ORDER BY RANDOM(), MD5("updatetarget"::text) LIMIT 1)'
+
+        num_rows = f'(SELECT MAX("{_ID}") FROM "{seed_table_name}")'
+        pseudo_random_row_id = f"MOD({_PSEUDO_RANDOM_INT}, {num_rows}) + 1"
+
+        return f'( SELECT {column} FROM "{seed_table_name}" WHERE "{_ID}"={pseudo_random_row_id})'
     elif column_strategy.strategy_type == UpdateColumnStrategyTypes.LITERAL:
         return column_strategy.value
     else:
@@ -68,7 +78,8 @@ def get_create_seed_table(table_name, qualifier_map):
     if len(qualifier_map) < 1:
         raise ValueError("Cannot create a seed table with no columns")
 
-    create_columns = [
+    create_columns = [f"{_ID} SERIAL NOT NULL PRIMARY KEY"]
+    create_columns += [
         f"{qualifier} {_get_sql_type(strategy.data_type)}"
         for qualifier, strategy in qualifier_map.items()
     ]
@@ -81,7 +92,6 @@ def get_drop_seed_table(table_name):
 
 
 def get_insert_seed_row(table_name, qualifier_map):
-
     column_names = ",".join([f"{qualifier}" for qualifier in qualifier_map.keys()])
     column_values = ",".join(
         [f"{_escape_sql_value(strategy.value)}" for strategy in qualifier_map.values()]
