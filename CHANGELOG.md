@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   -------------------------------------------------------------------
 ## [Unreleased]
 ### Changed
-- In Postgres, improved the FAKE_UPDATE strategy performances
+- Postgres FAKE_UPDATE strategy now uses an id-based randomization to pick from the seed table. 
+  This speeds up updates on large tables, as the seed table no longer needs to be ordered for every row in the target table.
+  Also this makes performances less dependent on the length of the seed table.
 
 ## [1.24.0] 2022-09-07
 ### Changed
