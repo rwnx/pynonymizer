@@ -32,7 +32,9 @@ jobs:
         run: pytest tests/
 
   integration-mssql: 
-    runs-on: ubuntu-latest
+    # The ubuntu version here needs to be synced with the setup instructions in /tests_integration/mssql/install_mssql.sh
+    # as different versions of mssql have different setup instructions https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-ubuntu?view=sql-server-ver16
+    runs-on: ubuntu-20.04
     env:
       MSSQL_SA_PASSWORD: pASSw0rd
       PYNONYMIZER_DB_USER: sa
