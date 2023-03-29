@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+# Installs mssql-server-2019 on ubuntu 20.04
+
 set -e
 source /etc/lsb-release
 
@@ -7,8 +9,8 @@ MSSQL_PID='developer'
 
 echo Adding Microsoft repositories...
 sudo curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-sudo add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/$DISTRIB_RELEASE/mssql-server-2019.list)"
-sudo add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/$DISTRIB_RELEASE/prod.list)"
+sudo add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/20.04/mssql-server-2019.list)"
+sudo add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list)"
 
 echo Running apt-get update -y...
 sudo apt-get update -y
