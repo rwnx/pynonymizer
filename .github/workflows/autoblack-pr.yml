@@ -5,14 +5,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+      - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.10
       - name: Install Black
-        run: pip install black
-      - name: Run black --check .
-        run: black --check .
+        run: pip install "black~=22.6.0"
+      - run: black --check .
       - name: If needed, commit black changes to the pull request
         if: failure()
         run: |
