@@ -183,7 +183,7 @@ column_name:
     depth: 1
   # Optional, define the SQL type in the database.
   # The value will not be escaped, it will be a raw SQL type so be careful.
-  sql_type: VARCHAR(255)
+  sql_type: CHAR(255)
 
 
 # Compact Syntax: specify any supported faker method string, excluding the keywords `unique_login`, `unique_email`
