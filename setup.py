@@ -24,7 +24,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.10",
     ],
     author="Rowan Twell",
-    author_email="rxntwe@gmail.com",
+    author_email="rowantwell@gmail.com",
     url="https://github.com/rwnx/pynonymizer",
     keywords="anonymization gdpr database mysql",
     license="MIT",
