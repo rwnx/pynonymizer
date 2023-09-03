@@ -54,7 +54,7 @@ jobs:
   integration-mysql: 
     services:
       db:
-        image: mariadb
+        image: mariadb:10
         env:
             MYSQL_ROOT_PASSWORD: password
         ports:
