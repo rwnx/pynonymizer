@@ -1,4 +1,4 @@
-# `pynonymizer` [![pynonymizer on PyPI](https://img.shields.io/pypi/v/pynonymizer)](https://pypi.org/project/pynonymizer/) [![Downloads](https://pepy.tech/badge/pynonymizer)](https://pepy.tech/project/pynonymizer) ![License](https://img.shields.io/pypi/l/pynonymizer)
+# `pynonymizer` [![pynonymizer on PyPI](https://img.shields.io/pypi/v/pynonymizer)](https://pypi.org/project/pynonymizer/) [![Downloads](https://static.pepy.tech/badge/pynonymizer)](https://pepy.tech/project/pynonymizer) ![License](https://img.shields.io/pypi/l/pynonymizer)
 
 pynonymizer is a universal tool for translating sensitive production database dumps into anonymized copies.
 
