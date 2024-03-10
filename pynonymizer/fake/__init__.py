@@ -50,7 +50,7 @@ _FAKE_DATA_TYPES = {
 class UnsupportedFakeTypeError(Exception):
     def __init__(self, fake_type, kwargs=None):
         kwargs = {} if kwargs is None else kwargs
-        super().__init__(f"Unsupported Fake type: {fake_type}: {kwargs.keys()}")
+        super().__init__(f"Unsupported Fake type: {fake_type}")
         self.fake_type = fake_type
         self.kwargs = kwargs
 

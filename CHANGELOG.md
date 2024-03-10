@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+### Added
+- Better error messages for unsupported fake types - the error should now explain the problem and link to the docs in the right section. [#133]
+
 ## [1.25.0] 2023-03-29
 ### Changed
 - Postgres FAKE_UPDATE strategy now uses an id-based randomization to pick from the seed table. 

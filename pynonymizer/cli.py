@@ -3,6 +3,7 @@ import dotenv
 import os
 import sys
 import logging
+from pynonymizer.fake import UnsupportedFakeTypeError
 from pynonymizer.pynonymize import (
     ArgumentValidationError,
     DatabaseConnectionError,
@@ -331,6 +332,13 @@ def cli(rawArgs=None):
         )
         parser.print_help()
         sys.exit(2)
+    except UnsupportedFakeTypeError as error:
+        logger.error(f"There was an error while parsing the strategyfile. Unknown fake type: {error.fake_type} \n " 
+                     + f"This happens when an fake_update column strategy is used with a generator that doesn't exist. \n"
+                     + f"You can only use data types that Faker supports. \n"
+                     + f"See https://github.com/rwnx/pynonymizer/blob/master/doc/strategyfiles.md#column-strategy-fake_update for usage information."
+                     )
+        sys.exit(1)
 
 
 if __name__ == "__main__":
