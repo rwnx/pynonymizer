@@ -1,0 +1,7 @@
+# This fixture should fail to parse because `not_a_real_type` is not an available generator
+
+tables:
+  update_column_table:
+    columns:
+      unsupported_fake_type: not_a_real_type
+

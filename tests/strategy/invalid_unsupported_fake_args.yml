@@ -1,0 +1,11 @@
+# This fixture should fail to parse because `not_a_real_arg` is not a kwarg available to the file_path generator
+
+tables:
+  update_column_table:
+    columns:
+      unsupported_fake_args:
+        type: fake_update
+        fake_type: file_path
+        fake_args:
+          not_a_real_arg: 1
+

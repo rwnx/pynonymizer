@@ -1,0 +1,9 @@
+# This fixture should fail to parse because `unsupported_column_type` is not a valid column type
+# note that this is normally caught by the shorthand for unknown fake type, so is only possible in verbose notation
+
+tables:
+  table:
+    columns:
+      unsupported_column_type:
+        type: unsupported_column_type
+

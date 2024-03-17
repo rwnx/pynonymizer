@@ -1,0 +1,139 @@
+name: PyPI
+
+on:
+  push:
+    branches:
+      - main
+      - "[0-9]+-[0-9]+-stable"
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 2 * * 0"
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python: ["3.7", "3.8", "3.9", "3.10"]
+
+    runs-on: ubuntu-latest
+    container: python:${{matrix.python}}-buster
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          apt-get update
+          apt-get install -y unixodbc-dev
+          pip install . .[mssql] pytest
+      - name: Run Unit Tests
+        run: pytest tests/
+
+  integration-mssql: 
+    # The ubuntu version here needs to be synced with the setup instructions in /tests_integration/mssql/install_mssql.sh
+    # as different versions of mssql have different setup instructions https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-ubuntu?view=sql-server-ver16
+    runs-on: ubuntu-20.04
+    env:
+      MSSQL_SA_PASSWORD: pASSw0rd
+      PYNONYMIZER_DB_USER: sa
+      PYNONYMIZER_DB_PASSWORD: pASSw0rd
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8' 
+      - name: Setup MSSQL
+        run: bash tests_integration/mssql/install_mssql.sh
+      - name: Setup test env
+        run: python -m pip install . .[mssql] pytest
+
+      - run: pytest -s tests_integration/mssql
+
+  integration-mysql: 
+    services:
+      db:
+        image: mariadb:10
+        env:
+            MYSQL_ROOT_PASSWORD: password
+        ports:
+            - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    env:
+      PYNONYMIZER_DB_HOST: db
+      PYNONYMIZER_DB_USER: root
+      PYNONYMIZER_DB_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: |
+          apt-get update
+          apt-get install -y mariadb-client
+          pip install . pytest
+      - run: pytest -s tests_integration/mysql
+            
+  integration-postgres: 
+    services:
+      db:
+        image: postgres:10.10
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432/tcp
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    env:
+      PYNONYMIZER_DB_HOST: db
+      PYNONYMIZER_DB_USER: postgres
+      PYNONYMIZER_DB_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: |
+          apt-get update
+          apt-get install -y postgresql-client
+          pip install . pytest
+      - run: pytest -s tests_integration/postgres
+
+  package: 
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    needs: 
+      - test
+      - integration-mysql
+      - integration-postgres
+      - integration-mssql
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install package tools
+      run: pip install twine
+    - run: python setup.py sdist bdist_wheel
+    - uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: dist
+
+  upload: 
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: 
+      - package
+    runs-on: ubuntu-latest
+    container: python:3.8-buster
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: dist
+        path: dist
+    - name: Install package tools
+      run: pip install twine
+    - run: twine upload dist/*
+      env:
+        TWINE_USERNAME: ${{secrets.PYPI_USERNAME}}
+        TWINE_PASSWORD: ${{secrets.PYPI_PASSWORD}}

@@ -1,0 +1,19 @@
+providers:
+  - custom_provider.CustomProvider
+
+scripts:
+  before: 
+    - SELECT * FROM actor LIMIT 1;
+  after: 
+    - SELECT * FROM actor LIMIT 1;
+    
+tables:
+  film:
+    columns:
+      description: name_email
+      title: unique_login
+  actor:
+    columns:
+      first_name: first_name
+      last_name: last_name
+  film_text: delete

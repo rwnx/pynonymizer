@@ -1,0 +1,19 @@
+# Wordpress 4.4+
+# Anonymizes users and comment authors.
+# See https://codex.wordpress.org/Database_Description for more info on wordpress schema.
+tables:
+  wp_users:
+    columns:
+      user_login: user_name
+      user_pass: empty
+      user_nicename: user_name
+      user_email: email
+      user_url: uri
+      display_name: name
+      user_activation_key: empty
+  wp_comments:
+    columns:
+      comment_author: name
+      comment_author_email: email
+      comment_author_IP: ipv4_public
+      comment_agent: user_agent

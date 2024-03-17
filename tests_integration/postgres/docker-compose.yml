@@ -1,0 +1,12 @@
+# This docker-compose is provided for developer convenience only
+# the authoritative service-setup required for the integration tests
+# will always be in the CI workflows (.github/workflows/*)
+version: "3"
+services:
+  db:
+    image: postgres:11
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+    ports:
+      - 54320:5432

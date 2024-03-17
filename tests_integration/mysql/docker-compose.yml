@@ -1,0 +1,11 @@
+# This docker-compose is provided for developer convenience only
+# the authoritative service-setup required for the integration tests
+# will always be in the CI workflows (.github/workflows/*)
+version: "3.7"
+services:
+  db:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - 3306:3306

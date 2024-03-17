@@ -1,0 +1,27 @@
+.env
+venv/
+build/
+
+
+.DS_Store
+.idea/
+
+__pycache__
+*.egg
+*.egg-info/
+.eggs
+*.sql
+*.sql.gz
+!tests_integration/**/*.sql.gz
+!tests_integration/**/*.sql
+*.pyc
+
+.tox
+dist/
+.coverage
+htmlcov/
+
+# This is a setup.py package, so you should be using the setup.py to install/link
+# However you can use pipenv as a venv manager, so we should ignore these files
+Pipfile
+Pipfile.lock

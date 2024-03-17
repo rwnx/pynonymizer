@@ -1,0 +1,4 @@
+# This fixture should fail to parse because `unsupported_table_type` is not an available table type
+
+tables:
+  unsupported_table_type: unsupported_table_type

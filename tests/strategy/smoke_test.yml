@@ -1,0 +1,38 @@
+locale: en_GB
+
+scripts:
+  before: 
+    - SELECT * FROM unique_login_verbose LIMIT 1;
+    - SELECT * FROM unique_login LIMIT 1;
+  after: 
+    - SELECT * FROM fake_update_shorthand LIMIT 1;
+    
+tables:
+  delete_table: delete
+  truncate_table: truncate
+
+  update_column_table:
+    columns:
+      unique_login: unique_login
+      unique_login_verbose:
+        type: unique_login
+
+      unique_email: unique_email
+      unique_email_verbose:
+        type: unique_email
+
+      fake_update_shorthand: file_path
+      fake_update_verbose:
+        type: fake_update
+        fake_type: file_path
+      
+      fake_update_verbose_with_args:
+        type: fake_update
+        fake_type: file_path
+        fake_args:
+          depth: 1
+        
+      literal_column_shorthand: (NOW())
+      literal_column_verbose: 
+        type: literal
+        value: (NOW())
