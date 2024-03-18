@@ -34,6 +34,7 @@ setuptools.setup(
         "tqdm>=4",
         "faker>=1",
         "python-dotenv>=0.10",
+        "typer[all]>=0.9.0",
     ],
     entry_points={"console_scripts": ["pynonymizer = pynonymizer.cli:cli"]},
     setup_requires=["pytest-runner"],

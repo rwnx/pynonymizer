@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 class StrategyParser:
-    def __init__(self, fake_locale):
-        self.fake_locale = fake_locale
+    def __init__(self):
+        pass
 
     @staticmethod
     def __normalize_table_config(table_config):

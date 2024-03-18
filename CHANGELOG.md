@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Better error messages for unsupported fake types - the error should now explain the problem and link to the docs in the right section. [#133]
 - Error message for when a fake_type is used with the wrong config kwargs (these would have previously been caught under "unsupported fake types")
 
+### Removed
+- Positional INPUT. Use the -i/--input option instead
+- Positional STRATEGYFILE. Use the -s/--strategy option instead
+- Positional OUTPUT. Use the -o/--output option instead
+- Deprecated environment keys: `DB_TYPE, DB_HOST, DB_NAME, DB_USER, DB_PASS`.
+- `--fake-locale` `-l` `$PYNONYMIZER_FAKE_LOCALE` cli option. Use the `locale:` key in your strategyfile instead
+
+### Changed
+- environment vars
+
 ## [1.25.0] 2023-03-29
 ### Changed
 - Postgres FAKE_UPDATE strategy now uses an id-based randomization to pick from the seed table. 

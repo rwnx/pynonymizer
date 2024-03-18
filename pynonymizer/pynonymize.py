@@ -20,7 +20,6 @@ def pynonymize(
     db_host=None,
     db_name=None,
     db_port=None,
-    fake_locale=None,
     only_step=None,
     start_at_step=None,
     stop_at_step=None,
@@ -103,11 +102,11 @@ def pynonymize(
 
     # init strategy as it relies on I/O - fail fast here preferred to after restore
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
-        strategy_parser = StrategyParser(fake_locale)
+        strategy_parser = StrategyParser()
 
         logger.debug("loading strategyfile %s...", strategyfile_path)
         strategy = strategy_parser.parse_config(
-            read_config(strategyfile_path), locale_override=fake_locale
+            read_config(strategyfile_path)
         )
 
     # Discover db-type kwargs

@@ -1,14 +1,14 @@
 from enum import Enum
 
 
-class ProcessSteps(Enum):
-    START = 0
-    CREATE_DB = 200
-    RESTORE_DB = 300
-    ANONYMIZE_DB = 400
-    DUMP_DB = 500
-    DROP_DB = 600
-    END = 9999
+class ProcessSteps(str, Enum):
+    START = "START"
+    CREATE_DB = "CREATE_DB"
+    RESTORE_DB = "RESTORE_DB"
+    ANONYMIZE_DB = "ANONYMIZE_DB"
+    DUMP_DB = "DUMP_DB"
+    DROP_DB = "DROP_DB"
+    END = "END"
 
     @staticmethod
     def names():

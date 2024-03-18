@@ -43,17 +43,10 @@ def invalid_custom_provider_unknown_module():
     return local_yaml("invalid_custom_provider_unknown_module.yml")
 
 @pytest.fixture
-def fake_column_generator():
-    from pynonymizer.fake import FakeColumnGenerator
-
-    return FakeColumnGenerator()
-
-
-@pytest.fixture
-def strategy_parser(fake_column_generator):
+def strategy_parser():
     from pynonymizer.strategy import parser
 
-    return parser.StrategyParser(fake_column_generator)
+    return parser.StrategyParser()
 
 
 def test_valid_parse_no_mutate(smoke_test, strategy_parser):
