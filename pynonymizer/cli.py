@@ -1,5 +1,5 @@
 import argparse
-from typing import Annotated, List, Optional
+from typing import Annotated, List, Optional, Union
 import dotenv
 import os
 import sys
@@ -16,6 +16,7 @@ from pynonymizer import __version__
 
 
 app = typer.Typer()
+
 
 
 def version_callback(value: bool):
@@ -55,16 +56,16 @@ def main(
     db_user: Annotated[str, typer.Option("--db-user", "-u")] = None,
     db_password: Annotated[str, typer.Option("--db-password", "-p")] = None,
     start_at_step: Annotated[
-        ProcessSteps,
+        str,
         typer.Option(
             "--start-at", help="Choose a step to begin the process (inclusive)."
         ),
     ] = None,
     only_step: Annotated[
-        ProcessSteps, typer.Option(help="Choose one step to perform.")
+        str, typer.Option(help="Choose one step to perform.")
     ] = None,
     skip_steps: Annotated[
-        List[ProcessSteps],
+        List[str],
         typer.Option(
             "--skip_steps",
             show_envvar=True,
@@ -73,7 +74,7 @@ def main(
         ),
     ] = None,
     stop_at_step: Annotated[
-        ProcessSteps,
+        str,
         typer.Option("--start-at", help="Choose a step to stop at (inclusive)."),
     ] = None,
     seed_rows: Annotated[
