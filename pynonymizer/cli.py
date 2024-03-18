@@ -75,7 +75,7 @@ def main(
     ] = None,
     stop_at_step: Annotated[
         str,
-        typer.Option("--start-at", help="Choose a step to stop at (inclusive)."),
+        typer.Option("--stop-at", help="Choose a step to stop at (inclusive)."),
     ] = None,
     seed_rows: Annotated[
         int,
