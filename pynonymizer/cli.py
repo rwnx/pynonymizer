@@ -18,7 +18,6 @@ from pynonymizer import __version__
 app = typer.Typer()
 
 
-
 def version_callback(value: bool):
     if value:
         print(f"{__version__}")
@@ -61,9 +60,7 @@ def main(
             "--start-at", help="Choose a step to begin the process (inclusive)."
         ),
     ] = None,
-    only_step: Annotated[
-        str, typer.Option(help="Choose one step to perform.")
-    ] = None,
+    only_step: Annotated[str, typer.Option(help="Choose one step to perform.")] = None,
     skip_steps: Annotated[
         List[str],
         typer.Option(
