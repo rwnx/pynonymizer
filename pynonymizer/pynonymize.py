@@ -105,9 +105,7 @@ def pynonymize(
         strategy_parser = StrategyParser()
 
         logger.debug("loading strategyfile %s...", strategyfile_path)
-        strategy = strategy_parser.parse_config(
-            read_config(strategyfile_path)
-        )
+        strategy = strategy_parser.parse_config(read_config(strategyfile_path))
 
     # Discover db-type kwargs
     # mssql_backup_option -> backup_option and pass these to the constructor

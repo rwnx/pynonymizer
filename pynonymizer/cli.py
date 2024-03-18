@@ -17,37 +17,135 @@ from pynonymizer import __version__
 
 app = typer.Typer()
 
+
 def version_callback(value: bool):
     if value:
         print(f"{__version__}")
         raise typer.Exit()
 
-@app.command(context_settings={ 'auto_envvar_prefix': 'PYNONYMIZER' })
+
+@app.command(context_settings={"auto_envvar_prefix": "PYNONYMIZER"})
 def main(
-    input: Annotated[str, typer.Option("--input", "-i", help="The source dump filepath to read from. Use `-` for stdin.")] = None,
-    strategyfile: Annotated[str, typer.Option("--input", "-i", help="A strategyfile to use during anonymization.")] = None,
-    output: Annotated[str, typer.Option("--output", "-o", help="The destination filepath to write the dumped output to. Use `-` for stdout.")] = None,
+    input: Annotated[
+        str,
+        typer.Option(
+            "--input",
+            "-i",
+            help="The source dump filepath to read from. Use `-` for stdin.",
+        ),
+    ] = None,
+    strategyfile: Annotated[
+        str,
+        typer.Option(
+            "--strategy", "-s", help="A strategyfile to use during anonymization."
+        ),
+    ] = None,
+    output: Annotated[
+        str,
+        typer.Option(
+            "--output",
+            "-o",
+            help="The destination filepath to write the dumped output to. Use `-` for stdout.",
+        ),
+    ] = None,
     db_type: Annotated[str, typer.Option("--db-type", "-t")] = "mysql",
     db_host: Annotated[str, typer.Option("--db-host", "-d")] = None,
     db_port: Annotated[str, typer.Option("--db-port", "-P")] = None,
     db_name: Annotated[str, typer.Option("--db-name", "-n")] = None,
     db_user: Annotated[str, typer.Option("--db-user", "-u")] = None,
     db_password: Annotated[str, typer.Option("--db-password", "-p")] = None,
-    start_at_step: Annotated[ProcessSteps, typer.Option(help="Choose a step to begin the process (inclusive).")] = None,
-    only_step: Annotated[ProcessSteps, typer.Option(help="Choose one step to perform.")] = None,
-    skip_steps: Annotated[List[ProcessSteps], typer.Option("--skip_steps", show_envvar=True, help="Choose one or more steps to skip", case_sensitive=False)] = None,
-    stop_at_step: Annotated[ProcessSteps, typer.Option(help="Choose a step to stop at (inclusive).")] = None,
-    seed_rows: Annotated[int, typer.Option(min=1, show_envvar=True, help="Number of rows to populate the fake data table used during anonymization")] = 150,
-    mssql_driver: Annotated[str, typer.Option("--mssql-backup-compression", help="[mssql] ODBC driver to use for database connection.")] = None,
-    mssql_backup_compression: Annotated[bool, typer.Option("--mssql-backup-compression", help="[mssql] Use compression when backing up the database.")] = False,
-    mysql_cmd_opts: Annotated[str, typer.Option("--mysql-cmd-opts", help="[mysql] pass additional arguments to the restore process.")] = None,
-    mysql_dump_opts: Annotated[str, typer.Option("--mysql-cmd-opts", help="[mysql] pass additional arguments to the dump process.")] = None,
-    postgres_cmd_opts: Annotated[str, typer.Option("--mysql-cmd-opts", help="[postgres] pass additional arguments to the restore process.")] = None,
-    postgres_dump_opts:  Annotated[str, typer.Option("--mysql-cmd-opts", help="[postgres] pass additional arguments to the dump process.")] = None,
-    dry_run: Annotated[bool, typer.Option("--dry-run", help="Skip all process steps. Useful for testing safely.")] = False,
-    verbose: Annotated[bool, typer.Option("--verbose", help="Increases the verbosity of the logging feature, to help when troubleshooting issues.")] = False,
-    ignore_anonymization_errors: Annotated[bool, typer.Option("--ignore-anonymization-errors",help="Ignore errors during the anonymization process.")] = False,
-    version: Annotated[bool, typer.Option("--version", callback=version_callback, is_eager=True)] = False,
+    start_at_step: Annotated[
+        ProcessSteps,
+        typer.Option(help="Choose a step to begin the process (inclusive)."),
+    ] = None,
+    only_step: Annotated[
+        ProcessSteps, typer.Option(help="Choose one step to perform.")
+    ] = None,
+    skip_steps: Annotated[
+        List[ProcessSteps],
+        typer.Option(
+            "--skip_steps",
+            show_envvar=True,
+            help="Choose one or more steps to skip",
+            case_sensitive=False,
+        ),
+    ] = None,
+    stop_at_step: Annotated[
+        ProcessSteps, typer.Option(help="Choose a step to stop at (inclusive).")
+    ] = None,
+    seed_rows: Annotated[
+        int,
+        typer.Option(
+            min=1,
+            show_envvar=True,
+            help="Number of rows to populate the fake data table used during anonymization",
+        ),
+    ] = 150,
+    mssql_driver: Annotated[
+        str,
+        typer.Option(
+            "--mssql-backup-compression",
+            help="[mssql] ODBC driver to use for database connection.",
+        ),
+    ] = None,
+    mssql_backup_compression: Annotated[
+        bool,
+        typer.Option(
+            "--mssql-backup-compression",
+            help="[mssql] Use compression when backing up the database.",
+        ),
+    ] = False,
+    mysql_cmd_opts: Annotated[
+        str,
+        typer.Option(
+            "--mysql-cmd-opts",
+            help="[mysql] pass additional arguments to the restore process.",
+        ),
+    ] = None,
+    mysql_dump_opts: Annotated[
+        str,
+        typer.Option(
+            "--mysql-cmd-opts",
+            help="[mysql] pass additional arguments to the dump process.",
+        ),
+    ] = None,
+    postgres_cmd_opts: Annotated[
+        str,
+        typer.Option(
+            "--mysql-cmd-opts",
+            help="[postgres] pass additional arguments to the restore process.",
+        ),
+    ] = None,
+    postgres_dump_opts: Annotated[
+        str,
+        typer.Option(
+            "--mysql-cmd-opts",
+            help="[postgres] pass additional arguments to the dump process.",
+        ),
+    ] = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run", help="Skip all process steps. Useful for testing safely."
+        ),
+    ] = False,
+    verbose: Annotated[
+        bool,
+        typer.Option(
+            "--verbose",
+            help="Increases the verbosity of the logging feature, to help when troubleshooting issues.",
+        ),
+    ] = False,
+    ignore_anonymization_errors: Annotated[
+        bool,
+        typer.Option(
+            "--ignore-anonymization-errors",
+            help="Ignore errors during the anonymization process.",
+        ),
+    ] = False,
+    version: Annotated[
+        bool, typer.Option("--version", callback=version_callback, is_eager=True)
+    ] = False,
 ):
     """
     A tool for writing better anonymization strategies for your production databases.
@@ -146,8 +244,10 @@ def main(
         )
         sys.exit(1)
 
+
 def cli():
     app()
+
 
 if __name__ == "__main__":
     cli()

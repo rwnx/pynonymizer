@@ -16,7 +16,6 @@ config_path = os.path.join(home, ".my.cnf")
 class OptionalConfigTests(unittest.TestCase):
     @classmethod
     def setup_class(cls):
-
         with open(config_path, "w+") as f:
             f.write(
                 f"""

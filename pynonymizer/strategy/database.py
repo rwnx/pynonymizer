@@ -4,7 +4,6 @@ from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 
 class DatabaseStrategy:
     def __init__(self, table_strategies=None, before_scripts=None, after_scripts=None):
-
         self.table_strategies = []
         self.before_scripts = []
         self.after_scripts = []
