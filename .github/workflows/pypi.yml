@@ -17,10 +17,10 @@ jobs:
   test:
     strategy:
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10"]
+        python: ["3.12", "3.11", "3.10"]
 
     runs-on: ubuntu-latest
-    container: python:${{matrix.python}}-buster
+    container: python:${{matrix.python}}
     steps:
       - uses: actions/checkout@v2
       - name: Install Dependencies
@@ -62,7 +62,7 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     
     runs-on: ubuntu-latest
-    container: python:3.8-buster
+    container: python:3.8
     env:
       PYNONYMIZER_DB_HOST: db
       PYNONYMIZER_DB_USER: root
@@ -88,7 +88,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     runs-on: ubuntu-latest
-    container: python:3.8-buster
+    container: python:3.8
     env:
       PYNONYMIZER_DB_HOST: db
       PYNONYMIZER_DB_USER: postgres
@@ -104,7 +104,7 @@ jobs:
 
   package: 
     runs-on: ubuntu-latest
-    container: python:3.8-buster
+    container: python:3.8
     needs: 
       - test
       - integration-mysql
@@ -125,7 +125,7 @@ jobs:
     needs: 
       - package
     runs-on: ubuntu-latest
-    container: python:3.8-buster
+    container: python:3.8
     steps:
     - uses: actions/download-artifact@v2
       with:
