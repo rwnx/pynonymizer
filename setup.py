@@ -18,10 +18,6 @@ setuptools.setup(
         "Operating System :: POSIX",
         "Topic :: Database",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
     ],
     author="Rowan Twell",
     author_email="rowantwell@gmail.com",
@@ -29,6 +25,7 @@ setuptools.setup(
     keywords="anonymization gdpr database mysql",
     license="MIT",
     packages=setuptools.find_packages(exclude=("tests", "tests.*")),
+    python_requires=">3.9.0",
     install_requires=[
         "pyyaml>=5",
         "tqdm>=4",

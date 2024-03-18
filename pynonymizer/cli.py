@@ -56,7 +56,9 @@ def main(
     db_password: Annotated[str, typer.Option("--db-password", "-p")] = None,
     start_at_step: Annotated[
         ProcessSteps,
-        typer.Option(help="Choose a step to begin the process (inclusive)."),
+        typer.Option(
+            "--start-at", help="Choose a step to begin the process (inclusive)."
+        ),
     ] = None,
     only_step: Annotated[
         ProcessSteps, typer.Option(help="Choose one step to perform.")
@@ -71,7 +73,8 @@ def main(
         ),
     ] = None,
     stop_at_step: Annotated[
-        ProcessSteps, typer.Option(help="Choose a step to stop at (inclusive).")
+        ProcessSteps,
+        typer.Option("--start-at", help="Choose a step to stop at (inclusive)."),
     ] = None,
     seed_rows: Annotated[
         int,
@@ -165,7 +168,7 @@ def main(
     dotenv_file = dotenv.find_dotenv(usecwd=True)
     dotenv.load_dotenv(dotenv_path=dotenv_file)
 
-    if args.verbose:
+    if verbose:
         console_handler.setLevel(logging.DEBUG)
 
     # Add local project dir to path in case of custom provider imports
@@ -198,14 +201,14 @@ def main(
             ignore_anonymization_errors=ignore_anonymization_errors,
         )
     except ModuleNotFoundError as error:
-        if error.name == "pyodbc" and args.db_type == "mssql":
+        if error.name == "pyodbc" and db_type == "mssql":
             logger.error("Missing Required Packages for database support.")
             logger.error("Install package extras: pip install pynonymizer[mssql]")
             sys.exit(1)
         else:
             raise error
     except ImportError as error:
-        if error.name == "pyodbc" and args.db_type == "mssql":
+        if error.name == "pyodbc" and db_type == "mssql":
             logger.error(
                 "Error importing pyodbc (mssql). "
                 "The ODBC driver may not be installed on your system. See package `unixodbc`."
@@ -215,7 +218,7 @@ def main(
             raise error
     except DatabaseConnectionError as error:
         logger.error("Failed to connect to database.")
-        if args.verbose:
+        if verbose:
             logger.error(error)
         sys.exit(1)
     except ArgumentValidationError as error:
@@ -225,7 +228,6 @@ def main(
             + "\nSet these using the command-line options or with environment variables. \n"
             "For a complete list, See the program help below.\n"
         )
-        parser.print_help()
         sys.exit(2)
     except UnsupportedFakeArgumentsError as error:
         logger.error(
