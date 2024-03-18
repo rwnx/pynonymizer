@@ -6,5 +6,5 @@
 # You should copy the output of this into README.md
 set -e
 
-stty rows 23 cols 80 &> /dev/null
-pynonymizer -h
+stty rows 23 cols 100 &> /dev/null
+pynonymizer --help

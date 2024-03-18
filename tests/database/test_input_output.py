@@ -1,4 +1,10 @@
-from pynonymizer.database.basic.input import GzipInput, RawInput, StdInInput, UnknownInputTypeError, resolve_input
+from pynonymizer.database.basic.input import (
+    GzipInput,
+    RawInput,
+    StdInInput,
+    UnknownInputTypeError,
+    resolve_input,
+)
 from pynonymizer.database.basic.output import (
     UnknownOutputTypeError,
     resolve_output,
@@ -43,7 +49,6 @@ def test_resolve_unknown():
 
 def test_resolve_stdout():
     isinstance(resolve_output("-"), StdOutOutput)
-
 
 
 @pytest.mark.parametrize("path_example", test_path_examples)

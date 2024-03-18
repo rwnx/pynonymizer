@@ -54,13 +54,14 @@ class UnsupportedFakeTypeError(Exception):
         self.fake_type = fake_type
         self.kwargs = kwargs
 
+
 class UnsupportedFakeArgumentsError(UnsupportedFakeTypeError):
     def __init__(self, fake_type, kwargs=None):
         kwargs = {} if kwargs is None else kwargs
-        super().__init__(f"Unsupported Fake Arguments for \"{fake_type}\": {kwargs}")
+        super().__init__(f'Unsupported Fake Arguments for "{fake_type}": {kwargs}')
         self.fake_type = fake_type
         self.kwargs = kwargs
-    
+
 
 class FakeColumnGenerator:
     def __init__(self, locale=None, providers=[]):
