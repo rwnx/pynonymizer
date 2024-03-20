@@ -8,7 +8,7 @@ from pynonymizer.database.mysql import execution, query_factory
 from pynonymizer.strategy.table import TableStrategyTypes
 
 
-class MySqlProvider():
+class MySqlProvider:
     """
     A command-line based mysql provider. Uses `mysql` and `mysqldump`,
     Because of the efficiency of piping mass amounts of sql into the command-line client.

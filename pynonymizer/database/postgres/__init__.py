@@ -7,7 +7,7 @@ from pynonymizer.database.output import resolve_output
 from pynonymizer.strategy.table import TableStrategyTypes
 
 
-class PostgreSqlProvider():
+class PostgreSqlProvider:
     """
     A command-line based postgres provider. Uses `psql` and `pg_dump`,
     because of the efficiency of piping mass amounts of sql into the command-line client.

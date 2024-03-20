@@ -141,7 +141,6 @@ def pynonymize(
         raise ArgumentValidationError(validations)
 
     db_provider = Provider(
-        type=db_type,
         db_host=db_host,
         db_user=db_user,
         db_pass=db_password,

@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Better error messages for unsupported fake types - the error should now explain the problem and link to the docs in the right section. [#133]
 - Error message for when a fake_type is used with the wrong config kwargs (these would have previously been caught under "unsupported fake types")
+- event hooks for progress events. you can now use your own progress bar if you're invoking the process via the python interface.
 
 ### Removed
 - Positional INPUT. Use the -i/--input option instead
