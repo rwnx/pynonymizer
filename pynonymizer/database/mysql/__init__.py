@@ -60,7 +60,7 @@ class MySqlProvider:
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
-        for i in progress(
+        for i in self.progress(
             range(0, self.seed_rows), desc="Inserting seed data", unit="rows"
         ):
             self.logger.debug(f"Inserting seed row {i}")
@@ -123,7 +123,7 @@ class MySqlProvider:
 
         anonymization_errors = []
 
-        with progress(
+        with self.progress(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
             for table_strategy in table_strategies:
@@ -197,7 +197,7 @@ class MySqlProvider:
         try:
             batch_processor = self.__runner.open_batch_processor()
             with input_obj.open() as dumpfile_data:
-                with progress(
+                with self.progress(
                     desc="Restoring",
                     total=dumpsize,
                     unit="B",
@@ -222,7 +222,7 @@ class MySqlProvider:
 
         dump_process = self.__dumper.open_dumper()
         with output_obj.open() as output_file:
-            with progress(
+            with self.progress(
                 desc="Dumping",
                 total=dumpsize_estimate,
                 unit="B",
