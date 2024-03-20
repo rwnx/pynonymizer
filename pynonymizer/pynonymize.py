@@ -15,23 +15,6 @@ import uuid
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class ProgressStartEvent:
-    name: str
-    total: int
-
-
-@dataclass
-class ProgressEndEvent:
-    name: str
-
-
-@dataclass
-class ProgressTickEvent:
-    name: str
-    size: int
-
-
 def get_temp_db_name(filename=None):
     name, _ = os.path.splitext(os.path.basename(filename))
     return f"{name}_{uuid.uuid4().hex}"

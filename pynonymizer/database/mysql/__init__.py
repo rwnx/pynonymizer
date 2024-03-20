@@ -5,15 +5,10 @@ from pynonymizer.database.output import resolve_output
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.mysql import execution, query_factory
-from pynonymizer.pynonymize import (
-    ProgressEndEvent,
-    ProgressStartEvent,
-    ProgressTickEvent,
-)
 from pynonymizer.strategy.table import TableStrategyTypes
 
 
-class MySqlProvider:
+class MySqlProvider():
     """
     A command-line based mysql provider. Uses `mysql` and `mysqldump`,
     Because of the efficiency of piping mass amounts of sql into the command-line client.
@@ -65,14 +60,13 @@ class MySqlProvider:
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
-        self.on_event(ProgressStartEvent("seed_data", self.seed_rows))
-        for i in range(0, self.seed_rows):
+        for i in progress(
+            range(0, self.seed_rows), desc="Inserting seed data", unit="rows"
+        ):
             self.logger.debug(f"Inserting seed row {i}")
             self.__runner.db_execute(
                 query_factory.get_insert_seed_row(SEED_TABLE_NAME, qualifier_map)
             )
-            self.on_event(ProgressTickEvent("seed_data", 1))
-        self.on_event(ProgressEndEvent("seed_data"))
 
     def __estimate_dumpsize(self):
         """
@@ -129,7 +123,7 @@ class MySqlProvider:
 
         anonymization_errors = []
 
-        with self.progress(
+        with progress(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
             for table_strategy in table_strategies:
@@ -203,7 +197,7 @@ class MySqlProvider:
         try:
             batch_processor = self.__runner.open_batch_processor()
             with input_obj.open() as dumpfile_data:
-                with self.progress(
+                with progress(
                     desc="Restoring",
                     total=dumpsize,
                     unit="B",
@@ -228,7 +222,7 @@ class MySqlProvider:
 
         dump_process = self.__dumper.open_dumper()
         with output_obj.open() as output_file:
-            with self.progress(
+            with progress(
                 desc="Dumping",
                 total=dumpsize_estimate,
                 unit="B",

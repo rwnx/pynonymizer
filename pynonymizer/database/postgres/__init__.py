@@ -2,12 +2,12 @@ from pynonymizer.database.provider import SEED_TABLE_NAME
 import logging
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.postgres import execution, query_factory
-from pynonymizer.database.basic.input import resolve_input
-from pynonymizer.database.basic.output import resolve_output
+from pynonymizer.database.input import resolve_input
+from pynonymizer.database.output import resolve_output
 from pynonymizer.strategy.table import TableStrategyTypes
 
 
-class PostgreSqlProvider(DatabaseProvider):
+class PostgreSqlProvider():
     """
     A command-line based postgres provider. Uses `psql` and `pg_dump`,
     because of the efficiency of piping mass amounts of sql into the command-line client.
