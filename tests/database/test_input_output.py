@@ -1,11 +1,11 @@
-from pynonymizer.database.basic.input import (
+from pynonymizer.database.input import (
     GzipInput,
     RawInput,
     StdInInput,
     UnknownInputTypeError,
     resolve_input,
 )
-from pynonymizer.database.basic.output import (
+from pynonymizer.database.output import (
     UnknownOutputTypeError,
     resolve_output,
     RawOutput,
