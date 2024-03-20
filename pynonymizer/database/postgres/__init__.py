@@ -1,7 +1,5 @@
 from pynonymizer.database.provider import SEED_TABLE_NAME
-from tqdm import tqdm
 import logging
-from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.postgres import execution, query_factory
 from pynonymizer.database.basic.input import resolve_input
@@ -26,6 +24,7 @@ class PostgreSqlProvider(DatabaseProvider):
         db_pass,
         db_name,
         seed_rows,
+        progress,
         db_port=None,
         cmd_opts=None,
         dump_opts=None,
@@ -45,6 +44,7 @@ class PostgreSqlProvider(DatabaseProvider):
         self.db_pass = db_pass
         self.db_name = db_name
         self.db_port = db_port
+        self.progress = progress
 
         self.seed_rows = int(seed_rows)
 
@@ -69,7 +69,7 @@ class PostgreSqlProvider(DatabaseProvider):
         """
         'Seed' the database with a bunch of pre-generated random records so updates can be performed in batch updates
         """
-        for i in tqdm(
+        for i in self.progress(
             range(0, self.seed_rows), desc="Inserting seed data", unit="rows"
         ):
             self.logger.debug(f"Inserting seed row {i}")
@@ -132,7 +132,7 @@ class PostgreSqlProvider(DatabaseProvider):
 
         anonymization_errors = []
 
-        with tqdm(
+        with self.progress(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
             for table_strategy in table_strategies:
@@ -195,7 +195,7 @@ class PostgreSqlProvider(DatabaseProvider):
         batch_processor = self.__runner.open_batch_processor()
         try:
             with input_obj.open() as dumpfile_data:
-                with tqdm(
+                with self.progress(
                     desc="Restoring",
                     total=dumpsize,
                     unit="B",
@@ -220,7 +220,7 @@ class PostgreSqlProvider(DatabaseProvider):
 
         dump_process = self.__dumper.open_dumper()
         with output_obj.open() as output_file:
-            with tqdm(
+            with self.progress(
                 desc="Dumping",
                 total=dumpsize_estimate,
                 unit="B",

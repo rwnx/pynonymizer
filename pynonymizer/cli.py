@@ -13,6 +13,7 @@ from pynonymizer.pynonymize import (
     ProcessSteps,
 )
 from pynonymizer import __version__
+from tqdm import tqdm
 
 
 app = typer.Typer()
@@ -197,6 +198,7 @@ def main(
             dry_run=dry_run,
             verbose=verbose,
             ignore_anonymization_errors=ignore_anonymization_errors,
+            progress=tqdm,
         )
     except ModuleNotFoundError as error:
         if error.name == "pyodbc" and db_type == "mssql":

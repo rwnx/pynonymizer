@@ -1,16 +1,44 @@
+from dataclasses import dataclass
 import logging
-from pynonymizer.database import get_temp_db_name, get_provider
+from typing import Callable, Literal, Union
+from pynonymizer.database.mssql import MsSqlProvider
+from pynonymizer.database.mysql import MySqlProvider
+from pynonymizer.database.postgres import PostgreSqlProvider
 from pynonymizer.fake import FakeColumnGenerator
 from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer.strategy.config import read_config
 from pynonymizer.exceptions import ArgumentValidationError, DatabaseConnectionError
 from pynonymizer.process_steps import StepActionMap, ProcessSteps
-
+import os.path
+import uuid
 
 logger = logging.getLogger(__name__)
 
 
+@dataclass
+class ProgressStartEvent:
+    name: str
+    total: int
+
+
+@dataclass
+class ProgressEndEvent:
+    name: str
+
+
+@dataclass
+class ProgressTickEvent:
+    name: str
+    size: int
+
+
+def get_temp_db_name(filename=None):
+    name, _ = os.path.splitext(os.path.basename(filename))
+    return f"{name}_{uuid.uuid4().hex}"
+
+
 def pynonymize(
+    progress,
     input_path=None,
     strategyfile_path=None,
     output_path=None,
@@ -37,6 +65,7 @@ def pynonymize(
         ArgumentValidationError: used when kwargs are missing or unable to be auto-resolved.
 
     """
+
     # Default and Normalize args
     if only_step is not None:
         only_step = ProcessSteps.from_value(only_step)
@@ -97,9 +126,6 @@ def pynonymize(
     if db_name is None:
         validations.append("Missing DB_NAME: Auto-resolve failed.")
 
-    if len(validations) > 0:
-        raise ArgumentValidationError(validations)
-
     # init strategy as it relies on I/O - fail fast here preferred to after restore
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
         strategy_parser = StrategyParser()
@@ -118,7 +144,20 @@ def pynonymize(
     logger.debug(
         "Database: (%s:%s)%s@%s name: %s", db_host, db_port, db_type, db_user, db_name
     )
-    db_provider = get_provider(
+
+    if db_type == "mysql":
+        Provider = MySqlProvider
+    elif db_type == "postgres":
+        Provider = PostgreSqlProvider
+    elif db_type == "mssql":
+        Provider = MsSqlProvider
+    else:
+        validations.append(f"{db_type} is not a known database type.")
+
+    if len(validations) > 0:
+        raise ArgumentValidationError(validations)
+
+    db_provider = Provider(
         type=db_type,
         db_host=db_host,
         db_user=db_user,
@@ -126,6 +165,7 @@ def pynonymize(
         db_name=db_name,
         db_port=db_port,
         seed_rows=seed_rows,
+        progress=progress,
         **db_kwargs,
     )
 

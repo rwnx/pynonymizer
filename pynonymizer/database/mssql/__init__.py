@@ -1,4 +1,3 @@
-from pynonymizer.database.provider import DatabaseProvider
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
 from pynonymizer.strategy.table import TableStrategyTypes
@@ -11,7 +10,6 @@ from pynonymizer.fake import FakeDataType
 
 import math
 import logging
-from tqdm import tqdm
 from pathlib import PureWindowsPath, PurePosixPath
 import re
 
@@ -34,7 +32,7 @@ def _extract_driver_version(driver):
         return 0
 
 
-class MsSqlProvider(DatabaseProvider):
+class MsSqlProvider:
     """
     A pyodbc-based MSSQL provider.
     """
@@ -53,6 +51,7 @@ class MsSqlProvider(DatabaseProvider):
         db_pass,
         db_name,
         seed_rows,
+        progress,
         db_port=None,
         backup_compression=False,
         driver=None,
@@ -69,6 +68,7 @@ class MsSqlProvider(DatabaseProvider):
         self.db_pass = db_pass
         self.db_name = db_name
         self.db_port = db_port
+        self.progress = progress
 
         self.seed_rows = int(seed_rows)
 
@@ -217,7 +217,9 @@ class MsSqlProvider(DatabaseProvider):
         # With STATS=x, we should recieve 100/x resultsets, provided the backup is slow enough.
         # With some databases, it will jump from y% to 100, so we'll only get <x nextset calls.
         # Even SSMS doesn't get informed (read: it's not my fault, blame microsoft)
-        with tqdm(desc=desc, total=math.floor(100 / self.__STATS)) as progressbar:
+        with self.progress(
+            desc=desc, total=math.floor(100 / self.__STATS)
+        ) as progressbar:
             while cursor.nextset():
                 progressbar.update()
 
@@ -266,7 +268,7 @@ class MsSqlProvider(DatabaseProvider):
         self.__db_execute(statement, value_list)
 
     def __seed(self, qualifier_map):
-        for i in tqdm(
+        for i in self.progress(
             range(0, self.seed_rows), desc="Inserting seed data", unit="rows"
         ):
             self.__insert_seed_row(qualifier_map)
@@ -318,7 +320,7 @@ class MsSqlProvider(DatabaseProvider):
 
         anonymization_errors = []
 
-        with tqdm(
+        with self.progress(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
             for table_strategy in table_strategies:
