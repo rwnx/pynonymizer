@@ -30,7 +30,6 @@ setuptools.setup(
         "pyyaml>=5",
         "tqdm>=4",
         "faker>=1",
-        "python-dotenv>=0.10",
         "typer[all]>=0.9.0",
     ],
     entry_points={"console_scripts": ["pynonymizer = pynonymizer.cli:cli"]},

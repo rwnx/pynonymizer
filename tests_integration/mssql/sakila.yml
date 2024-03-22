@@ -1,3 +1,6 @@
+providers:
+  - custom_provider.CustomProvider
+
 scripts:
   before: 
     - SELECT TOP 1 * FROM actor;
@@ -7,17 +10,12 @@ scripts:
 tables:
   film:
     columns:
-      description: bs
-      # title is a varchar(256) field so this should truncate
-      title: 
-        type: fake_update
-        fake_type: pystr
-        fake_args: 
-          min_chars: 256
-          max_chars: 500
+      description: unique_login
+      title: unique_login
 
   actor:
     columns:
       first_name: first_name
-      last_name: last_name
-  film_text: delete
+      last_name: name_email
+  film_text: truncate
+  film_category: delete

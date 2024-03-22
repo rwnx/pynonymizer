@@ -5,7 +5,8 @@
 set -e
 source /etc/lsb-release
 
-MSSQL_PID='developer'
+# Moved to env, see .github/workflows
+# MSSQL_PID='developer'
 
 echo Adding Microsoft repositories...
 sudo curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -

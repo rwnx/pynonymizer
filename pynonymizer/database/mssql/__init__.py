@@ -12,7 +12,7 @@ import math
 import logging
 from pathlib import PureWindowsPath, PurePosixPath
 import re
-
+from .connectionstring import ConnectionString
 
 _FAKE_COLUMN_TYPES = {
     FakeDataType.STRING: "VARCHAR(MAX)",
@@ -20,9 +20,6 @@ _FAKE_COLUMN_TYPES = {
     FakeDataType.DATETIME: "DATETIME",
     FakeDataType.INT: "INT",
 }
-
-_LOCAL_SERVER = "127.0.0.1"
-_DEFAULT_PORT = "1433"
 
 
 def _extract_driver_version(driver):
@@ -53,29 +50,45 @@ class MsSqlProvider:
         seed_rows,
         progress,
         db_port=None,
+        connection_string=None,
         backup_compression=False,
         driver=None,
     ):
         # import here for fast-failiness
         import pyodbc
 
-        db_host = db_host or _LOCAL_SERVER
-        db_port = db_port or _DEFAULT_PORT
-        driver = driver or self.__detect_driver()
+        self.connnectionstr = ConnectionString.from_string(connection_string or "")
 
-        self.db_host = db_host
-        self.db_user = db_user
-        self.db_pass = db_pass
-        self.db_name = db_name
-        self.db_port = db_port
+        if db_name is None:
+            raise ValueError("db_name is required")
+        else:
+            self.db_name = db_name
+
+        if db_host == "(local)\\SQLEXPRESS":
+            self.connnectionstr["server"] = db_host
+        else:
+            db_host = db_host or "(local)"
+            if db_port:
+                self.connnectionstr["server"] = f"{db_host},{db_port}"
+            else:
+                self.connnectionstr["server"] = db_host
+
+        if db_user:
+            self.connnectionstr["uid"] = db_user
+
+        if db_pass:
+            self.connnectionstr["pwd"] = db_pass
+
         self.progress = progress
+
+        if "driver" not in self.connnectionstr:
+            self.connnectionstr["driver"] = driver or self.__detect_driver()
 
         self.seed_rows = int(seed_rows)
 
         self.__conn = None
         self.__db_conn = None
         self.__backup_compression = backup_compression
-        self.__driver = driver
 
     def __detect_driver(self):
         import pyodbc
@@ -92,25 +105,13 @@ class MsSqlProvider:
         # Sort by the highest number (like, ODBC driver 14 for SQL server)
         return sorted(ms_drivers, key=_extract_driver_version, reverse=True)[0]
 
-    def __require_local_server(self):
-        if self.db_host != _LOCAL_SERVER:
-            raise DependencyError(
-                "db_host",
-                "This operation does not support remote servers due to backup file "
-                "location requirements. You must omit db_host from your configuration "
-                "and run pynonymizer on the same server as the database.",
-            )
-
     def __connection(self):
         import pyodbc
 
         """a lazy-evaluated connection"""
         if self.__conn is None:
             self.__conn = pyodbc.connect(
-                driver=f"{{{self.__driver}}}",
-                server=f"{self.db_host},{self.db_port}",
-                uid=self.db_user,
-                pwd=self.db_pass,
+                self.connnectionstr.get_string(),
                 autocommit=True,
             )
 
@@ -122,11 +123,8 @@ class MsSqlProvider:
         """a lazy-evaluated db-specific connection"""
         if self.__db_conn is None:
             self.__db_conn = pyodbc.connect(
-                driver=f"{{{self.__driver}}}",
+                self.connnectionstr.get_string(),
                 database=self.db_name,
-                server=f"{self.db_host},{self.db_port}",
-                uid=self.db_user,
-                pwd=self.db_pass,
                 autocommit=True,
             )
 
@@ -277,9 +275,9 @@ class MsSqlProvider:
         if column_strategy.strategy_type == UpdateColumnStrategyTypes.EMPTY:
             return "('')"
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_EMAIL:
-            return f"( SELECT CONCAT(NEWID(), '@', NEWID(), '.com') )"
+            return f"( SELECT CONCAT(convert(varchar(38),NEWID()), '@example.com') )"
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.UNIQUE_LOGIN:
-            return f"( SELECT NEWID() )"
+            return f"( SELECT convert(varchar(38),NEWID()) )"
         elif column_strategy.strategy_type == UpdateColumnStrategyTypes.FAKE_UPDATE:
             column = f"[{column_strategy.qualifier}]"
             if column_strategy.sql_type:
@@ -368,9 +366,11 @@ class MsSqlProvider:
                                     table_name, i + 1, total_wheres
                                 )
                             )
-                            # Disable ANSI_WARNINGS to allow oversized fake data to be truncated without error
+
+                            # set ansi warnings off because otherwise we run into lots of little incompatibilities between the seed data nd the columns
+                            # e.g. string or binary data would be truncated (when the data is too long)
                             self.__db_execute(
-                                "SET ANSI_WARNINGS off; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS on;".format(
+                                "SET ANSI_WARNINGS OFF; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS ON; ".format(
                                     schema_prefix,
                                     table_name,
                                     column_assignments,
@@ -390,7 +390,7 @@ class MsSqlProvider:
                 progressbar.update()
 
         if len(anonymization_errors) > 0:
-            raise Exception("Error during anonymization")
+            raise Exception("Error during anonymization" + repr(anonymization_errors))
 
         self.__run_scripts(database_strategy.after_scripts, "after")
 
@@ -398,8 +398,6 @@ class MsSqlProvider:
         self.__drop_seed_table()
 
     def restore_database(self, input_path):
-        self.__require_local_server()
-
         move_files = self.__get_file_moves(input_path)
 
         self.logger.info("Found %d files in %s", len(move_files), input_path)
@@ -417,8 +415,6 @@ class MsSqlProvider:
         self.__async_operation_progress("Restoring Database", restore_cursor)
 
     def dump_database(self, output_path):
-        self.__require_local_server()
-
         with_options = []
         if self.__backup_compression:
             with_options.append("COMPRESSION")

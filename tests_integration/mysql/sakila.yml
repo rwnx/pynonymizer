@@ -10,10 +10,12 @@ scripts:
 tables:
   film:
     columns:
-      description: name_email
+      description: unique_login
       title: unique_login
+
   actor:
     columns:
       first_name: first_name
       last_name: last_name
-  film_text: delete
+  film_text: truncate
+  film_category: delete

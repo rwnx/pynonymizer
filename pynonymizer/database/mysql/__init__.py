@@ -173,7 +173,7 @@ class MySqlProvider:
                 progressbar.update()
 
         if len(anonymization_errors) > 0:
-            raise Exception("Error during anonymization")
+            raise Exception("Error during anonymization" + repr(anonymization_errors))
 
         self.__run_scripts(database_strategy.after_scripts, "after")
 

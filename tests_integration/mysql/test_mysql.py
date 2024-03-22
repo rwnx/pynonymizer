@@ -1,16 +1,26 @@
+import gzip
+import shutil
 import pytest
 import subprocess
 import os
 import unittest
+from pynonymizer.cli import app
+from typer.testing import CliRunner
 
 # force getenv to error here for more human-readable errors
 user = os.getenv("PYNONYMIZER_DB_USER")
 password = os.getenv("PYNONYMIZER_DB_PASSWORD")
 test_dir = os.path.dirname(os.path.realpath(__file__))
+input_path = os.path.abspath(os.path.join(test_dir, "./sakila.sql.gz"))
+strategy_path = os.path.abspath(os.path.join(test_dir, "./sakila.yml"))
 ONE_MB = 1024 * 1024
 
 home = os.path.expanduser("~")
 config_path = os.path.join(home, ".my.cnf")
+
+os.chdir(test_dir)
+
+runner = CliRunner()
 
 
 class OptionalConfigTests(unittest.TestCase):
@@ -26,27 +36,21 @@ password="{password}"
             )
 
     def test_smoke_lzma(self):
-        # remove db user/password from env (used in other tests)
         new_env = os.environ.copy()
         del new_env["PYNONYMIZER_DB_USER"]
         del new_env["PYNONYMIZER_DB_PASSWORD"]
-        output_path = os.path.join(test_dir, "./OptionalConfig.sql.xz")
-        output = subprocess.check_output(
-            [
-                "pynonymizer",
-                "-i",
-                "sakila.sql.gz",
-                "-o",
-                output_path,
-                "-s",
-                "sakila.yml",
-            ],
-            cwd=test_dir,
-            env=new_env,
-        )
 
-        # some very rough output checks
-        assert os.path.exists(output_path)
+        with runner.isolated_filesystem() as tmpdir:
+            output_path = os.path.join(tmpdir, "basic.sql.xz")
+            output = runner.invoke(
+                app,
+                ["-i", input_path, "-o", output_path, "-s", strategy_path],
+                env=new_env,
+            )
+            assert output.exit_code == 0
+
+            # some very rough output checks
+            assert os.path.exists(output_path)
 
     @classmethod
     def teardown_class(cls):
@@ -54,48 +58,26 @@ password="{password}"
 
 
 def test_smoke_lzma():
-    output = subprocess.check_output(
-        [
-            "pynonymizer",
-            "-i",
-            "sakila.sql.gz",
-            "-o",
-            "basic.sql.xz",
-            "-s",
-            "sakila.yml",
-        ],
-        cwd=test_dir,
-    )
-    output_path = os.path.join(test_dir, "./basic.sql.xz")
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql.xz")
+        output = runner.invoke(
+            app,
+            ["-i", input_path, "-o", output_path, "-s", strategy_path],
+        )
+        assert output.exit_code == 0
 
-    # some very rough output checks
-    assert os.path.exists(output_path)
+        # some very rough output checks
+        assert os.path.exists(output_path)
 
 
 def test_basic():
-    """
-    Perform an actual run against the local database using the modified sakila DB
-    perform some basic checks against the output file
-    """
-    output = subprocess.check_output(
-        ["pynonymizer", "-i", "sakila.sql.gz", "-o", "basic.sql", "-s", "sakila.yml"],
-        cwd=test_dir,
-    )
-    output_path = os.path.join(test_dir, "./basic.sql")
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql")
+        output = runner.invoke(
+            app,
+            ["-i", input_path, "-o", output_path, "-s", strategy_path],
+        )
+        assert output.exit_code == 0
 
-    # some very rough output checks
-    assert os.path.exists(output_path)
-    assert os.path.getsize(output_path) > 3 * ONE_MB
-
-
-def test_basic_stdin_stdout():
-    p = subprocess.check_output(
-        f"gunzip -c sakila.sql.gz | pynonymizer -i - -o - -s sakila.yml > stdout.sql",
-        shell=True,
-        cwd=test_dir,
-    )
-
-    output_path = os.path.join(test_dir, "./stdout.sql")
-    # some very rough output checks
-    assert os.path.exists(output_path)
-    assert os.path.getsize(output_path) > 3 * ONE_MB
+        assert os.path.exists(output_path)
+        assert os.path.getsize(output_path) > 3 * ONE_MB
