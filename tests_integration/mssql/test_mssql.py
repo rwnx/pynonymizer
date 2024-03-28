@@ -28,7 +28,7 @@ def test_smoke_use_connection_str():
         os.chmod(tmpdir, mode=0o777)
         tmp_output = os.path.join(tmpdir, "basic.bak")
 
-        result = runner.invoke(
+        output = runner.invoke(
             app,
             [
                 "-i",
@@ -45,11 +45,10 @@ def test_smoke_use_connection_str():
             catch_exceptions=False,
         )
 
-        print(result.stdout)
-        assert result.exit_code == 0
+        print(output.stdout)
+        assert output.exit_code == 0
         # some very rough output checks
         assert os.path.exists(tmp_output)
-
 
 
 def test_anonymize_column_uniqueness():
@@ -74,7 +73,7 @@ def test_anonymize_column_uniqueness():
             ],
             catch_exceptions=False,
         )
-        print(result.stdout)
+        print(output.stdout)
 
     assert output.exit_code == 0
 
