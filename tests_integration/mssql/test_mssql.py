@@ -25,6 +25,7 @@ def test_smoke_use_connection_str():
     perform some basic checks against the output file
     """
     with runner.isolated_filesystem() as tmpdir:
+        os.chmod(tmpdir, mode=0o777)
         tmp_output = os.path.join(tmpdir, "basic.bak")
 
         result = runner.invoke(
