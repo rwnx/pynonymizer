@@ -63,7 +63,7 @@ class MsSqlProvider:
             raise ValueError("db_name is required")
         else:
             self.db_name = db_name
-        
+
         if db_host and db_host.startswith(r"(local)\\"):
             self.connnectionstr["server"] = db_host
         else:
