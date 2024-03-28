@@ -47,6 +47,7 @@ password="{password}"
                 ["-i", input_path, "-o", output_path, "-s", strategy_path],
                 env=new_env,
             )
+            print(output.stdout)
             assert output.exit_code == 0
 
             # some very rough output checks
@@ -64,6 +65,8 @@ def test_smoke_lzma():
             app,
             ["-i", input_path, "-o", output_path, "-s", strategy_path],
         )
+        print(output.stdout)
+
         assert output.exit_code == 0
 
         # some very rough output checks
@@ -77,6 +80,7 @@ def test_basic():
             app,
             ["-i", input_path, "-o", output_path, "-s", strategy_path],
         )
+        print(output.stdout)
         assert output.exit_code == 0
 
         assert os.path.exists(output_path)

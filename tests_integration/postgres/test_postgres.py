@@ -62,6 +62,7 @@ class OptionalConfigTests(unittest.TestCase):
                 ],
                 env=new_env,
             )
+            print(output.stdout)
             assert output.exit_code == 0
 
             # some very rough output checks
@@ -108,6 +109,7 @@ def test_basic():
                 strategy_path,
             ],
         )
+        print(output.stdout)
         assert output.exit_code == 0
 
         # some very rough output checks
@@ -138,6 +140,7 @@ def test_anonymize_column_uniqueness():
                 strategy_path,
             ],
         )
+        print(output.stdout)
         assert output.exit_code == 0
 
     query = "WITH names_agg AS (SELECT COUNT(1), first_name FROM actor GROUP BY first_name) SELECT COUNT(1) FROM names_agg"
