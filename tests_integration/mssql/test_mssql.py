@@ -46,6 +46,7 @@ def test_smoke_use_connection_str():
         )
 
     assert result.exit_code == 0
+    print(result.stdout)
     # some very rough output checks
     assert os.path.exists(tmp_output)
 
