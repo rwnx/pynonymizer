@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Better error messages for unsupported fake types - the error should now explain the problem and link to the docs in the right section. [#133]
 - Error message for when a fake_type is used with the wrong config kwargs (these would have previously been caught under "unsupported fake types")
 - event hooks for progress events. you can now use your own progress bar if you're invoking the process via the python interface.
+- support for connection strings in mssql. 
+
+### Changed
+- removed credentials validation (db_user, db_password) from the initial cli validation, as these are now handled by your original database. This should grant the most flexibility for different types of credentials.
 
 ### Removed
 - Positional INPUT. Use the -i/--input option instead
@@ -27,9 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Positional OUTPUT. Use the -o/--output option instead
 - Deprecated environment keys: `DB_TYPE, DB_HOST, DB_NAME, DB_USER, DB_PASS`.
 - `--fake-locale` `-l` `$PYNONYMIZER_FAKE_LOCALE` cli option. Use the `locale:` key in your strategyfile instead
-
-### Changed
-- environment vars
+- `dotenv` is no longer a dependency. you are expected to load your environment variables yourself!
+- Removed local server check for mssql, as manual overrides using connection string will be possible. pynonymizer isn't going to stop you!
 
 ## [1.25.0] 2023-03-29
 ### Changed

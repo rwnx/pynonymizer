@@ -1,15 +1,21 @@
+providers:
+  - custom_provider.CustomProvider
+
 scripts:
   before: 
-    - SELECT * FROM customer LIMIT 1;
+    - SELECT * FROM actor LIMIT 1;
   after: 
-    - SELECT * FROM customer LIMIT 1;
+    - SELECT * FROM actor LIMIT 1;
     
 tables:
   film:
     columns:
-      description: bs
-      title: word
-  customer:
+      description: unique_login
+      title: unique_login
+
+  actor:
     columns:
       first_name: first_name
-      email: unique_email
+      last_name: last_name
+  film_actor: truncate
+  film_category: delete

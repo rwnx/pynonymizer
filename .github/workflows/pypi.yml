@@ -36,6 +36,7 @@ jobs:
     # as different versions of mssql have different setup instructions https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-ubuntu?view=sql-server-ver16
     runs-on: ubuntu-20.04
     env:
+      MSSQL_PID: developer
       MSSQL_SA_PASSWORD: pASSw0rd
       PYNONYMIZER_DB_USER: sa
       PYNONYMIZER_DB_PASSWORD: pASSw0rd
@@ -45,7 +46,7 @@ jobs:
         with:
           python-version: '3.12' 
       - name: Setup MSSQL
-        run: bash tests_integration/mssql/install_mssql.sh
+        run: bash tests_integration/install_mssql.sh
       - name: Setup test env
         run: python -m pip install . .[mssql] pytest
 

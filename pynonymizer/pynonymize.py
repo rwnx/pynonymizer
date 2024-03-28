@@ -1,16 +1,13 @@
-from dataclasses import dataclass
 import logging
-from typing import Callable, Literal, Union
 from pynonymizer.database.mssql import MsSqlProvider
 from pynonymizer.database.mysql import MySqlProvider
 from pynonymizer.database.postgres import PostgreSqlProvider
-from pynonymizer.fake import FakeColumnGenerator
 from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer.strategy.config import read_config
-from pynonymizer.exceptions import ArgumentValidationError, DatabaseConnectionError
-from pynonymizer.process_steps import StepActionMap, ProcessSteps
-import os.path
+from pynonymizer.exceptions import ArgumentValidationError
+from pynonymizer.process_steps import ProcessSteps
 import uuid
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -22,22 +19,17 @@ def get_temp_db_name(filename=None):
 
 def pynonymize(
     progress,
+    actions,
+    db_type,
     input_path=None,
     strategyfile_path=None,
     output_path=None,
     db_user=None,
     db_password=None,
-    db_type=None,
     db_host=None,
     db_name=None,
     db_port=None,
-    only_step=None,
-    start_at_step=None,
-    stop_at_step=None,
-    skip_steps=None,
     seed_rows=None,
-    dry_run=False,
-    verbose=False,
     ignore_anonymization_errors=False,
     **kwargs,
 ):
@@ -48,34 +40,6 @@ def pynonymize(
         ArgumentValidationError: used when kwargs are missing or unable to be auto-resolved.
 
     """
-
-    # Default and Normalize args
-    if only_step is not None:
-        only_step = ProcessSteps.from_value(only_step)
-
-    if start_at_step is None:
-        start_at_step = ProcessSteps.START
-    else:
-        start_at_step = ProcessSteps.from_value(start_at_step)
-
-    if stop_at_step is None:
-        stop_at_step = ProcessSteps.END
-    else:
-        stop_at_step = ProcessSteps.from_value(stop_at_step)
-
-    if skip_steps and len(skip_steps) > 0:
-        skip_steps = [ProcessSteps.from_value(skip) for skip in skip_steps]
-
-    if db_type is None:
-        db_type = "mysql"
-
-    actions = StepActionMap(
-        start_at_step=start_at_step,
-        stop_at_step=stop_at_step,
-        skip_steps=skip_steps,
-        dry_run=dry_run,
-        only_step=only_step,
-    )
 
     # Validate mandatory args (depends on step actions)
     validations = []
@@ -96,15 +60,10 @@ def pynonymize(
         if output_path is None:
             validations.append("Missing OUTPUT")
 
+    # do not validate db_user/password as these are managed by providers
     # Mysql supports my.cnf files with additional config, so we have to assume db_host, db_user, db_password, db_port could all be in there
-    if db_type != "mysql":
-        if db_user is None:
-            validations.append("Missing DB_USER")
-
-        # postgres supports implicit db_pass using the .pgpass file
-        if db_type != "postgres":
-            if db_password is None:
-                validations.append("Missing DB_PASSWORD")
+    # postgres supports implicit db_pass using the .pgpass file
+    # mssql could be using integrated security or connectionstr
 
     if db_name is None:
         validations.append("Missing DB_NAME: Auto-resolve failed.")

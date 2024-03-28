@@ -1,14 +1,13 @@
-import argparse
-from typing import Annotated, List, Optional, Union
-import dotenv
-import os
+from subprocess import CalledProcessError
+from typing import Annotated, List
 import sys
 import logging
 import typer
+from pynonymizer.exceptions import DatabaseConnectionError
 from pynonymizer.fake import UnsupportedFakeArgumentsError, UnsupportedFakeTypeError
+from pynonymizer.process_steps import StepActionMap
 from pynonymizer.pynonymize import (
     ArgumentValidationError,
-    DatabaseConnectionError,
     pynonymize,
     ProcessSteps,
 )
@@ -60,7 +59,7 @@ def main(
         typer.Option(
             "--start-at", help="Choose a step to begin the process (inclusive)."
         ),
-    ] = None,
+    ] = "START",
     only_step: Annotated[str, typer.Option(help="Choose one step to perform.")] = None,
     skip_steps: Annotated[
         List[str],
@@ -74,7 +73,7 @@ def main(
     stop_at_step: Annotated[
         str,
         typer.Option("--stop-at", help="Choose a step to stop at (inclusive)."),
-    ] = None,
+    ] = "END",
     seed_rows: Annotated[
         int,
         typer.Option(
@@ -83,6 +82,14 @@ def main(
             help="Number of rows to populate the fake data table used during anonymization",
         ),
     ] = 150,
+    mssql_connection_string: Annotated[
+        str,
+        typer.Option(
+            "--mssql-connection-string",
+            "-c",
+            help="Pass additional options to the pyodbc connection. overrides existing connection arguments.",
+        ),
+    ] = None,
     mssql_driver: Annotated[
         str,
         typer.Option(
@@ -154,40 +161,50 @@ def main(
 
     https://github.com/rwnx/pynonymizer
     """
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    root_logger = logging.getLogger()
 
-    logger.handlers.clear()
+    loglevel = logging.INFO
+    if verbose:
+        loglevel = logging.DEBUG
+
+    root_logger.handlers.clear()
     console_handler = logging.StreamHandler(sys.stderr)
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(logging.Formatter("%(message)s"))
-    logger.addHandler(console_handler)
 
-    # find the dotenv from the current working dir rather than the execution location
-    dotenv_file = dotenv.find_dotenv(usecwd=True)
-    dotenv.load_dotenv(dotenv_path=dotenv_file)
+    console_handler.setLevel(loglevel)
+    console_handler.setFormatter(logging.Formatter("%(message)s"))
+    root_logger.addHandler(console_handler)
+
+    # Default and Normalize args
+    if only_step is not None:
+        only_step = ProcessSteps.from_value(only_step)
+
+    start_at_step = ProcessSteps.from_value(start_at_step)
+    stop_at_step = ProcessSteps.from_value(stop_at_step)
+
+    if skip_steps and len(skip_steps) > 0:
+        skip_steps = [ProcessSteps.from_value(skip) for skip in skip_steps]
 
     if verbose:
         console_handler.setLevel(logging.DEBUG)
+
+    actions = StepActionMap(
+        start_at_step=start_at_step,
+        stop_at_step=stop_at_step,
+        skip_steps=skip_steps,
+        dry_run=dry_run,
+        only_step=only_step,
+    )
 
     # Add local project dir to path in case of custom provider imports
     if "." not in sys.path:
         sys.path.append(".")
     try:
         pynonymize(
+            progress=tqdm,
+            actions=actions,
             input_path=input,
             strategyfile_path=strategyfile,
             output_path=output,
-            db_type=db_type,
-            db_host=db_host,
-            db_port=db_port,
-            db_name=db_name,
-            db_user=db_user,
-            db_password=db_password,
-            start_at_step=start_at_step,
-            only_step=only_step,
-            skip_steps=skip_steps,
-            stop_at_step=stop_at_step,
             seed_rows=seed_rows,
             mssql_driver=mssql_driver,
             mssql_backup_compression=mssql_backup_compression,
@@ -195,21 +212,26 @@ def main(
             mysql_dump_opts=mysql_dump_opts,
             postgres_cmd_opts=postgres_cmd_opts,
             postgres_dump_opts=postgres_dump_opts,
-            dry_run=dry_run,
-            verbose=verbose,
             ignore_anonymization_errors=ignore_anonymization_errors,
-            progress=tqdm,
+            verbose=verbose,
+            db_type=db_type,
+            db_host=db_host,
+            db_port=db_port,
+            db_name=db_name,
+            db_user=db_user,
+            db_password=db_password,
+            mssql_connection_string=mssql_connection_string,
         )
     except ModuleNotFoundError as error:
         if error.name == "pyodbc" and db_type == "mssql":
-            logger.error("Missing Required Packages for database support.")
-            logger.error("Install package extras: pip install pynonymizer[mssql]")
+            root_logger.error("Missing Required Packages for database support.")
+            root_logger.error("Install package extras: pip install pynonymizer[mssql]")
             sys.exit(1)
         else:
             raise error
     except ImportError as error:
         if error.name == "pyodbc" and db_type == "mssql":
-            logger.error(
+            root_logger.error(
                 "Error importing pyodbc (mssql). "
                 "The ODBC driver may not be installed on your system. See package `unixodbc`."
             )
@@ -217,12 +239,12 @@ def main(
         else:
             raise error
     except DatabaseConnectionError as error:
-        logger.error("Failed to connect to database.")
+        root_logger.error("Failed to connect to database.")
         if verbose:
-            logger.error(error)
+            root_logger.error(error)
         sys.exit(1)
     except ArgumentValidationError as error:
-        logger.error(
+        root_logger.error(
             "Missing values for required arguments: \n"
             + "\n".join(error.validation_messages)
             + "\nSet these using the command-line options or with environment variables. \n"
@@ -230,7 +252,7 @@ def main(
         )
         sys.exit(2)
     except UnsupportedFakeArgumentsError as error:
-        logger.error(
+        root_logger.error(
             f"There was an error while parsing the strategyfile. Unknown fake type: {error.fake_type} \n "
             + f"This happens when additional kwargs are passed to a fake type that it doesnt support. \n"
             + f"You can only configure generators using kwargs that Faker supports. \n"
@@ -238,12 +260,15 @@ def main(
         )
         sys.exit(1)
     except UnsupportedFakeTypeError as error:
-        logger.error(
+        root_logger.error(
             f"There was an error while parsing the strategyfile. Unknown fake type: {error.fake_type} \n "
             + f"This happens when an fake_update column strategy is used with a generator that doesn't exist. \n"
             + f"You can only use data types that Faker supports. \n"
             + f"See https://github.com/rwnx/pynonymizer/blob/main/doc/strategyfiles.md#column-strategy-fake_update for usage information."
         )
+        sys.exit(1)
+    except CalledProcessError as error:
+        root_logger.error(error)
         sys.exit(1)
 
 
