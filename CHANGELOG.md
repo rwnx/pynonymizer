@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [2.0.0] 2024-03-28
 ### Added
 - Better error messages for unsupported fake types - the error should now explain the problem and link to the docs in the right section. [#133]
 - Error message for when a fake_type is used with the wrong config kwargs (these would have previously been caught under "unsupported fake types")

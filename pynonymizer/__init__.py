@@ -1,3 +1,3 @@
-__version__ = "1.25.0"
+__version__ = "2.0.0"
 
 from pynonymizer.pynonymize import pynonymize as run
