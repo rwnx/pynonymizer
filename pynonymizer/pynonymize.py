@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 import logging
+from typing import Optional
 from pynonymizer.database.mssql import MsSqlProvider
 from pynonymizer.database.mysql import MySqlProvider
 from pynonymizer.database.postgres import PostgreSqlProvider
@@ -6,6 +8,8 @@ from pynonymizer.strategy.parser import StrategyParser
 from pynonymizer.strategy.config import read_config
 from pynonymizer.exceptions import ArgumentValidationError
 from pynonymizer.process_steps import ProcessSteps
+from pynonymizer.strategy.database import DatabaseStrategy
+
 import uuid
 import os
 
@@ -21,6 +25,7 @@ def pynonymize(
     progress,
     actions,
     db_type,
+    db_workers,
     input_path=None,
     strategyfile_path=None,
     output_path=None,
@@ -122,7 +127,7 @@ def pynonymize(
     logger.info(actions.summary(ProcessSteps.ANONYMIZE_DB))
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
         try:
-            db_provider.anonymize_database(strategy)
+            db_provider.anonymize_database(strategy, db_workers=db_workers)
         except Exception as e:
             if not ignore_anonymization_errors:
                 raise e

@@ -1,6 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from pynonymizer.strategy.update_column import UpdateColumnStrategyTypes
-from pynonymizer.strategy.table import TableStrategyTypes
+from pynonymizer.strategy.table import TableStrategy, TableStrategyTypes
 from pynonymizer.database.exceptions import (
     UnsupportedColumnStrategyError,
     UnsupportedTableStrategyError,
@@ -109,11 +110,10 @@ class MsSqlProvider:
         import pyodbc
 
         """a lazy-evaluated connection"""
-        if self.__conn is None:
-            self.__conn = pyodbc.connect(
-                self.connnectionstr.get_string(),
-                autocommit=True,
-            )
+        self.__conn = pyodbc.connect(
+            self.connnectionstr.get_string(),
+            autocommit=True,
+        )
 
         return self.__conn
 
@@ -121,12 +121,12 @@ class MsSqlProvider:
         import pyodbc
 
         """a lazy-evaluated db-specific connection"""
-        if self.__db_conn is None:
-            self.__db_conn = pyodbc.connect(
-                self.connnectionstr.get_string(),
-                database=self.db_name,
-                autocommit=True,
-            )
+
+        self.__db_conn = pyodbc.connect(
+            self.connnectionstr.get_string(),
+            database=self.db_name,
+            autocommit=True,
+        )
 
         return self.__db_conn
 
@@ -301,7 +301,7 @@ class MsSqlProvider:
         )
         self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
-    def anonymize_database(self, database_strategy):
+    def anonymize_database(self, database_strategy, db_workers):
         qualifier_map = database_strategy.fake_update_qualifier_map
 
         if len(qualifier_map) > 0:
@@ -318,76 +318,77 @@ class MsSqlProvider:
 
         anonymization_errors = []
 
+        def anonymize_table(progressbar, table_strategy: TableStrategy):
+            try:
+                table_name = table_strategy.table_name
+                schema_prefix = (
+                    f"[{table_strategy.schema}]." if table_strategy.schema else ""
+                )
+
+                if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
+                    progressbar.set_description("Truncating {}".format(table_name))
+                    self.__db_execute(
+                        "TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name)
+                    )
+
+                elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
+                    progressbar.set_description("Deleting {}".format(table_name))
+                    self.__db_execute(
+                        "DELETE FROM {}[{}];".format(schema_prefix, table_name)
+                    )
+
+                elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
+                    progressbar.set_description("Anonymizing {}".format(table_name))
+                    where_grouping = table_strategy.group_by_where()
+                    total_wheres = len(where_grouping)
+
+                    for i, (where, column_map) in enumerate(where_grouping.items()):
+                        column_assignments = ",".join(
+                            [
+                                "[{}] = {}".format(
+                                    name,
+                                    self.__get_column_subquery(
+                                        column, table_name, name
+                                    ),
+                                )
+                                for name, column in column_map.items()
+                            ]
+                        )
+                        where_clause = f" WHERE {where}" if where else ""
+                        progressbar.set_description(
+                            "Anonymizing {}: w[{}/{}]".format(
+                                table_name, i + 1, total_wheres
+                            )
+                        )
+
+                        # set ansi warnings off because otherwise we run into lots of little incompatibilities between the seed data nd the columns
+                        # e.g. string or binary data would be truncated (when the data is too long)
+                        self.__db_execute(
+                            "SET ANSI_WARNINGS OFF; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS ON; ".format(
+                                schema_prefix,
+                                table_name,
+                                column_assignments,
+                                where_clause,
+                            )
+                        )
+
+                else:
+                    raise UnsupportedTableStrategyError(table_strategy)
+
+            except Exception as e:
+                anonymization_errors.append(e)
+                self.logger.exception(
+                    f"Error while anonymizing table {table_strategy.qualified_name}"
+                )
+
+            progressbar.update()
+
         with self.progress(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
-            for table_strategy in table_strategies:
-                try:
-                    table_name = table_strategy.table_name
-                    schema_prefix = (
-                        f"[{table_strategy.schema}]." if table_strategy.schema else ""
-                    )
-
-                    if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-                        progressbar.set_description("Truncating {}".format(table_name))
-                        self.__db_execute(
-                            "TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name)
-                        )
-
-                    elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
-                        progressbar.set_description("Deleting {}".format(table_name))
-                        self.__db_execute(
-                            "DELETE FROM {}[{}];".format(schema_prefix, table_name)
-                        )
-
-                    elif (
-                        table_strategy.strategy_type
-                        == TableStrategyTypes.UPDATE_COLUMNS
-                    ):
-                        progressbar.set_description("Anonymizing {}".format(table_name))
-                        where_grouping = table_strategy.group_by_where()
-                        total_wheres = len(where_grouping)
-
-                        for i, (where, column_map) in enumerate(where_grouping.items()):
-                            column_assignments = ",".join(
-                                [
-                                    "[{}] = {}".format(
-                                        name,
-                                        self.__get_column_subquery(
-                                            column, table_name, name
-                                        ),
-                                    )
-                                    for name, column in column_map.items()
-                                ]
-                            )
-                            where_clause = f" WHERE {where}" if where else ""
-                            progressbar.set_description(
-                                "Anonymizing {}: w[{}/{}]".format(
-                                    table_name, i + 1, total_wheres
-                                )
-                            )
-
-                            # set ansi warnings off because otherwise we run into lots of little incompatibilities between the seed data nd the columns
-                            # e.g. string or binary data would be truncated (when the data is too long)
-                            self.__db_execute(
-                                "SET ANSI_WARNINGS OFF; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS ON; ".format(
-                                    schema_prefix,
-                                    table_name,
-                                    column_assignments,
-                                    where_clause,
-                                )
-                            )
-
-                    else:
-                        raise UnsupportedTableStrategyError(table_strategy)
-
-                except Exception as e:
-                    anonymization_errors.append(e)
-                    self.logger.exception(
-                        f"Error while anonymizing table {table_strategy.qualified_name}"
-                    )
-
-                progressbar.update()
+            with ThreadPoolExecutor(max_workers=db_workers) as e:
+                for table_strategy in table_strategies:
+                    e.submit(anonymize_table, progressbar, table_strategy)
 
         if len(anonymization_errors) > 0:
             raise Exception("Error during anonymization" + repr(anonymization_errors))

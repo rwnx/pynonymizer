@@ -85,6 +85,39 @@ def get_single(db, query):
     )
 
 
+def test_parallel():
+    """
+    Perform an actual run against the local database using the modified sakila DB
+    perform some basic checks against the output file
+    """
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "output.sql.xz")
+        output = runner.invoke(
+            app,
+            [
+                "--db-host",
+                host,
+                "--db-user",
+                user,
+                "--db-type",
+                "postgres",
+                "-i",
+                input_path,
+                "-o",
+                output_path,
+                "-s",
+                strategy_path,
+                "--workers",
+                "3",
+            ],
+        )
+        print(output.stdout)
+        assert output.exit_code == 0
+
+        # some very rough output checks
+        assert os.path.exists(output_path)
+
+
 def test_basic():
     """
     Perform an actual run against the local database using the modified sakila DB
