@@ -1,11 +1,14 @@
+from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 import logging
+
+import tqdm
 from pynonymizer.database.input import resolve_input
 from pynonymizer.database.output import resolve_output
 from pynonymizer.database.provider import SEED_TABLE_NAME
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.mysql import execution, query_factory
-from pynonymizer.strategy.table import TableStrategyTypes
+from pynonymizer.strategy.table import TableStrategy, TableStrategyTypes
 
 
 class MySqlProvider:
@@ -98,7 +101,7 @@ class MySqlProvider:
         """Drop the working database"""
         self.__runner.execute(query_factory.get_drop_database(self.db_name))
 
-    def anonymize_database(self, database_strategy):
+    def anonymize_database(self, database_strategy, db_workers):
         """
         Anonymize a restored database using the passed database strategy
         :param database_strategy: a strategy.DatabaseStrategy configuration
@@ -123,54 +126,55 @@ class MySqlProvider:
 
         anonymization_errors = []
 
+        def anonymize_table(progressbar, table_strategy: TableStrategy):
+            try:
+                if table_strategy.schema is not None:
+                    self.logger.warning(
+                        "%s: MySQL provider does not support table schema. This option will be ignored.",
+                        table_strategy.table_name,
+                    )
+
+                if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
+                    progressbar.set_description(
+                        "Truncating {}".format(table_strategy.table_name)
+                    )
+                    self.__runner.db_execute(
+                        query_factory.get_truncate_table(table_strategy.table_name)
+                    )
+
+                elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
+                    progressbar.set_description(
+                        "Deleting {}".format(table_strategy.table_name)
+                    )
+                    self.__runner.db_execute(
+                        query_factory.get_delete_table(table_strategy.table_name)
+                    )
+
+                elif table_strategy.strategy_type == TableStrategyTypes.UPDATE_COLUMNS:
+                    progressbar.set_description(
+                        "Anonymizing {}".format(table_strategy.table_name)
+                    )
+                    statements = query_factory.get_update_table(
+                        SEED_TABLE_NAME, table_strategy
+                    )
+                    self.__runner.db_execute(statements)
+
+                else:
+                    raise UnsupportedTableStrategyError(table_strategy)
+            except Exception as e:
+                anonymization_errors.append(e)
+                self.logger.exception(
+                    f"Error while anonymizing table {table_strategy.qualified_name}"
+                )
+
+            progressbar.update()
+
         with self.progress(
             desc="Anonymizing database", total=len(table_strategies)
         ) as progressbar:
-            for table_strategy in table_strategies:
-                try:
-                    if table_strategy.schema is not None:
-                        self.logger.warning(
-                            "%s: MySQL provider does not support table schema. This option will be ignored.",
-                            table_strategy.table_name,
-                        )
-
-                    if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
-                        progressbar.set_description(
-                            "Truncating {}".format(table_strategy.table_name)
-                        )
-                        self.__runner.db_execute(
-                            query_factory.get_truncate_table(table_strategy.table_name)
-                        )
-
-                    elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
-                        progressbar.set_description(
-                            "Deleting {}".format(table_strategy.table_name)
-                        )
-                        self.__runner.db_execute(
-                            query_factory.get_delete_table(table_strategy.table_name)
-                        )
-
-                    elif (
-                        table_strategy.strategy_type
-                        == TableStrategyTypes.UPDATE_COLUMNS
-                    ):
-                        progressbar.set_description(
-                            "Anonymizing {}".format(table_strategy.table_name)
-                        )
-                        statements = query_factory.get_update_table(
-                            SEED_TABLE_NAME, table_strategy
-                        )
-                        self.__runner.db_execute(statements)
-
-                    else:
-                        raise UnsupportedTableStrategyError(table_strategy)
-                except Exception as e:
-                    anonymization_errors.append(e)
-                    self.logger.exception(
-                        f"Error while anonymizing table {table_strategy.qualified_name}"
-                    )
-
-                progressbar.update()
+            with ThreadPoolExecutor(max_workers=db_workers) as e:
+                for table_strategy in table_strategies:
+                    e.submit(anonymize_table, progressbar, table_strategy)
 
         if len(anonymization_errors) > 0:
             raise Exception("Error during anonymization" + repr(anonymization_errors))

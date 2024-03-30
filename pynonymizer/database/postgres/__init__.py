@@ -1,10 +1,11 @@
+from concurrent.futures import ThreadPoolExecutor
 from pynonymizer.database.provider import SEED_TABLE_NAME
 import logging
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.postgres import execution, query_factory
 from pynonymizer.database.input import resolve_input
 from pynonymizer.database.output import resolve_output
-from pynonymizer.strategy.table import TableStrategyTypes
+from pynonymizer.strategy.table import TableStrategy, TableStrategyTypes
 
 
 class PostgreSqlProvider:
@@ -107,7 +108,7 @@ class PostgreSqlProvider:
         """Drop the working database"""
         self.__runner.execute(query_factory.get_drop_database(self.db_name))
 
-    def anonymize_database(self, database_strategy):
+    def anonymize_database(self, database_strategy, db_workers):
         """
         Anonymize a restored database using the passed database strategy
         :param database_strategy: a strategy.DatabaseStrategy configuration
@@ -132,9 +133,7 @@ class PostgreSqlProvider:
 
         anonymization_errors = []
 
-        with self.progress(
-            desc="Anonymizing database", total=len(table_strategies)
-        ) as progressbar:
+        def anonymize_table(progressbar, table_strategy: TableStrategy):
             for table_strategy in table_strategies:
                 try:
                     if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
@@ -174,6 +173,13 @@ class PostgreSqlProvider:
                     )
 
                 progressbar.update()
+
+        with self.progress(
+            desc="Anonymizing database", total=len(table_strategies)
+        ) as progressbar:
+            with ThreadPoolExecutor(max_workers=db_workers) as e:
+                for table_strategy in table_strategies:
+                    e.submit(anonymize_table, progressbar, table_strategy)
 
         if len(anonymization_errors) > 0:
             raise Exception("Error during anonymization" + repr(anonymization_errors))

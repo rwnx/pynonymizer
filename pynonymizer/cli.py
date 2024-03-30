@@ -1,5 +1,5 @@
 from subprocess import CalledProcessError
-from typing import Annotated, List
+from typing import Annotated, List, Union
 import sys
 import logging
 import typer
@@ -54,6 +54,7 @@ def main(
     db_name: Annotated[str, typer.Option("--db-name", "-n")] = None,
     db_user: Annotated[str, typer.Option("--db-user", "-u")] = None,
     db_password: Annotated[str, typer.Option("--db-password", "-p")] = None,
+    db_workers: Annotated[int, typer.Option("--workers", "-w")] = 1,
     start_at_step: Annotated[
         str,
         typer.Option(
@@ -220,6 +221,7 @@ def main(
             db_name=db_name,
             db_user=db_user,
             db_password=db_password,
+            db_workers=db_workers,
             mssql_connection_string=mssql_connection_string,
         )
     except ModuleNotFoundError as error:

@@ -85,3 +85,26 @@ def test_basic():
 
         assert os.path.exists(output_path)
         assert os.path.getsize(output_path) > 3 * ONE_MB
+
+
+def test_parallel():
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql")
+        output = runner.invoke(
+            app,
+            [
+                "-i",
+                input_path,
+                "-o",
+                output_path,
+                "-s",
+                strategy_path,
+                "--workers",
+                "3",
+            ],
+        )
+        print(output.stdout)
+        assert output.exit_code == 0
+
+        assert os.path.exists(output_path)
+        assert os.path.getsize(output_path) > 3 * ONE_MB

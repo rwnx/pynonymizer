@@ -19,6 +19,38 @@ runner = CliRunner()
 # https://learn.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnection.connectionstring
 
 
+def test_parallel():
+    """
+    Perform an actual run against the local database using the modified sakila DB
+    perform some basic checks against the output file
+    """
+    with runner.isolated_filesystem() as tmpdir:
+        os.chmod(tmpdir, mode=0o777)
+        tmp_output = os.path.join(tmpdir, "basic.bak")
+
+        output = runner.invoke(
+            app,
+            [
+                "-i",
+                input_path,
+                "-o",
+                tmp_output,
+                "-s",
+                strategy_path,
+                "-t",
+                "mssql",
+                "--workers",
+                "3",
+            ],
+            catch_exceptions=False,
+        )
+
+        print(output.stdout)
+        assert output.exit_code == 0
+        # some very rough output checks
+        assert os.path.exists(tmp_output)
+
+
 def test_smoke_use_connection_str():
     """
     Perform an actual run against the local database using the modified sakila DB
