@@ -121,7 +121,7 @@ class MsSqlProvider:
         import pyodbc
 
         """a lazy-evaluated db-specific connection"""
- 
+
         self.__db_conn = pyodbc.connect(
             self.connnectionstr.get_string(),
             database=self.db_name,
