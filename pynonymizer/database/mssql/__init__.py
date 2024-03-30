@@ -110,11 +110,10 @@ class MsSqlProvider:
         import pyodbc
 
         """a lazy-evaluated connection"""
-        if self.__conn is None:
-            self.__conn = pyodbc.connect(
-                self.connnectionstr.get_string(),
-                autocommit=True,
-            )
+        self.__conn = pyodbc.connect(
+            self.connnectionstr.get_string(),
+            autocommit=True,
+        )
 
         return self.__conn
 
@@ -122,12 +121,12 @@ class MsSqlProvider:
         import pyodbc
 
         """a lazy-evaluated db-specific connection"""
-        if self.__db_conn is None:
-            self.__db_conn = pyodbc.connect(
-                self.connnectionstr.get_string(),
-                database=self.db_name,
-                autocommit=True,
-            )
+ 
+        self.__db_conn = pyodbc.connect(
+            self.connnectionstr.get_string(),
+            database=self.db_name,
+            autocommit=True,
+        )
 
         return self.__db_conn
 
