@@ -105,6 +105,13 @@ def main(
             help="[mssql] Use compression when backing up the database.",
         ),
     ] = False,
+    mssql_ansi_warnings_off: Annotated[
+        bool,
+        typer.Option(
+            "--mssql-ansi-warnings-off",
+            help="[mssql] turn off ANSI_WARNINGS when making updates.",
+        ),
+    ] = True,
     mysql_cmd_opts: Annotated[
         str,
         typer.Option(
@@ -223,6 +230,7 @@ def main(
             db_password=db_password,
             db_workers=db_workers,
             mssql_connection_string=mssql_connection_string,
+            mssql_ansi_warnings_off=mssql_ansi_warnings_off,
         )
     except ModuleNotFoundError as error:
         if error.name == "pyodbc" and db_type == "mssql":

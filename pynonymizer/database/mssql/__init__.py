@@ -54,6 +54,7 @@ class MsSqlProvider:
         connection_string=None,
         backup_compression=False,
         driver=None,
+        ansi_warnings_off=True,
     ):
         # import here for fast-failiness
         import pyodbc
@@ -90,6 +91,7 @@ class MsSqlProvider:
         self.__conn = None
         self.__db_conn = None
         self.__backup_compression = backup_compression
+        self.ansi_warnings_off = ansi_warnings_off
 
     def __detect_driver(self):
         import pyodbc
@@ -361,15 +363,13 @@ class MsSqlProvider:
                             )
                         )
 
+                        ansi_warnings_prefix = "SET ANSI_WARNINGS OFF;" if self.ansi_warnings_off else ""
+                        ansi_warnings_suffix = "SET ANSI_WARNINGS ON;" if self.ansi_warnings_off else ""
+
                         # set ansi warnings off because otherwise we run into lots of little incompatibilities between the seed data nd the columns
                         # e.g. string or binary data would be truncated (when the data is too long)
                         self.__db_execute(
-                            "SET ANSI_WARNINGS OFF; UPDATE {}[{}] SET {}{}; SET ANSI_WARNINGS ON; ".format(
-                                schema_prefix,
-                                table_name,
-                                column_assignments,
-                                where_clause,
-                            )
+                            f"{ansi_warnings_prefix} UPDATE {schema_prefix}[{table_name}] SET {column_assignments}{where_clause}; {ansi_warnings_suffix}"
                         )
 
                 else:
