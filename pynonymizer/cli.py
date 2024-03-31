@@ -22,6 +22,7 @@ def version_callback(value: bool):
         print(f"{__version__}")
         raise typer.Exit()
 
+
 @app.command(context_settings={"auto_envvar_prefix": "PYNONYMIZER"})
 def default(
     input: Annotated[
@@ -201,7 +202,7 @@ def default(
         dry_run=dry_run,
         only_step=only_step,
     )
-        
+
     # Add local project dir to path in case of custom provider imports
     if "." not in sys.path:
         sys.path.append(".")

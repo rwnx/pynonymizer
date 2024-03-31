@@ -96,7 +96,7 @@ def pynonymize(
 
     if len(validations) > 0:
         raise ArgumentValidationError(validations)
-    
+
     # init strategy as it relies on I/O - fail fast here preferred to after restore
     if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
         strategy_parser = StrategyParser()
