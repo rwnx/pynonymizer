@@ -196,7 +196,20 @@ def test_basic_stdin_stdout():
 
         output = runner.invoke(
             app,
-            ["-i", "-", "-o", "-", "-s", strategy_path],
+            [
+                "--db-host",
+                host,
+                "--db-user",
+                user,
+                "--db-type",
+                "postgres",
+                "-i",
+                "-",
+                "-o",
+                "-",
+                "-s",
+                strategy_path,
+            ],
             input=gzip_raw,
             catch_exceptions=False,
         )
