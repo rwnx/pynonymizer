@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     container: python:${{matrix.python}}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         run: |
           apt-get update
@@ -41,8 +41,8 @@ jobs:
       PYNONYMIZER_DB_USER: sa
       PYNONYMIZER_DB_PASSWORD: pASSw0rd
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12' 
       - name: Setup MSSQL
@@ -69,7 +69,7 @@ jobs:
       PYNONYMIZER_DB_USER: root
       PYNONYMIZER_DB_PASSWORD: password
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup
         run: |
           apt-get update
@@ -95,7 +95,7 @@ jobs:
       PYNONYMIZER_DB_USER: postgres
       PYNONYMIZER_DB_PASSWORD: password
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup
         run: |
           apt-get update
@@ -112,7 +112,7 @@ jobs:
       - integration-postgres
       - integration-mssql
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install package tools
       run: pip install twine
     - run: python setup.py sdist bdist_wheel

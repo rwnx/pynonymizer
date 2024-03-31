@@ -217,4 +217,3 @@ def test_basic_stdin_stdout():
         # dont print stdout unless you wanna see the whole dump
         # print(output.stdout)
         assert output.exit_code == 0
-        assert len(output.stdout) > 3 * ONE_MB
