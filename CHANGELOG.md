@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - `--workers` option to control number of threads to use when anonymizing. Table anonymization will be done in threads and should result in a major speed boost. By default, a single worker is used.
+- `--mssql-ansi-warnings-off` option (default: on) to disable ansi warnings when making updates
 
 ## [2.0.0] 2024-03-28
 ### Added
