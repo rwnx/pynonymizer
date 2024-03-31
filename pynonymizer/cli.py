@@ -1,5 +1,5 @@
 from subprocess import CalledProcessError
-from typing import Annotated, List, Union
+from typing import Annotated, List
 import sys
 import logging
 import typer
@@ -14,7 +14,6 @@ from pynonymizer.pynonymize import (
 from pynonymizer import __version__
 from tqdm import tqdm
 
-
 app = typer.Typer()
 
 
@@ -25,7 +24,7 @@ def version_callback(value: bool):
 
 
 @app.command(context_settings={"auto_envvar_prefix": "PYNONYMIZER"})
-def main(
+def default(
     input: Annotated[
         str,
         typer.Option(
@@ -169,6 +168,7 @@ def main(
 
     https://github.com/rwnx/pynonymizer
     """
+
     root_logger = logging.getLogger()
 
     loglevel = logging.INFO
@@ -236,7 +236,7 @@ def main(
         if error.name == "pyodbc" and db_type == "mssql":
             root_logger.error("Missing Required Packages for database support.")
             root_logger.error("Install package extras: pip install pynonymizer[mssql]")
-            sys.exit(1)
+            return typer.Exit(1)
         else:
             raise error
     except ImportError as error:
@@ -245,22 +245,22 @@ def main(
                 "Error importing pyodbc (mssql). "
                 "The ODBC driver may not be installed on your system. See package `unixodbc`."
             )
-            sys.exit(1)
+            return typer.Exit(1)
         else:
             raise error
     except DatabaseConnectionError as error:
         root_logger.error("Failed to connect to database.")
         if verbose:
             root_logger.error(error)
-        sys.exit(1)
+        return typer.Exit(1)
     except ArgumentValidationError as error:
         root_logger.error(
             "Missing values for required arguments: \n"
             + "\n".join(error.validation_messages)
             + "\nSet these using the command-line options or with environment variables. \n"
-            "For a complete list, See the program help below.\n"
+            "For a complete list, See: `pynonymizer --help`.\n"
         )
-        sys.exit(2)
+        return typer.Exit(2)
     except UnsupportedFakeArgumentsError as error:
         root_logger.error(
             f"There was an error while parsing the strategyfile. Unknown fake type: {error.fake_type} \n "
@@ -268,7 +268,7 @@ def main(
             + f"You can only configure generators using kwargs that Faker supports. \n"
             + f"See https://github.com/rwnx/pynonymizer/blob/main/doc/strategyfiles.md#column-strategy-fake_update for usage information."
         )
-        sys.exit(1)
+        return typer.Exit(1)
     except UnsupportedFakeTypeError as error:
         root_logger.error(
             f"There was an error while parsing the strategyfile. Unknown fake type: {error.fake_type} \n "
@@ -276,10 +276,10 @@ def main(
             + f"You can only use data types that Faker supports. \n"
             + f"See https://github.com/rwnx/pynonymizer/blob/main/doc/strategyfiles.md#column-strategy-fake_update for usage information."
         )
-        sys.exit(1)
+        return typer.Exit(1)
     except CalledProcessError as error:
         root_logger.error(error)
-        sys.exit(1)
+        return typer.Exit(1)
 
 
 def cli():

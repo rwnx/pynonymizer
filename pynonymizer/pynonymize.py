@@ -73,13 +73,6 @@ def pynonymize(
     if db_name is None:
         validations.append("Missing DB_NAME: Auto-resolve failed.")
 
-    # init strategy as it relies on I/O - fail fast here preferred to after restore
-    if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
-        strategy_parser = StrategyParser()
-
-        logger.debug("loading strategyfile %s...", strategyfile_path)
-        strategy = strategy_parser.parse_config(read_config(strategyfile_path))
-
     # Discover db-type kwargs
     # mssql_backup_option -> backup_option and pass these to the constructor
     db_kwargs = {}
@@ -103,6 +96,14 @@ def pynonymize(
 
     if len(validations) > 0:
         raise ArgumentValidationError(validations)
+
+    # init strategy as it relies on I/O - fail fast here preferred to after restore
+    if not actions.skipped(ProcessSteps.ANONYMIZE_DB):
+        strategy_parser = StrategyParser()
+
+        logger.debug("loading strategyfile %s...", strategyfile_path)
+        file_data = read_config(strategyfile_path)
+        strategy = strategy_parser.parse_config(file_data)
 
     db_provider = Provider(
         db_host=db_host,
