@@ -46,6 +46,7 @@ password="{password}"
                 app,
                 ["-i", input_path, "-o", output_path, "-s", strategy_path],
                 env=new_env,
+                catch_exceptions=False,
             )
             print(output.stdout)
             assert output.exit_code == 0
@@ -64,6 +65,7 @@ def test_smoke_lzma():
         output = runner.invoke(
             app,
             ["-i", input_path, "-o", output_path, "-s", strategy_path],
+            catch_exceptions=False,
         )
         print(output.stdout)
 
@@ -79,6 +81,7 @@ def test_basic():
         output = runner.invoke(
             app,
             ["-i", input_path, "-o", output_path, "-s", strategy_path],
+            catch_exceptions=False,
         )
         print(output.stdout)
         assert output.exit_code == 0
@@ -102,9 +105,27 @@ def test_parallel():
                 "--workers",
                 "3",
             ],
+            catch_exceptions=False,
         )
         print(output.stdout)
         assert output.exit_code == 0
 
         assert os.path.exists(output_path)
         assert os.path.getsize(output_path) > 3 * ONE_MB
+
+
+def test_basic_stdin_stdout():
+    with gzip.open(input_path) as gzip_file:
+        gzip_raw = gzip_file.read()
+
+        output = runner.invoke(
+            app,
+            ["-i", "-", "-o", "-", "-s", strategy_path],
+            input=gzip_raw,
+            catch_exceptions=False,
+        )
+
+        # dont print stdout unless you wanna see the whole dump
+        # print(output.stdout)
+        assert output.exit_code == 0
+        assert len(output.stdout) > 3 * ONE_MB

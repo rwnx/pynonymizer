@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `--workers` option to control number of threads to use when anonymizing. Table anonymization will be done in threads and should result in a major speed boost. By default, a single worker is used.
 - `--mssql-ansi-warnings-off` option (default: on) to disable ansi warnings when making updates
 
+### Fixed
+- Fixed a bug where using the raw `pynonymizer` command would error. It now prints help.
+
 ## [2.0.0] 2024-03-28
 ### Added
 - Better error messages for unsupported fake types - the error should now explain the problem and link to the docs in the right section. [#133]

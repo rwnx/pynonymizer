@@ -1,3 +1,4 @@
+import gzip
 import pytest
 import subprocess
 import os
@@ -61,6 +62,7 @@ class OptionalConfigTests(unittest.TestCase):
                     strategy_path,
                 ],
                 env=new_env,
+                catch_exceptions=False,
             )
             print(output.stdout)
             assert output.exit_code == 0
@@ -110,6 +112,7 @@ def test_parallel():
                 "--workers",
                 "3",
             ],
+            catch_exceptions=False,
         )
         print(output.stdout)
         assert output.exit_code == 0
@@ -141,6 +144,7 @@ def test_basic():
                 "-s",
                 strategy_path,
             ],
+            catch_exceptions=False,
         )
         print(output.stdout)
         assert output.exit_code == 0
@@ -172,6 +176,7 @@ def test_anonymize_column_uniqueness():
                 "-s",
                 strategy_path,
             ],
+            catch_exceptions=False,
         )
         print(output.stdout)
         assert output.exit_code == 0
@@ -183,3 +188,20 @@ def test_anonymize_column_uniqueness():
 
     # make sure that names was actually randomized instead of simply set to the same value "randomly"
     assert name_count > 1
+
+
+def test_basic_stdin_stdout():
+    with gzip.open(input_path) as gzip_file:
+        gzip_raw = gzip_file.read()
+
+        output = runner.invoke(
+            app,
+            ["-i", "-", "-o", "-", "-s", strategy_path],
+            input=gzip_raw,
+            catch_exceptions=False,
+        )
+
+        # dont print stdout unless you wanna see the whole dump
+        # print(output.stdout)
+        assert output.exit_code == 0
+        assert len(output.stdout) > 3 * ONE_MB

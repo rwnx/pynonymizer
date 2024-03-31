@@ -1,10 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor
+from pynonymizer.database.io import dump, restore
 from pynonymizer.database.provider import SEED_TABLE_NAME
 import logging
 from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.postgres import execution, query_factory
-from pynonymizer.database.input import resolve_input
-from pynonymizer.database.output import resolve_output
 from pynonymizer.strategy.table import TableStrategy, TableStrategyTypes
 
 
@@ -15,7 +14,6 @@ class PostgreSqlProvider:
     Unfortunately, this implementation provides limited feedback when things go wrong.
     """
 
-    __CHUNK_SIZE = 8192
     logger = logging.getLogger(__name__)
 
     def __init__(
@@ -91,9 +89,6 @@ class PostgreSqlProvider:
         except ValueError:
             # Value unparsable, likely NULL
             return None
-
-    def __read_until_empty_byte(self, data):
-        return iter(lambda: data.read(self.__CHUNK_SIZE), b"")
 
     def __run_scripts(self, script_list, title=""):
         for i, script in enumerate(script_list):
@@ -190,49 +185,12 @@ class PostgreSqlProvider:
         self.__runner.db_execute(query_factory.get_drop_seed_table(SEED_TABLE_NAME))
 
     def restore_database(self, input_path):
-        """
-        Feed a `pg_dump` dumpfile to the `psql` binary on stdin.
-        :param input_path:
-        :return:
-        """
-        input_obj = resolve_input(input_path)
-        dumpsize = input_obj.get_size()
-
-        batch_processor = self.__runner.open_batch_processor()
         try:
-            with input_obj.open() as dumpfile_data:
-                with self.progress(
-                    desc="Restoring",
-                    total=dumpsize,
-                    unit="B",
-                    unit_scale=True,
-                    unit_divisor=1000,
-                ) as bar:
-                    for chunk in self.__read_until_empty_byte(dumpfile_data):
-                        batch_processor.write(chunk)
-                        batch_processor.flush()
-                        bar.update(len(chunk))
+            batch_processor = self.__runner.open_batch_processor()
+            restore(self.progress, input_path, batch_processor)
         finally:
             self.__runner.close_batch_processor()
 
     def dump_database(self, output_path):
-        """
-        Feed an output with stdout from the dump binary
-        :param output_path:
-        :return:
-        """
-        output_obj = resolve_output(output_path)
-        dumpsize_estimate = self.__estimate_dumpsize()
-
         dump_process = self.__dumper.open_dumper()
-        with output_obj.open() as output_file:
-            with self.progress(
-                desc="Dumping",
-                total=dumpsize_estimate,
-                unit="B",
-                unit_scale=True,
-                unit_divisor=1000,
-            ) as bar:
-                for chunk in self.__read_until_empty_byte(dump_process):
-                    output_file.write(chunk)
-                    bar.update(len(chunk))
+        dump(self.progress, output_path, dump_process, self.__estimate_dumpsize())
