@@ -363,8 +363,12 @@ class MsSqlProvider:
                             )
                         )
 
-                        ansi_warnings_prefix = "SET ANSI_WARNINGS OFF;" if self.ansi_warnings_off else ""
-                        ansi_warnings_suffix = "SET ANSI_WARNINGS ON;" if self.ansi_warnings_off else ""
+                        ansi_warnings_prefix = (
+                            "SET ANSI_WARNINGS OFF;" if self.ansi_warnings_off else ""
+                        )
+                        ansi_warnings_suffix = (
+                            "SET ANSI_WARNINGS ON;" if self.ansi_warnings_off else ""
+                        )
 
                         # set ansi warnings off because otherwise we run into lots of little incompatibilities between the seed data nd the columns
                         # e.g. string or binary data would be truncated (when the data is too long)
