@@ -64,7 +64,7 @@ def default(
     skip_steps: Annotated[
         List[str],
         typer.Option(
-            "--skip_steps",
+            "--skip-steps",
             show_envvar=True,
             help="Choose one or more steps to skip",
             case_sensitive=False,
