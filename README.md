@@ -58,9 +58,6 @@ You can see strategyfile examples for existing database, such as wordpress or ad
 
 If this workflow doesnt work for you, see [process control](https://github.com/rwnx/pynonymizer/blob/main/doc/process-control.md) to see if it can be adjusted to suit your needs.
 
-## Requirements
-* Python >= 3.6
-
 ### mysql
 * `mysql`/`mysqldump` Must be in $PATH
 * Local or remote mysql >= 5.5
