@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+### Changed
+- mssql now sets Mars_Connection=Yes on connection as this allows support for threading without connection busy.
+
 ## [2.1.1] 2024-04-06
 ### Fixed
 - Fixed a bug where `--skip-steps` would be ignored if passed via the CLI. [#152]
