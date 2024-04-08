@@ -61,6 +61,9 @@ class MsSqlProvider:
 
         self.connnectionstr = ConnectionString.from_string(connection_string or "")
 
+        # Allow multiple results sets as this can cause connection busy when using multiple threads
+        self.connnectionstr["MARS_Connection"] = "yes"
+
         if db_name is None:
             raise ValueError("db_name is required")
         else:
