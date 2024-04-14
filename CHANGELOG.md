@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [2.2.0] 2024-04-14
 ### Added
 - pynonmizer now has docker images with the database client and dependencies built in. These are in beta, please report any issues to the github. 
 See https://hub.docker.com/r/rwnxt/pynonymizer 
