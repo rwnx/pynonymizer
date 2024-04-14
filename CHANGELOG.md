@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+### Added
+- pynonmizer now has docker images with the database client and dependencies built in. These are in beta, please report any issues to the github. 
+See https://hub.docker.com/r/rwnxt/pynonymizer 
+
 ### Changed
 - mssql now sets Mars_Connection=Yes on connection as this allows support for threading without connection busy.
 
