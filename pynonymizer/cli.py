@@ -36,7 +36,10 @@ def default(
     strategyfile: Annotated[
         str,
         typer.Option(
-            "--strategy", "-s", help="A strategyfile to use during anonymization."
+            "--strategy",
+            "-s",
+            help="A strategyfile to use during anonymization.",
+            envvar=["PYNONYMIZER_STRATEGY", "PYNONYMIZER_STRATEGYFILE"],
         ),
     ] = None,
     output: Annotated[
@@ -57,7 +60,9 @@ def default(
     start_at_step: Annotated[
         str,
         typer.Option(
-            "--start-at", help="Choose a step to begin the process (inclusive)."
+            "--start-at",
+            help="Choose a step to begin the process (inclusive).",
+            envvar=["PYNONYMIZER_START_AT", "PYNONYMIZER_START_AT_STEP"],
         ),
     ] = "START",
     only_step: Annotated[str, typer.Option(help="Choose one step to perform.")] = None,
@@ -72,7 +77,11 @@ def default(
     ] = None,
     stop_at_step: Annotated[
         str,
-        typer.Option("--stop-at", help="Choose a step to stop at (inclusive)."),
+        typer.Option(
+            "--stop-at",
+            help="Choose a step to stop at (inclusive).",
+            envvar=["PYNONYMIZER_STOP_AT", "PYNONYMIZER_STOP_AT_STEP"],
+        ),
     ] = "END",
     seed_rows: Annotated[
         int,
@@ -93,7 +102,7 @@ def default(
     mssql_driver: Annotated[
         str,
         typer.Option(
-            "--mssql-backup-compression",
+            "--mssql-driver",
             help="[mssql] ODBC driver to use for database connection.",
         ),
     ] = None,
@@ -121,21 +130,21 @@ def default(
     mysql_dump_opts: Annotated[
         str,
         typer.Option(
-            "--mysql-cmd-opts",
+            "--mysql-dump-opts",
             help="[mysql] pass additional arguments to the dump process.",
         ),
     ] = None,
     postgres_cmd_opts: Annotated[
         str,
         typer.Option(
-            "--mysql-cmd-opts",
+            "--postgres-cmd-opts",
             help="[postgres] pass additional arguments to the restore process.",
         ),
     ] = None,
     postgres_dump_opts: Annotated[
         str,
         typer.Option(
-            "--mysql-cmd-opts",
+            "--postgres-dump-opts",
             help="[postgres] pass additional arguments to the dump process.",
         ),
     ] = None,
@@ -236,7 +245,7 @@ def default(
         if error.name == "pyodbc" and db_type == "mssql":
             root_logger.error("Missing Required Packages for database support.")
             root_logger.error("Install package extras: pip install pynonymizer[mssql]")
-            return typer.Exit(1)
+            raise typer.Exit(1)
         else:
             raise error
     except ImportError as error:
@@ -245,14 +254,14 @@ def default(
                 "Error importing pyodbc (mssql). "
                 "The ODBC driver may not be installed on your system. See package `unixodbc`."
             )
-            return typer.Exit(1)
+            raise typer.Exit(1)
         else:
             raise error
     except DatabaseConnectionError as error:
         root_logger.error("Failed to connect to database.")
         if verbose:
             root_logger.error(error)
-        return typer.Exit(1)
+        raise typer.Exit(1)
     except ArgumentValidationError as error:
         root_logger.error(
             "Missing values for required arguments: \n"
@@ -260,7 +269,7 @@ def default(
             + "\nSet these using the command-line options or with environment variables. \n"
             "For a complete list, See: `pynonymizer --help`.\n"
         )
-        return typer.Exit(2)
+        raise typer.Exit(2)
     except UnsupportedFakeArgumentsError as error:
         root_logger.error(
             f"There was an error while parsing the strategyfile. Unknown fake type: {error.fake_type} \n "
@@ -268,7 +277,7 @@ def default(
             + f"You can only configure generators using kwargs that Faker supports. \n"
             + f"See https://github.com/rwnx/pynonymizer/blob/main/doc/strategyfiles.md#column-strategy-fake_update for usage information."
         )
-        return typer.Exit(1)
+        raise typer.Exit(1)
     except UnsupportedFakeTypeError as error:
         root_logger.error(
             f"There was an error while parsing the strategyfile. Unknown fake type: {error.fake_type} \n "
@@ -276,10 +285,10 @@ def default(
             + f"You can only use data types that Faker supports. \n"
             + f"See https://github.com/rwnx/pynonymizer/blob/main/doc/strategyfiles.md#column-strategy-fake_update for usage information."
         )
-        return typer.Exit(1)
+        raise typer.Exit(1)
     except CalledProcessError as error:
         root_logger.error(error)
-        return typer.Exit(1)
+        raise typer.Exit(1)
 
 
 def cli():

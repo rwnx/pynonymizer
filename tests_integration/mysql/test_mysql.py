@@ -129,3 +129,16 @@ def test_basic_stdin_stdout():
         # print(output.stdout)
         assert output.exit_code == 0
         assert len(output.stdout) > 3 * ONE_MB
+
+
+def test_error_code():
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql")
+        output = runner.invoke(
+            app,
+            ["-o", output_path, "-s", strategy_path],
+            catch_exceptions=False,
+        )
+        print(output.stdout)
+        # should fail on missing input
+        assert output.exit_code == 2
