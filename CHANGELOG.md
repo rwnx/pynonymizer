@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+
+## [2.2.1] 2024-04-30
 ## Fixed
 - Fixed a bug where command line switches were not named correctly. `--mysql-cmd-opts` and `--mssql-backup-compression` were duplicated, making some options difficult to access.
 - Error codes from the CLI were not working correctly. Pynonymizer will now report failure on validations and other errors.
