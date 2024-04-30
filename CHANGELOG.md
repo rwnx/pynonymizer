@@ -16,7 +16,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
-
+## Fixed
+- Fixed a bug where command line switches were not named correctly. `--mysql-cmd-opts` and `--mssql-backup-compression` were duplicated, making some options difficult to access.
+- Error codes from the CLI were not working correctly. Pynonymizer will now report failure on validations and other errors.
+- Fixed a bug where some environment variables were changed. Both variations will now be supported to ease migration.
+  - `PYNONYMIZER_START_AT`, `PYNONYMIZER_START_AT_STEP`, 
+  - `PYNONYMIZER_STOP_AT`, `PYNONYMIZER_STOP_AT_STEP`,
+  - `PYNONYMIZER_STRATEGY`, `PYNONYMIZER_STRATEGYFILE`
+  
 ## [2.2.0] 2024-04-14
 ### Added
 - pynonmizer now has docker images with the database client and dependencies built in. These are in beta, please report any issues to the github. 
