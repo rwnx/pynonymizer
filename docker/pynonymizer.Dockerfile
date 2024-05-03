@@ -8,6 +8,10 @@ RUN apt-get update && \
     curl https://packages.microsoft.com/config/debian/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
     apt-get update
 
+# Install PostgreSQL client
+RUN apt-get install -y postgresql-client
+RUN apt-get install -y mariadb-client
+
 RUN ACCEPT_EULA=Y apt-get install -y mssql-tools18 msodbcsql18
 ENV PATH="${PATH}:/opt/mssql-tools18/bin"
 
