@@ -8,6 +8,8 @@ from pynonymizer.database.exceptions import UnsupportedTableStrategyError
 from pynonymizer.database.mysql import execution, query_factory
 from pynonymizer.strategy.table import TableStrategy, TableStrategyTypes
 
+logger = logging.getLogger(__name__)
+
 
 class MySqlProvider:
     """
@@ -17,7 +19,6 @@ class MySqlProvider:
     """
 
     __DUMPSIZE_ESTIMATE_INFLATION = 1.15
-    logger = logging.getLogger(__name__)
 
     def __init__(
         self,
@@ -63,7 +64,7 @@ class MySqlProvider:
         for i in self.progress(
             range(0, self.seed_rows), desc="Inserting seed data", unit="rows"
         ):
-            self.logger.debug(f"Inserting seed row {i}")
+            logger.debug(f"Inserting seed row {i}")
             self.__runner.db_execute(
                 query_factory.get_insert_seed_row(SEED_TABLE_NAME, qualifier_map)
             )
@@ -84,8 +85,8 @@ class MySqlProvider:
 
     def __run_scripts(self, script_list, title=""):
         for i, script in enumerate(script_list):
-            self.logger.info(f'Running {title} script #{i} "{script[:50]}"')
-            self.logger.info(self.__runner.db_execute(script))
+            logger.info(f'Running {title} script #{i} "{script[:50]}"')
+            logger.info(self.__runner.db_execute(script))
 
     def create_database(self):
         """Create the working database"""
@@ -104,26 +105,26 @@ class MySqlProvider:
         qualifier_map = database_strategy.fake_update_qualifier_map
 
         if len(qualifier_map) > 0:
-            self.logger.info("creating seed table with %d columns", len(qualifier_map))
+            logger.info("creating seed table with %d columns", len(qualifier_map))
             create_seed_table_sql = query_factory.get_create_seed_table(
                 SEED_TABLE_NAME, qualifier_map
             )
             self.__runner.db_execute(create_seed_table_sql)
 
-            self.logger.info("Inserting seed data")
+            logger.info("Inserting seed data")
             self.__seed(qualifier_map)
 
         self.__run_scripts(database_strategy.before_scripts, "before")
 
         table_strategies = database_strategy.table_strategies
-        self.logger.info("Anonymizing %d tables", len(table_strategies))
+        logger.info("Anonymizing %d tables", len(table_strategies))
 
         anonymization_errors = []
 
         def anonymize_table(progressbar, table_strategy: TableStrategy):
             try:
                 if table_strategy.schema is not None:
-                    self.logger.warning(
+                    logger.warning(
                         "%s: MySQL provider does not support table schema. This option will be ignored.",
                         table_strategy.table_name,
                     )
@@ -157,7 +158,7 @@ class MySqlProvider:
                     raise UnsupportedTableStrategyError(table_strategy)
             except Exception as e:
                 anonymization_errors.append(e)
-                self.logger.exception(
+                logger.exception(
                     f"Error while anonymizing table {table_strategy.qualified_name}"
                 )
 
@@ -175,12 +176,12 @@ class MySqlProvider:
 
         self.__run_scripts(database_strategy.after_scripts, "after")
 
-        self.logger.info("dropping seed table")
+        logger.info("dropping seed table")
         self.__runner.db_execute(query_factory.get_drop_seed_table(SEED_TABLE_NAME))
 
         # Wait an arbitrary amount of time here to prevent this step from interacting with
         # transactional dump operations
-        self.logger.debug("Waiting for trailing operations to complete...")
+        logger.debug("Waiting for trailing operations to complete...")
         sleep(0.2)
 
     def restore_database(self, input_path):

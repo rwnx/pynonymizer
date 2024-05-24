@@ -45,7 +45,6 @@ def pynonymize(
         ArgumentValidationError: used when kwargs are missing or unable to be auto-resolved.
 
     """
-
     # Validate mandatory args (depends on step actions)
     validations = []
 

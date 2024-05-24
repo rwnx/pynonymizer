@@ -15,6 +15,8 @@ from pathlib import PureWindowsPath, PurePosixPath
 import re
 from .connectionstring import ConnectionString
 
+logger = logging.getLogger(__name__)
+
 _FAKE_COLUMN_TYPES = {
     FakeDataType.STRING: "VARCHAR(MAX)",
     FakeDataType.DATE: "DATE",
@@ -34,8 +36,6 @@ class MsSqlProvider:
     """
     A pyodbc-based MSSQL provider.
     """
-
-    logger = logging.getLogger(__name__)
 
     # stats value for restore/backup command: Report progress every X percent
     # A lower value means MORE resultssets / more frequent updates from the backup command.
@@ -96,6 +96,8 @@ class MsSqlProvider:
         self.__backup_compression = backup_compression
         self.ansi_warnings_off = ansi_warnings_off
 
+        logger.debug("connnectionstr: %s", self.connnectionstr)
+
     def __detect_driver(self):
         import pyodbc
 
@@ -106,7 +108,7 @@ class MsSqlProvider:
             )
 
         if len(ms_drivers) > 1:
-            self.logger.debug("multiple drivers detected for mssql: %s", ms_drivers)
+            logger.debug("multiple drivers detected for mssql: %s", ms_drivers)
 
         # Sort by the highest number (like, ODBC driver 14 for SQL server)
         return sorted(ms_drivers, key=_extract_driver_version, reverse=True)[0]
@@ -135,11 +137,13 @@ class MsSqlProvider:
 
         return self.__db_conn
 
-    def __execute(self, *args, **kwargs):
-        return self.__connection().execute(*args, **kwargs)
+    def __execute(self, statement, *args):
+        logger.debug(statement, args)
+        return self.__connection().execute(statement, *args)
 
-    def __db_execute(self, *args, **kwargs):
-        return self.__db_connection().execute(*args, **kwargs)
+    def __db_execute(self, statement, *args):
+        logger.debug(statement, args)
+        return self.__db_connection().execute(statement, *args)
 
     def __get_path(self, filepath):
         if "\\" in filepath:
@@ -233,14 +237,14 @@ class MsSqlProvider:
         import pyodbc
 
         for i, script in enumerate(script_list):
-            self.logger.info(f'Running {title} script #{i} "{script[:50]}"')
+            logger.info(f'Running {title} script #{i} "{script[:50]}"')
             cursor = self.__db_execute(script)
             results = None
             try:
                 results = cursor.fetchall()
             except pyodbc.Error:
                 pass
-            self.logger.info(results)
+            logger.info(results)
 
     def __create_seed_table(self, qualifier_map):
         seed_column_lines = [
@@ -295,7 +299,7 @@ class MsSqlProvider:
             raise UnsupportedColumnStrategyError(column_strategy)
 
     def create_database(self):
-        self.logger.warning(
+        logger.warning(
             "MSSQL: create_database ignored, database will be created when restore_db is run"
         )
 
@@ -310,16 +314,16 @@ class MsSqlProvider:
         qualifier_map = database_strategy.fake_update_qualifier_map
 
         if len(qualifier_map) > 0:
-            self.logger.info("creating seed table with %d columns", len(qualifier_map))
+            logger.info("creating seed table with %d columns", len(qualifier_map))
             self.__create_seed_table(qualifier_map)
 
-            self.logger.info("Inserting seed data")
+            logger.info("Inserting seed data")
             self.__seed(qualifier_map)
 
         self.__run_scripts(database_strategy.before_scripts, "before")
 
         table_strategies = database_strategy.table_strategies
-        self.logger.info("Anonymizing %d tables", len(table_strategies))
+        logger.info("Anonymizing %d tables", len(table_strategies))
 
         anonymization_errors = []
 
@@ -384,7 +388,7 @@ class MsSqlProvider:
 
             except Exception as e:
                 anonymization_errors.append(e)
-                self.logger.exception(
+                logger.exception(
                     f"Error while anonymizing table {table_strategy.qualified_name}"
                 )
 
@@ -402,14 +406,14 @@ class MsSqlProvider:
 
         self.__run_scripts(database_strategy.after_scripts, "after")
 
-        self.logger.info("Dropping seed table")
+        logger.info("Dropping seed table")
         self.__drop_seed_table()
 
     def restore_database(self, input_path):
         move_files = self.__get_file_moves(input_path)
 
-        self.logger.info("Found %d files in %s", len(move_files), input_path)
-        self.logger.debug(move_files)
+        logger.info("Found %d files in %s", len(move_files), input_path)
+        logger.debug(move_files)
 
         # get move statements and flatten pairs out so we can do the 2-param substitution
         move_clauses = ", ".join(["MOVE ? TO ?"] * len(move_files))

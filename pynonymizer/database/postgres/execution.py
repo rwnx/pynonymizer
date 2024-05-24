@@ -1,3 +1,4 @@
+import logging
 import shutil
 import shlex
 import subprocess
@@ -7,6 +8,8 @@ import os
 """
 Seperate everything that touches actual query exec into its own module
 """
+
+logger = logging.getLogger(__name__)
 
 
 class PSqlDumpRunner:
@@ -93,6 +96,7 @@ class PSqlCmdRunner:
         outputs = []
 
         for statement in statements:
+            logger.debug(statement)
             outputs.append(
                 subprocess.check_output(
                     self.__get_base_params()
@@ -111,6 +115,7 @@ class PSqlCmdRunner:
         outputs = []
 
         for statement in statements:
+            logger.debug(statement)
             outputs.append(
                 subprocess.check_output(
                     self.__get_base_params()
@@ -128,6 +133,7 @@ class PSqlCmdRunner:
         return outputs
 
     def get_single_result(self, statement):
+        logger.debug(statement)
         return subprocess.check_output(
             self.__get_base_params()
             + [

@@ -13,14 +13,14 @@ if not (version.is_prerelease or version.is_devrelease or version.is_postrelease
 else:
     tags.append(pynonymizer.__version__)
 
-buildstr = " ".join([
-    "docker build -f docker/pynonymizer.Dockerfile .",
-    *[f"-t rwnxt/pynonymizer:{tag}" for tag in tags]
-])
+buildstr = " ".join(
+    [
+        "docker build -f docker/pynonymizer.Dockerfile .",
+        *[f"-t rwnxt/pynonymizer:{tag}" for tag in tags],
+    ]
+)
 
-pushstr = "\n".join([
-    *[f"docker push rwnxt/pynonymizer:{tag}" for tag in tags]
-])
+pushstr = "\n".join([*[f"docker push rwnxt/pynonymizer:{tag}" for tag in tags]])
 
 print(buildstr)
 print(pushstr)

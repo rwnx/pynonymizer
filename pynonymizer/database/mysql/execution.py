@@ -1,7 +1,10 @@
+import logging
 import shutil
 import shlex
 import subprocess
 from pynonymizer.database.exceptions import DependencyError
+
+logger = logging.getLogger(__name__)
 
 
 def _optional_arg(condition, value):
@@ -125,6 +128,7 @@ class MySqlCmdRunner:
         outputs = []
 
         for statement in statements:
+            logger.debug(statement)
             try:
                 outputs.append(
                     subprocess.check_output(
@@ -145,6 +149,7 @@ class MySqlCmdRunner:
         outputs = []
 
         for statement in statements:
+            logger.debug(statement)
             try:
                 outputs.append(
                     subprocess.check_output(
@@ -159,6 +164,7 @@ class MySqlCmdRunner:
         return outputs
 
     def get_single_result(self, statement):
+        logger.debug(statement)
         try:
             return subprocess.check_output(
                 self.__get_base_params()
