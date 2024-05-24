@@ -17,6 +17,28 @@ from tqdm import tqdm
 app = typer.Typer()
 
 
+class ColorCliFormatter(logging.Formatter):
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = "%(message)s"
+
+    FORMATS = {
+        logging.DEBUG: grey + format + reset,
+        logging.INFO: grey + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset,
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
 def version_callback(value: bool):
     if value:
         print(f"{__version__}")
@@ -187,8 +209,8 @@ def default(
     root_logger.handlers.clear()
     console_handler = logging.StreamHandler(sys.stderr)
 
-    console_handler.setLevel(loglevel)
-    console_handler.setFormatter(logging.Formatter("%(message)s"))
+    root_logger.setLevel(loglevel)
+    console_handler.setFormatter(ColorCliFormatter())
     root_logger.addHandler(console_handler)
 
     # Default and Normalize args
@@ -200,9 +222,6 @@ def default(
 
     if skip_steps and len(skip_steps) > 0:
         skip_steps = [ProcessSteps.from_value(skip) for skip in skip_steps]
-
-    if verbose:
-        console_handler.setLevel(logging.DEBUG)
 
     actions = StepActionMap(
         start_at_step=start_at_step,

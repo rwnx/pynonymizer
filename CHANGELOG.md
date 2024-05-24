@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+## Fixed
+- Fixed a bug where verbose logging was not lowering the log level correctly
+
+## Added
+- Logging output will now be colored according to level
+- Added debug log: sql statements to mssql, mysql, postgres providers
+- Added debug log: connection string log to mssql
 
 ## [2.2.1] 2024-04-30
 ## Fixed
