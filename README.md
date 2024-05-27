@@ -87,6 +87,10 @@ If this workflow doesnt work for you, see [process control](https://github.com/r
 1. Start Anonymizing!
 
 ### Docker
+
+![Docker Image Version](https://img.shields.io/docker/v/rwnxt/pynonymizer?label=Docker)
+
+
 pynonymizer is available as a docker image so that you dont have to install the client tools for your database. 
 
 See https://hub.docker.com/repository/docker/rwnxt/pynonymizer
