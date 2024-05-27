@@ -1,36 +1,18 @@
 # `pynonymizer` [![pynonymizer on PyPI](https://img.shields.io/pypi/v/pynonymizer)](https://pypi.org/project/pynonymizer/) [![Downloads](https://static.pepy.tech/badge/pynonymizer)](https://pepy.tech/project/pynonymizer) ![License](https://img.shields.io/pypi/l/pynonymizer)
 
-pynonymizer is a universal tool for translating sensitive production database dumps into anonymized copies.
+# pynonymizer
 
-This can help you support GDPR/Data Protection in your organization without compromizing on quality testing data.
+pynonymizer is a tool for anonymizing sensitive production database dumps, allowing you to create realistic test datasets while maintaining GDPR/Data Protection compliance. It replaces personally identifiable information (PII) in your database with random, yet realistic data, using the Faker library and other functions.
 
-## Why are anonymized databases important?
-The primary source of information on how your database is used is in _your production database_. In most situations, the production dataset is usually significantly larger than any development copy, and
-would contain a wider range of data.
+Key features:
 
-From time to time, it is prudent to run a new feature or stage a test against this dataset, rather
-than one that is artificially created by developers or by testing frameworks. Anonymized databases allow us to use the structures present in production, while stripping them of any personally identifiable data that would
-consitute a breach of privacy for end-users and subsequently a breach of GDPR.
+- Supports MySQL, PostgreSQL, and MSSQL databases
+- Accepts various input formats (SQL, compressed files)
+- Generates anonymized output in multiple formats
+- Flexible data generation strategies for different use cases
+- Easy to use command-line interface and Python library
 
-With Anonymized databases, copies can be processed regularly, and distributed easily, leaving your developers and testers with a rich source of information on the volume and general makeup of the system in production. It can
-be used to run better staging environments, integration tests, and even simulate database migrations.
-
-below is an excerpt from an anonymized database:
-
-| id |salutation | firstname | surname | email | dob |
-| - | - | - | - | - | - |
-| 1 | Dr. | Bernard | Gough | `tnelson@powell.com` | 2000-07-03 |
-| 2 | Mr. | Molly | Bennett | `clarkeharriet@price-fry.com` | 2014-05-19 |
-| 3 | Mrs. | Chelsea | Reid | `adamsamber@clayton.com` | 1974-09-08 |
-| 4 | Dr. | Grace | Armstrong | `tracy36@wilson-matthews.com` | 1963-12-15 |
-| 5 | Dr. | Stanley | James | `christine15@stewart.net` | 1976-09-16 |
-| 6 | Dr. | Mark | Walsh | `dgardner@ward.biz` | 2004-08-28 |
-| 7 | Mrs. | Josephine | Chambers | `hperry@allen.com` | 1916-04-04 |
-| 8 | Dr. | Stephen | Thomas | `thompsonheather@smith-stevens.com` | 1995-04-17 |
-| 9 | Ms. | Damian | Thompson | `yjones@cox.biz` | 2016-10-02 |
-| 10 | Miss | Geraldine | Harris | `porteralice@francis-patel.com` | 1910-09-28 |
-| 11 | Ms. | Gemma | Jones | `mandylewis@patel-thomas.net` | 1990-06-03 |
-| 12 | Dr. | Glenn | Carr | `garnervalerie@farrell-parsons.biz` | 1998-04-19 |
+With pynonymizer, you can safely share production database copies with developers and testers, enabling better staging environments, integration tests, and database migration simulations, without compromising user privacy.
 
 
 ## How does it work?
@@ -47,7 +29,7 @@ This may or may not suit your exact use-case. For a full list of data generation
 
 ### Examples
 
-You can see strategyfile examples for existing database, such as wordpress or adventureworks sample database, in the the [examples folder](https://github.com/rwnx/pynonymizer/blob/main/examples).
+You can see strategyfile examples for existing databases, in the the [examples folder](https://github.com/rwnx/pynonymizer/blob/main/examples).
 
 ### Process outline
 
@@ -103,6 +85,16 @@ If this workflow doesnt work for you, see [process control](https://github.com/r
 1. Write a [strategyfile](https://github.com/rwnx/pynonymizer/blob/main/doc/strategyfiles.md) for your database
 1. Check out the help for a description of options `pynonymizer --help`
 1. Start Anonymizing!
+
+### Docker
+pynonymizer is available as a docker image so that you dont have to install the client tools for your database. 
+
+See https://hub.docker.com/repository/docker/rwnxt/pynonymizer
+
+```sh
+# As pynonymizer depends on strategyfiles, you'll need to create a file mount so the file can be read.
+docker run --mount type=bind,source=./strategyfile.yml,target=/tmp/strategyfile.yml rwnxt/pynonymizer -s /tmp/strategyfile.yml --db-host [...]
+```
 
 ### Package
 Pynonymizer can also be invoked programmatically / from other python code. See the module entrypoint [pynonymizer](pynonymizer/__init__.py) or [pynonymizer/pynonymize.py](pynonymizer/pynonymize.py)
