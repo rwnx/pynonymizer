@@ -15,7 +15,7 @@ else:
 
 buildstr = " ".join(
     [
-        "docker build -f docker/pynonymizer.Dockerfile .",
+        "docker build .",
         *[f"-t rwnxt/pynonymizer:{tag}" for tag in tags],
     ]
 )
