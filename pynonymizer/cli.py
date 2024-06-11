@@ -142,6 +142,13 @@ def default(
             help="[mssql] turn off ANSI_WARNINGS when making updates.",
         ),
     ] = True,
+    mssql_timeout: Annotated[
+        int,
+        typer.Option(
+            "--mssql-timeout",
+            help="[mssql] set the query timeout option in seconds. This is used when anonymizing the data. A value of 0 leaves this setting at the default."
+        )
+    ] = None,
     mysql_cmd_opts: Annotated[
         str,
         typer.Option(
@@ -259,6 +266,7 @@ def default(
             db_workers=db_workers,
             mssql_connection_string=mssql_connection_string,
             mssql_ansi_warnings_off=mssql_ansi_warnings_off,
+            mssql_timeout=mssql_timeout
         )
     except ModuleNotFoundError as error:
         if error.name == "pyodbc" and db_type == "mssql":
