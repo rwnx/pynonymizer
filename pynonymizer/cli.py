@@ -146,7 +146,7 @@ def default(
         int,
         typer.Option(
             "--mssql-timeout",
-            help="[mssql] set the query timeout option in seconds. A value of 0 leaves this values at the default."
+            help="[mssql] set the query timeout option in seconds. This is used when anonymizing the data. A value of 0 leaves this setting at the default."
         )
     ] = None,
     mysql_cmd_opts: Annotated[
