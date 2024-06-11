@@ -142,6 +142,7 @@ class MsSqlProvider:
     def __execute(self, statement, *args):
         logger.debug(statement, args)
         c = self.__connection()
+        # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout
         return c.execute(statement, *args)
@@ -149,6 +150,7 @@ class MsSqlProvider:
     def __db_execute(self, statement, *args):
         logger.debug(statement, args)
         c = self.__db_connection()
+        # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout        
         return c.execute(statement, *args)
