@@ -55,6 +55,7 @@ class MsSqlProvider:
         backup_compression=False,
         driver=None,
         ansi_warnings_off=True,
+        timeout=None
     ):
         # import here for fast-failiness
         import pyodbc
@@ -95,6 +96,7 @@ class MsSqlProvider:
         self.__db_conn = None
         self.__backup_compression = backup_compression
         self.ansi_warnings_off = ansi_warnings_off
+        self.timeout = timeout
 
         logger.debug("connnectionstr: %s", self.connnectionstr)
 
@@ -139,11 +141,19 @@ class MsSqlProvider:
 
     def __execute(self, statement, *args):
         logger.debug(statement, args)
-        return self.__connection().execute(statement, *args)
+        c = self.__connection()
+        # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
+        if self.timeout:
+            c.timeout = self.timeout
+        return c.execute(statement, *args)
 
     def __db_execute(self, statement, *args):
         logger.debug(statement, args)
-        return self.__db_connection().execute(statement, *args)
+        c = self.__db_connection()
+        # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
+        if self.timeout:
+            c.timeout = self.timeout        
+        return c.execute(statement, *args)
 
     def __get_path(self, filepath):
         if "\\" in filepath:
