@@ -313,7 +313,7 @@ def default(
             + f"See https://github.com/rwnx/pynonymizer/blob/main/doc/strategyfiles.md#column-strategy-fake_update for usage information."
         )
         raise typer.Exit(1)
-    except CalledProcessError as error:
+    except Exception as error:
         root_logger.error(error)
         raise typer.Exit(1)
 

@@ -217,3 +217,59 @@ def test_basic_stdin_stdout():
         # dont print stdout unless you wanna see the whole dump
         # print(output.stdout)
         assert output.exit_code == 0
+
+
+def test_when_restore_fails__should_error():
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql.xz")
+        output = runner.invoke(
+            app,
+            [
+                "--db-host",
+                host,
+                "--db-user",
+                user,
+                "--db-type",
+                "postgres",
+                "-i",
+                input_path,
+                "-o",
+                output_path,
+                "-s",
+                strategy_path,
+                "--postgres-cmd-opts",
+                "--not-a-real-option",
+            ],
+            catch_exceptions=False,
+        )
+        print(output.stdout)
+
+        assert output.exit_code > 0
+
+
+def test_when_dump_fails__should_error():
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql.xz")
+        output = runner.invoke(
+            app,
+            [
+                "--db-host",
+                host,
+                "--db-user",
+                user,
+                "--db-type",
+                "postgres",
+                "-i",
+                input_path,
+                "-o",
+                output_path,
+                "-s",
+                strategy_path,
+                "--postgres-dump-opts",
+                "--not-a-real-option",
+            ],
+            catch_exceptions=False,
+        )
+        print(output.stdout)
+
+        assert output.exit_code > 0

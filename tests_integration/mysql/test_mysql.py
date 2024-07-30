@@ -131,7 +131,7 @@ def test_basic_stdin_stdout():
         assert len(output.stdout) > 3 * ONE_MB
 
 
-def test_error_code():
+def test_missing():
     with runner.isolated_filesystem() as tmpdir:
         output_path = os.path.join(tmpdir, "basic.sql")
         output = runner.invoke(
@@ -142,3 +142,47 @@ def test_error_code():
         print(output.stdout)
         # should fail on missing input
         assert output.exit_code == 2
+
+
+def test_when_restore_fails__should_error():
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql")
+        output = runner.invoke(
+            app,
+            [
+                "-i",
+                input_path,
+                "-o",
+                output_path,
+                "-s",
+                strategy_path,
+                "--mysql-cmd-opts",
+                "--not-a-real-option",
+            ],
+            catch_exceptions=False,
+        )
+        print(output.stdout)
+
+        assert output.exit_code > 0
+
+
+def test_when_dump_fails__should_error():
+    with runner.isolated_filesystem() as tmpdir:
+        output_path = os.path.join(tmpdir, "basic.sql")
+        output = runner.invoke(
+            app,
+            [
+                "-i",
+                input_path,
+                "-o",
+                output_path,
+                "-s",
+                strategy_path,
+                "--mysql-dump-opts",
+                "--not-a-real-option",
+            ],
+            catch_exceptions=False,
+        )
+        print(output.stdout)
+
+        assert output.exit_code > 0

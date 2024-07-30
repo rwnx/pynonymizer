@@ -9,6 +9,9 @@ import os
 Seperate everything that touches actual query exec into its own module
 """
 
+RESTORE_CMD = "psql"
+DUMP_CMD = "pg_dump"
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,15 +25,16 @@ class PSqlDumpRunner:
         self.db_name = db_name
         self.db_port = db_port
         self.additional_opts = shlex.split(additional_opts)
+        self.process = None
 
-        if not (shutil.which("pg_dump")):
+        if not (shutil.which(DUMP_CMD)):
             raise DependencyError(
-                "pg_dump", "The 'pg_dump' client must be present in the $PATH"
+                DUMP_CMD, f"The '{DUMP_CMD}' client must be present in the $PATH"
             )
 
     def __get_base_params(self):
         return [
-            "pg_dump",
+            DUMP_CMD,
             "--host",
             self.db_host,
             "--port",
@@ -46,12 +50,22 @@ class PSqlDumpRunner:
 
         return new_env
 
-    def open_dumper(self):
-        return subprocess.Popen(
+    def open(self):
+        self.close()
+        self.process = subprocess.Popen(
             self.__get_base_params() + self.additional_opts + [self.db_name],
             stdout=subprocess.PIPE,
             env=self.__get_env(),
-        ).stdout
+        )
+        return self.process.stdout
+
+    def close(self):
+        if self.process is not None:
+            self.process.stdout.close()
+            return_code = self.process.wait()
+            if return_code > 0:
+                raise DependencyError(DUMP_CMD, "returned error during run")
+            self.process = None
 
 
 class PSqlCmdRunner:
@@ -66,14 +80,14 @@ class PSqlCmdRunner:
         self.additional_opts = shlex.split(additional_opts)
         self.process = None
 
-        if not (shutil.which("psql")):
+        if not (shutil.which(RESTORE_CMD)):
             raise DependencyError(
-                "psql", "The 'psql' client must be present in the $PATH"
+                RESTORE_CMD, "The f'{RESTORE_CMD}' client must be present in the $PATH"
             )
 
     def __get_base_params(self):
         return [
-            "psql",
+            RESTORE_CMD,
             "--host",
             self.db_host,
             "--port",
@@ -147,8 +161,8 @@ class PSqlCmdRunner:
             env=self.__get_env(),
         ).decode()
 
-    def open_batch_processor(self):
-        self.close_batch_processor()
+    def open(self):
+        self.close()
         self.process = subprocess.Popen(
             self.__get_base_params()
             + ["--dbname", self.db_name, "--quiet"]
@@ -158,8 +172,10 @@ class PSqlCmdRunner:
         )
         return self.process.stdin
 
-    def close_batch_processor(self):
+    def close(self):
         if self.process is not None:
             self.process.stdin.close()
-            self.process.wait()
+            return_code = self.process.wait()
+            if return_code > 0:
+                raise DependencyError(RESTORE_CMD, "returned error during run")
             self.process = None
