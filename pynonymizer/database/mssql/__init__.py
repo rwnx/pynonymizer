@@ -55,7 +55,7 @@ class MsSqlProvider:
         backup_compression=False,
         driver=None,
         ansi_warnings_off=True,
-        timeout=None
+        timeout=None,
     ):
         # import here for fast-failiness
         import pyodbc
@@ -70,14 +70,11 @@ class MsSqlProvider:
         else:
             self.db_name = db_name
 
-        if db_host and db_host.startswith(r"(local)\\"):
-            self.connnectionstr["server"] = db_host
+        host = db_host or "(local)"
+        if db_port:
+            self.connnectionstr["server"] = f"{host},{db_port}"
         else:
-            db_host = "(local)"
-            if db_port:
-                self.connnectionstr["server"] = f"{db_host},{db_port}"
-            else:
-                self.connnectionstr["server"] = db_host
+            self.connnectionstr["server"] = host
 
         if db_user:
             self.connnectionstr["uid"] = db_user
@@ -152,7 +149,7 @@ class MsSqlProvider:
         c = self.__db_connection()
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
-            c.timeout = self.timeout        
+            c.timeout = self.timeout
         return c.execute(statement, *args)
 
     def __get_path(self, filepath):
