@@ -186,11 +186,14 @@ class MySqlProvider:
 
     def restore_database(self, input_path):
         try:
-            batch_processor = self.__runner.open_batch_processor()
-            restore(self.progress, input_path, batch_processor)
+            restore_pipe = self.__runner.open()
+            restore(self.progress, input_path, restore_pipe)
         finally:
-            self.__runner.close_batch_processor()
+            self.__runner.close()
 
     def dump_database(self, output_path):
-        dump_process = self.__dumper.open_dumper()
-        dump(self.progress, output_path, dump_process, self.__estimate_dumpsize())
+        try:
+            dump_stream = self.__dumper.open()
+            dump(self.progress, output_path, dump_stream, self.__estimate_dumpsize())
+        finally:
+            self.__dumper.close()

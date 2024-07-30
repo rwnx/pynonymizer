@@ -6,6 +6,9 @@ from pynonymizer.database.exceptions import DependencyError
 
 logger = logging.getLogger(__name__)
 
+RESTORE_CMD = "mysql"
+DUMP_CMD = "mysqldump"
+
 
 def _optional_arg(condition, value):
     if condition:
@@ -34,20 +37,15 @@ class MySqlDumpRunner:
         self.db_name = db_name
         self.db_port = db_port
         self.additional_opts = shlex.split(additional_opts)
+        self.process = None
 
         if db_name is None:
             raise ValueError("db_name cannot be null")
 
-        if not (shutil.which("mysqldump")):
+        if not (shutil.which(DUMP_CMD)):
             raise DependencyError(
-                "mysqldump", "The 'mysqldump' client must be present in the $PATH"
+                DUMP_CMD, f"The '{DUMP_CMD}' client must be present in the $PATH"
             )
-
-    def __ifdef(self):
-        if self.db_host:
-            return ["--host", self.db_host]
-        else:
-            return []
 
     def __get_base_params(self):
         return [
@@ -57,14 +55,25 @@ class MySqlDumpRunner:
             *_optional_arg(self.db_pass, [f"-p{self.db_pass}"]),
         ]
 
-    def open_dumper(self):
-        return subprocess.Popen(
-            ["mysqldump"]
+    def open(self):
+        self.close()
+
+        self.process = subprocess.Popen(
+            [DUMP_CMD]
             + self.__get_base_params()
             + self.additional_opts
             + [self.db_name],
             stdout=subprocess.PIPE,
-        ).stdout
+        )
+        return self.process.stdout
+
+    def close(self):
+        if self.process is not None:
+            self.process.stdout.close()
+            return_code = self.process.wait()
+            if return_code > 0:
+                raise DependencyError(DUMP_CMD, "returned error during run")
+            self.process = None
 
 
 class MySqlCmdRunner:
@@ -88,9 +97,9 @@ class MySqlCmdRunner:
         if db_name is None:
             raise ValueError("db_name cannot be null")
 
-        if not (shutil.which("mysql")):
+        if not (shutil.which(RESTORE_CMD)):
             raise DependencyError(
-                "mysql", "The 'mysql' client must be present in the $PATH"
+                RESTORE_CMD, f"The '{RESTORE_CMD}' client must be present in the $PATH"
             )
 
     def __mask_subprocess_error(self, error):
@@ -101,7 +110,7 @@ class MySqlCmdRunner:
         This might be better as a wrapping exception, rather than messing around inside other people's classes.
         """
         error.cmd = [
-            "mysql",
+            RESTORE_CMD,
             "-h",
             self.db_host,
             "-P",
@@ -114,7 +123,7 @@ class MySqlCmdRunner:
 
     def __get_base_params(self):
         return [
-            "mysql",
+            RESTORE_CMD,
             *_optional_arg_pair(["-h", self.db_host]),
             *_optional_arg_pair(["-P", self.db_port]),
             *_optional_arg_pair(["-u", self.db_user]),
@@ -173,16 +182,18 @@ class MySqlCmdRunner:
         except subprocess.CalledProcessError as error:
             self.__mask_subprocess_error(error)
 
-    def open_batch_processor(self):
-        self.close_batch_processor()
+    def open(self):
+        self.close()
         self.process = subprocess.Popen(
             self.__get_base_params() + self.additional_opts + [self.db_name],
             stdin=subprocess.PIPE,
         )
         return self.process.stdin
 
-    def close_batch_processor(self):
+    def close(self):
         if self.process is not None:
             self.process.stdin.close()
-            self.process.wait()
+            return_code = self.process.wait()
+            if return_code > 0:
+                raise DependencyError(RESTORE_CMD, "returned error during run")
             self.process = None
