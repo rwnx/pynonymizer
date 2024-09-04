@@ -142,7 +142,12 @@ class MsSqlProvider:
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout
-        return c.execute(statement, *args)
+        cur = c.execute(statement, *args)
+        # If the SQL query causes multiple messages to come back (either extra row counts from triggers, or PRINT statements),
+        # then we need to keep running nextset() for PyODBC to get the query to run to completion
+        while cur.nextset():
+            pass
+        return cur
 
     def __db_execute(self, statement, *args):
         logger.debug(statement, args)
@@ -150,7 +155,12 @@ class MsSqlProvider:
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout
-        return c.execute(statement, *args)
+        # If the SQL query causes multiple messages to come back (either extra row counts from triggers, or PRINT statements),
+        # then we need to keep running nextset() for PyODBC to get the query to run to completion
+        cur = c.execute(statement, *args)
+        while cur.nextset():
+            pass
+        return cur
 
     def __get_path(self, filepath):
         if "\\" in filepath:
