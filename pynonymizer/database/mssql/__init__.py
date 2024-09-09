@@ -136,21 +136,34 @@ class MsSqlProvider:
 
         return self.__db_conn
 
-    def __execute(self, statement, *args):
+    def __execute_dml(self, statement, *args):
         logger.debug(statement, args)
-        c = self.__connection()
+        c = self.__db_connection()
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout
-        return c.execute(statement, *args)
+        cur = c.execute(statement, *args)
+        # If the SQL query causes multiple messages to come back (either extra row counts from triggers, or PRINT statements),
+        # then we need to keep running nextset() for PyODBC to get the query to run to completion
+        while cur.nextset():
+            pass
+        return cur
 
-    def __db_execute(self, statement, *args):
+    def __execute_ddl(self, statement, *args):
         logger.debug(statement, args)
         c = self.__db_connection()
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout
         return c.execute(statement, *args)
+    
+    def __execute_server(self, statement, *args):
+        logger.debug(statement, args)
+        c = self.__connection()
+        # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
+        if self.timeout:
+            c.timeout = self.timeout
+        return c.execute(statement, *args)    
 
     def __get_path(self, filepath):
         if "\\" in filepath:
@@ -169,7 +182,7 @@ class MsSqlProvider:
         checking the model db seems like a good 'boring' solution
         :return: Default data directory e.g. "C:\\DATA"
         """
-        datafile = self.__execute(
+        datafile = self.__execute_server(
             """
         SELECT physical_name
         FROM sys.master_files mf
@@ -187,7 +200,7 @@ class MsSqlProvider:
         __get_default_datafolder: see for more info
         :return:
         """
-        logfile = self.__execute(
+        logfile = self.__execute_server(
             """
         SELECT physical_name
         FROM sys.master_files mf
@@ -207,7 +220,7 @@ class MsSqlProvider:
         datadir = self.__get_default_datafolder()
         logdir = self.__get_default_logfolder()
 
-        filelist = self.__execute(
+        filelist = self.__execute_server(
             f"RESTORE FILELISTONLY FROM DISK = ?;", input_path
         ).fetchall()
 
@@ -245,7 +258,7 @@ class MsSqlProvider:
 
         for i, script in enumerate(script_list):
             logger.info(f'Running {title} script #{i} "{script[:50]}"')
-            cursor = self.__db_execute(script)
+            cursor = self.__execute_dml(script)
             results = None
             try:
                 results = cursor.fetchall()
@@ -262,10 +275,10 @@ class MsSqlProvider:
             SEED_TABLE_NAME, ",".join(seed_column_lines)
         )
 
-        self.__db_execute(create_statement)
+        self.__execute_ddl(create_statement)
 
     def __drop_seed_table(self):
-        self.__db_execute("DROP TABLE IF EXISTS [{}];".format(SEED_TABLE_NAME))
+        self.__execute_ddl("DROP TABLE IF EXISTS [{}];".format(SEED_TABLE_NAME))
 
     def __insert_seed_row(self, qualifier_map):
         column_list = ",".join(
@@ -279,7 +292,7 @@ class MsSqlProvider:
         statement = "INSERT INTO [{}]({}) VALUES ({});".format(
             SEED_TABLE_NAME, column_list, substitution_list
         )
-        self.__db_execute(statement, value_list)
+        self.__execute_dml(statement, value_list)
 
     def __seed(self, qualifier_map):
         for i in self.progress(
@@ -312,10 +325,10 @@ class MsSqlProvider:
 
     def drop_database(self):
         # force connection close so we can always drop the db: sometimes timing makes a normal drop impossible.
-        self.__execute(
+        self.__execute_server(
             f"ALTER DATABASE [{self.db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;"
         )
-        self.__execute(f"DROP DATABASE IF EXISTS [{self.db_name}];")
+        self.__execute_server(f"DROP DATABASE IF EXISTS [{self.db_name}];")
 
     def anonymize_database(self, database_strategy, db_workers):
         qualifier_map = database_strategy.fake_update_qualifier_map
@@ -343,13 +356,13 @@ class MsSqlProvider:
 
                 if table_strategy.strategy_type == TableStrategyTypes.TRUNCATE:
                     progressbar.set_description("Truncating {}".format(table_name))
-                    self.__db_execute(
+                    self.__execute_dml(
                         "TRUNCATE TABLE {}[{}];".format(schema_prefix, table_name)
                     )
 
                 elif table_strategy.strategy_type == TableStrategyTypes.DELETE:
                     progressbar.set_description("Deleting {}".format(table_name))
-                    self.__db_execute(
+                    self.__execute_dml(
                         "DELETE FROM {}[{}];".format(schema_prefix, table_name)
                     )
 
@@ -386,7 +399,7 @@ class MsSqlProvider:
 
                         # set ansi warnings off because otherwise we run into lots of little incompatibilities between the seed data nd the columns
                         # e.g. string or binary data would be truncated (when the data is too long)
-                        self.__db_execute(
+                        self.__execute_dml(
                             f"{ansi_warnings_prefix} UPDATE {schema_prefix}[{table_name}] SET {column_assignments}{where_clause}; {ansi_warnings_suffix}"
                         )
 
@@ -426,7 +439,7 @@ class MsSqlProvider:
         move_clauses = ", ".join(["MOVE ? TO ?"] * len(move_files))
         move_clause_params = [item for pair in move_files.items() for item in pair]
 
-        restore_cursor = self.__execute(
+        restore_cursor = self.__execute_server(
             f"RESTORE DATABASE ? FROM DISK = ? WITH {move_clauses}, STATS = ?;",
             [self.db_name, input_path, *move_clause_params, self.__STATS],
         )
@@ -442,7 +455,7 @@ class MsSqlProvider:
             ",".join(with_options) + ", " if len(with_options) > 0 else ""
         )
 
-        dump_cursor = self.__execute(
+        dump_cursor = self.__execute_server(
             f"BACKUP DATABASE ? TO DISK = ? WITH {with_options_str}STATS = ?;",
             [self.db_name, output_path, self.__STATS],
         )
