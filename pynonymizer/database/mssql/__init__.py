@@ -137,20 +137,21 @@ class MsSqlProvider:
         return self.__db_conn
 
     def __execute_dml(self, statement, *args):
-        logger.debug(statement, args)
+        logger.debug("sql: %s, args: %s", statement, args)
         c = self.__db_connection()
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout
         cur = c.execute(statement, *args)
+        logger.debug("%s row(s) affected", cur.rowcount)
         # If the SQL query causes multiple messages to come back (either extra row counts from triggers, or PRINT statements),
         # then we need to keep running nextset() for PyODBC to get the query to run to completion
         while cur.nextset():
-            pass
+            logger.debug("%s row(s) affected", cur.rowcount)
         return cur
 
     def __execute_ddl(self, statement, *args):
-        logger.debug(statement, args)
+        logger.debug("sql: %s, args: %s", statement, args)
         c = self.__db_connection()
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
@@ -158,7 +159,7 @@ class MsSqlProvider:
         return c.execute(statement, *args)
     
     def __execute_server(self, statement, *args):
-        logger.debug(statement, args)
+        logger.debug("sql: %s, args: %s", statement, args)
         c = self.__connection()
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:

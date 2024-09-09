@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ## Fixed
 - Fixed a issue when updates to MSSQL data would result in multiple messages coming back from the server, e.g. when triggers update multiple tables and NOCOUNT is OFF. Another scenario is before or after scripts that call stored procs wth PRINT statements in them or that return multiple resultsets before completing. Without the fix, this issue can result in tables only partially anonymized.
+- Fix error messages when running MSSQL anonymization with --verbose enabled
 
 ## [2.4.0] 2024-07-30
 ## Changed
