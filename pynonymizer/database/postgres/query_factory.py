@@ -9,7 +9,7 @@ All Static query generation functions
 _FAKE_COLUMN_TYPES = {
     FakeDataType.STRING: "VARCHAR(65535)",
     FakeDataType.DATE: "DATE",
-    FakeDataType.DATETIME: "DATETIME",
+    FakeDataType.DATETIME: "TIMESTAMP",
     FakeDataType.INT: "INT",
 }
 
