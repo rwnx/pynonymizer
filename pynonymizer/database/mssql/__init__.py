@@ -157,14 +157,14 @@ class MsSqlProvider:
         if self.timeout:
             c.timeout = self.timeout
         return c.execute(statement, *args)
-    
+
     def __execute_server(self, statement, *args):
         logger.debug("sql: %s, args: %s", statement, args)
         c = self.__connection()
         # If timeout is set, then apply it to the connection. PyODBC will then assign that value to the Cursor created during execute()
         if self.timeout:
             c.timeout = self.timeout
-        return c.execute(statement, *args)    
+        return c.execute(statement, *args)
 
     def __get_path(self, filepath):
         if "\\" in filepath:
