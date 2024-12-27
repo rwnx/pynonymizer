@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install package tools
-      run: pip install twine
+      run: pip install twine setuptools wheel
     - run: python setup.py sdist bdist_wheel
     - uses: actions/upload-artifact@v4
       with:
