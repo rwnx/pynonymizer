@@ -2,7 +2,9 @@ import logging
 import shutil
 import shlex
 import subprocess
+
 from pynonymizer.database.exceptions import DependencyError
+import pynonymizer
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,15 @@ def _optional_arg(condition, value):
 
 def _optional_arg_pair(arg_value_pair):
     return _optional_arg(arg_value_pair[1], arg_value_pair)
+
+
+def _set_mysql_cmd() -> None:
+    if shutil.which("mariadb"):
+        logger.info(
+            "Found mariadb client, using mariadb and mariadb-dump instead of deprecated mysql commands."
+        )
+        pynonymizer.database.mysql.execution.RESTORE_CMD = "mariadb"
+        pynonymizer.database.mysql.execution.DUMP_CMD = "mariadb-dump"
 
 
 class MySqlDumpRunner:
@@ -41,6 +52,8 @@ class MySqlDumpRunner:
 
         if db_name is None:
             raise ValueError("db_name cannot be null")
+
+        _set_mysql_cmd()
 
         if not (shutil.which(DUMP_CMD)):
             raise DependencyError(
@@ -96,6 +109,8 @@ class MySqlCmdRunner:
 
         if db_name is None:
             raise ValueError("db_name cannot be null")
+
+        _set_mysql_cmd()
 
         if not (shutil.which(RESTORE_CMD)):
             raise DependencyError(

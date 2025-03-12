@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   -------------------------------------------------------------------
 ## [Unreleased]
+## Added
+- Added a function to the mysql executioner to use mariadb commands if mariadb is detected. This is because the mysql commands are deprecated on newer systems.
 
 ## [2.5.0] 2024-12-27
 ## Fixed
